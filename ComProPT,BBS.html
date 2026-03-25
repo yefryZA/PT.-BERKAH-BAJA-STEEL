@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Company Profile | PT. BERKAH BAJA STEEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+   <style>
+    /* 🎨 VARIABEL DASAR */
+    :root {
+        --bg-dark: #1a1a1c; 
+        --bg-light: #2c2c2e;
+        --accent: #ffcc00;  
+        --text-light: #ffffff;
+        --text-muted: #bcbcbc;
+        --gold-glow: 0 0 15px rgba(255, 204, 0, 0.4);
+    }
+
+    /* 🧱 RESET DASAR */
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0; 
+        background: var(--bg-dark);
+        color: var(--text-light); 
+        padding-bottom: 90px;
+        overflow-x: hidden;
+    }
+
+    /* 🔒 SISTEM SECTION (DISIPLIN TOTAL) */
+    .section { 
+        display: none !important/* Semua ngumpet secara default */
+        opacity: 0; 
+        transition: opacity 0.5s ease;
+    }
+
+    .section.active { 
+        display: block !important; /* Muncul kalau dipanggil */
+        opacity: 1;
+        animation: fadeIn 0.8s ease forwards;
+    }
+
+    /* 🏆 KHUSUS WELCOME PAGE (SUPER PRIORITAS) */
+    #welcome.active { 
+        display: flex !important; 
+        opacity: 1 !important;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+        z-index: 9999;
+    }
+
+    /* 🏢 HEADER & BRANDING */
+    .brand-header {
+        background: linear-gradient(180deg, #1c1c1e 0%, var(--bg-dark) 100%);
+        padding: 40px 20px; 
+        text-align: center; 
+        border-bottom: 4px solid var(--accent);
+        animation: borderGlow 3s infinite;
+    }
+
+ /* 🧭 NAVIGASI BAWAH - FLOATING VERSION */
+.bottom-nav {
+    position: fixed; 
+    bottom: 15px; /* NAIKIN DIKIT BIAR GAK NEMPEL DASAR */
+    left: 5%; /* Biar di tengah */
+    width: 90%; /* Jangan 100%, biar ada jarak kiri-kanan */
+    background: rgba(28, 28, 30, 0.95); /* Sedikit transparan mewah */
+    backdrop-filter: blur(10px); /* Efek kaca blur */
+    display: flex; 
+    padding: 12px 0;
+    border: 1px solid var(--accent); /* Border emas keliling */
+    border-radius: 25px; /* Lengkungan mewah di ujung */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6); /* Bayangan biar melayang */
+    z-index: 1000;
+}
+
+.nav-item {
+    text-align: center; 
+    color: var(--text-muted); 
+    flex: 1; 
+    cursor: pointer; 
+    font-size: 10px; /* Dikecilin dikit biar pas berempat */
+    line-height: 1.4;
+    transition: 0.3s ease;
+}
+
+/* Biar pas diklik makin berasa emasnya */
+.nav-item.active { 
+    color: var(--accent); 
+    font-weight: bold; 
+    transform: translateY(-3px); /* Efek naik dikit pas aktif */
+}
+
+    /* 📦 UI ELEMENTS (CARD & ACCORDION) */
+    .menu-container { 
+        background: var(--bg-light); 
+        border-radius: 12px; 
+        margin-bottom: 12px; 
+        border: 1px solid #444; 
+        overflow: hidden; 
+    }
+    .menu-header { padding: 15px; display: flex; justify-content: space-between; cursor: pointer; color: var(--accent); font-weight: bold; }
+    .menu-content { display: none; padding: 15px; background: rgba(0,0,0,0.2); font-size: 14px; line-height: 1.6; }
+
+    /* ✨ ANIMASI */
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(15px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+
+    @keyframes borderGlow {
+        0%, 100% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
+        50% { border-color: #fff; box-shadow: 0 0 15px var(--accent); }
+    }
+
+    @keyframes logoFadeZoom {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+        100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.1); }
+    }
+    @media (max-width: 480px) {
+    #welcome p { 
+        letter-spacing: 2px !important; 
+        font-size: 11px !important; 
+        white-space: nowrap; /* Biar tetap satu baris gagah */
+    }
+}
+/* GRID DASHBOARD */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 15px;
+}
+
+.dash-card {
+    background: linear-gradient(145deg, #2c2c2e, #1c1c1e);
+    border: 1px solid rgba(255, 204, 0, 0.2);
+    border-radius: 20px;
+    padding: 30px 10px;
+    text-align: center;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+    transition: 0.3s;
+}
+
+.dash-card:active { transform: scale(0.9); }
+.dash-icon { font-size: 35px; margin-bottom: 25px; }
+.dash-label { color: var(--accent); font-weight: 800; font-size: 12px; letter-spacing: 1px; }
+
+/* MODAL / JENDELA MEWAH - FIX LEBAR HP */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10000; /* Pastikan paling atas */
+    display: none; 
+    justify-content: center;
+    align-items: center; /* Jendela di tengah layar */
+    opacity: 0;
+    transition: 0.3s ease;
+}
+
+.modal-window {
+    width: 92%; /* Lebar jendela 92% dari layar HP */
+    max-width: 450px; /* Batas maksimal biar nggak kelebaran di tablet */
+    max-height: 80vh; /* Tinggi maksimal 80% layar */
+    margin-bottom: 150px;
+    background: #1a1a1c;
+    border: 1.5px solid var(--accent);
+    border-radius: 20px;
+    padding: 20px;
+    overflow-y: auto; /* Bisa di-scroll kalau teksnya panjang */
+    position: relative;
+    box-sizing: border-box; /* KUNCI: Biar padding nggak nambah lebar */
+    transform: scale(0.85);
+    transition: 0.3s ease;
+}
+
+/* Biar pas aktif animasinya cakep */
+.modal-overlay.active { 
+    display: flex; 
+    opacity: 1; 
+}
+.modal-overlay.active .modal-window { 
+    transform: scale(1); 
+}
+
+/* Tombol Tutup Biar Gak Tabrakan */
+.close-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 11px;
+    cursor: pointer;
+}
+/* 🕰️ JAM DIGITAL MEWAH (REVISI HABI) */
+.jam-container {
+    text-align: center;
+    padding: 25px 10px;
+    background: #ffffff; /* Background Putih Bersih */
+    border-bottom: 5px solid #d4af37; /* Garis Bawah Emas */
+    margin-bottom: 0;
+}
+
+#clock {
+    font-size: 55px; /* JAM GEDE BANGET */
+    font-weight: 900;
+    color: #1a1a1c; /* Angka Hitam biar kontras di Putih */
+    line-height: 1;
+    margin: 0;
+    text-shadow: 2px 2px 0px rgba(212, 175, 55, 0.3); /* Bayangan Emas Tipis */
+}
+
+#date-info {
+    font-size: 14px;
+    color: #d4af37; /* Hari & Tanggal EMAS */
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+
+/* 🏎️ EFEK GESER LOGO KALEM (LEFT-RIGHT SLIDE) - ANTI PUSING */
+.logo-circle {
+    width: 90px !important; 
+    height: 90px !important;
+    background: #fff; 
+    border-radius: 50%;
+    margin: 0 auto 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    border: 4px solid var(--accent); 
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    /* 🚀 PANGGIL ANIMASI GESER */
+    animation: geserKalemBBS 4s infinite ease-in-out !important; 
+}
+
+@keyframes geserKalemBBS {
+    0% { transform: translateX(0); }         /* Mulai di tengah */
+    25% { transform: translateX(-20px); }    /* Geser ke KIRI */
+    50% { transform: translateX(0); }         /* Balik ke TENGAH */
+    75% { transform: translateX(20px); }     /* Geser ke KANAN */
+    100% { transform: translateX(0); }        /* Balik ke TENGAH lagi */
+}
+.logo-circle {
+    animation: geserKalemBBS 5s infinite ease-in-out !important; 
+}
+
+.card:active {
+        transform: scale(0.98);
+        background: rgba(255,255,255,0.1) !important;
+    }
+    #welcome {
+    height: 100dvh !important; /* Dinamis ngikutin layar asli */
+}
+
+.email-card:active {
+        background: rgba(212, 175, 55, 0.1) !important;
+        transform: scale(0.97);
+    }
+    .email-card:active .arrow-icon {
+        transform: translateX(5px);
+        opacity: 1;
+    }
+
+</style>
+</head>
+<body>
+<div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+    <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; flex: 1; margin: 5px; border: 1px solid #444;">
+        <span style="display: block; font-size: 9px; color: #888;">LOGISTIC STATUS</span>
+        <span style="color: #00ff00; font-size: 11px; font-weight: bold;">● ACTIVE</span>
+    </div>
+    <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; flex: 1; margin: 5px; border: 1px solid #444;">
+        <span style="display: block; font-size: 9px; color: #888;">PROJECT MONITORING</span>
+        <span style="color: var(--accent); font-size: 11px; font-weight: bold;">ON-GOING</span>
+    </div>
+</div>
+
+
+<div id="welcome" class="section active" style="
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh; 
+    background: #000; 
+    z-index: 9999; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0; padding: 0; /* Paksa Nol biar gak narik ke kanan */
+    transition: opacity 0.8s ease;
+">
+    
+   <div id="welcome" class="section active" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; padding: 0; transition: opacity 0.8s ease;">
+    
+    <div style="
+        position: absolute; 
+        top: 50%; left: 50%; 
+        width: 320px; height: 320px;
+        background-image: url('https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        filter: blur(1px) grayscale(20%);
+        animation: logoFadeZoom 4s ease-out forwards;
+        z-index: 1;
+        transform: translate(-50%, -50%); 
+    "></div>
+
+    <div style="position: relative; z-index: 2; text-align: center; width: 100%;">
+        
+        <h1 style="
+            color: var(--accent); 
+            margin: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 45px; 
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.6);
+            letter-spacing: 2px;
+        ">PT. BBS</h1>
+
+        <p style="
+            margin: 10px 0 40px 0;
+            color: #ffd700;
+            font-size: 14px; 
+            font-weight: 900; 
+            letter-spacing: 7px; 
+            text-transform: uppercase; 
+            font-family: 'Montserrat', sans-serif;
+            display: inline-block;
+            /* EFEK GRADASI EMAS */
+            background: linear-gradient(to bottom, #fff700 0%, #ffcc00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* GLOW EMAS */
+            filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+        ">TANGGUH • TERPERCAYA • MODERN</p>
+        
+        <br>
+        
+        <button onclick="masukApp()" style="
+    background: transparent; 
+    border: 2px solid var(--accent); 
+    color: var(--accent); 
+    padding: 12px 45px; 
+    border-radius: 35px; 
+    font-weight: bold; 
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255,193,7,0.4);
+    text-transform: uppercase;
+    transition: 0.3s;
+    ">EXPLORE NOW</button>
+    </div>
+</div></div>
+
+<div id="date-time" style="background: #1a1a1c; color: #ffffff; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #d4af37; font-family: 'Montserrat', sans-serif; width: 85%; margin: 0 auto; border-radius: 0 0 15px 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+    
+    <span id="current-clock" style="font-size: 45px; font-weight: 900; line-height: 1; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);">00:00:00</span>
+    
+    <div style="display: flex; gap: 8px; font-size: 11px; font-weight: bold; letter-spacing: 1px; margin-top: 5px; color: #ffffff;">
+        <span id="current-day" style="color: #d4af37;">SABTU</span>
+        <span style="opacity: 0.4;">|</span>
+        <span id="current-date">21/03/2026</span>
+    </div>
+</div>
+
+<div class="brand-header" style="padding: 25px 20px;">
+    <div class="logo-circle" style="width: 85px; height: 85px; animation: goyangBBS 4s infinite ease-in-out;">
+        <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" style="width: 85%; border-radius: 50%;">
+    </div>
+    <h1 style="font-family: 'Montserrat'; font-size: 20px; color: var(--accent); margin: 0;">PT. BERKAH BAJA STEEL</h1>
+    <p style="font-size: 10px; letter-spacing: 1px; color: white; opacity: 0.8;">INFRASTRUKTUR • PERDAGANGAN • DIGITALISASI</p>
+</div>
+
+<div id="home" class="section">
+    <div class="dashboard-grid">
+        <div class="dash-card" onclick="openModal('misi-data')">
+            <div class="dash-icon">🎯</div>
+            <span class="dash-label">VISI & MISI</span>
+        </div>
+        <div class="dash-card" onclick="openModal('legal-data')">
+            <div class="dash-icon">⚖️</div>
+            <span class="dash-label">LEGALITAS PERUSAHAAN</span>
+        </div>
+        <div class="dash-card" onclick="openModal('layanan-data')">
+            <div class="dash-icon">🏗️</div>
+            <span class="dash-label">LAYANAN KAMI</span>
+        </div>
+        <div class="dash-card" onclick="openModal('struktur-data')">
+            <div class="dash-icon">👔</div>
+            <span class="dash-label">STRUKTUR PERUSAHAAN</span>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-window">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">
+                <b id="modalTitle" style="color: var(--accent); font-size: 18px; font-family: 'Montserrat';">DETAIL DATA</b>
+                <button onclick="closeModal()" class="close-btn">✕ TUTUP</button>
+            </div>
+            <div id="modalContent">
+                </div>
+        </div>
+    </div>
+
+    <div style="display: none;">
+        
+        <div id="misi-data">
+            <div style="margin-bottom: 20px; border-bottom: 1px dashed #555; padding-bottom: 15px;">
+                <b style="color: var(--accent); font-size: 16px; display: block; margin-bottom: 5px;">VISI PERUSAHAAN</b>
+                <p style="margin: 0; font-style: italic; color: #eee; font-size: 14px; line-height: 1.6;">
+                    "Menjadi pusat integrasi infrastruktur dan perdagangan berbasis digital yang transparan, efisien, dan berkelanjutan."
+                </p>
+            </div>
+            <b style="color: var(--accent); font-size: 16px; display: block; margin-bottom: 10px;">MISI KAMI</b>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: var(--accent); font-size: 18px;">◈</span>
+                    <span style="font-size: 14px;">Menghadirkan solusi konstruksi fisik dengan standar mutu tinggi dan presisi.</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: var(--accent); font-size: 18px;">◈</span>
+                    <span style="font-size: 14px;">Menciptakan ekosistem perdagangan yang terdigitalisasi untuk percepatan distribusi.</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: var(--accent); font-size: 18px;">◈</span>
+                    <span style="font-size: 14px;">Menyediakan sistem monitoring secara real-time bagi setiap mitra kerja dan pelanggan.</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="legal-data">
+            <div style="margin-bottom: 15px; border-bottom: 1px dashed #555; padding-bottom: 10px;">
+                <b style="color: var(--accent); font-size: 16px; display: block; margin-bottom: 5px;">KREDIBILITAS TERJAMIN</b>
+                <p style="margin: 0; font-size: 13px; color: #bbb;">
+                    Seluruh operasional perusahaan kami berjalan di atas landasan hukum yang sah dan transparan sesuai regulasi NKRI.
+                </p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px; background: #333; padding: 8px; border-radius: 5px;">
+                    <span style="color: var(--accent);">✔</span> <span style="font-size: 13px;">Akta Pendirian Perusahaan dari Notaris</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; background: #333; padding: 8px; border-radius: 5px;">
+                    <span style="color: var(--accent);">✔</span> <span style="font-size: 13px;">Pengesahan Akta dari Kemenkumham</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; background: #333; padding: 8px; border-radius: 5px;">
+                    <span style="color: var(--accent);">✔</span> <span style="font-size: 13px;">Nomor Induk Berusaha (NIB)</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; background: #333; padding: 8px; border-radius: 5px;">
+                    <span style="color: var(--accent);">✔</span> <span style="font-size: 13px;">Nomor Pokok Wajib Pajak (NPWP)</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; background: #333; padding: 8px; border-radius: 5px;">
+                    <span style="color: var(--accent);">✔</span> <span style="font-size: 13px;">Izin Operasional Lengkap</span>
+                </div>
+            </div>
+            <p style="margin-top: 15px; font-size: 11px; font-style: italic; color: var(--accent); text-align: center; border: 1px solid var(--accent); padding: 5px; border-radius: 5px;">
+                *Dokumen fisik tersedia di menu LEGAL.
+            </p>
+        </div>
+
+        <div id="layanan-data">
+            <b style="color: var(--accent); font-size: 16px; display: block; margin-bottom: 10px;">SOLUSI TERINTEGRASI</b>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: #333; padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: bold; margin-bottom: 5px;">🏗️ Konstruksi Sipil & Baja</div>
+                    <div style="font-size: 12px; color: #ccc;">Struktur bangunan dan rangka baja presisi tinggi.</div>
+                </div>
+                <div style="background: #333; padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: bold; margin-bottom: 5px;">🚢 Logistik Batu Split</div>
+                    <div style="font-size: 12px; color: #ccc;">Suplai Material Jalur Laut (Tongkang) & Jalur Darat.</div>
+                </div>
+                <div style="background: #333; padding: 12px; border-radius: 10px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: bold; margin-bottom: 5px;">📊 Monitoring Digital</div>
+                    <div style="font-size: 12px; color: #ccc;">Transparansi kontrol proyek secara real-time.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="struktur-data">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <b style="color: var(--accent); font-size: 16px;">MANAGEMENT TEAM</b>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: linear-gradient(to right, #444, #222); padding: 10px; border-radius: 8px; border-right: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold; font-size: 13px;">H. HENDAR EFFENDI</span>
+                    <span style="font-size: 9px; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 800;">DIREKTUR UTAMA</span>
+                </div>
+                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">YEFRY ZA.</span>
+                    <span style="color: var(--accent); font-size: 11px;">● Manajer</span>
+                </div>
+                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">SOFYAN</span>
+                    <span style="color: var(--accent); font-size: 11px;">● Supervisor</span>
+                </div>
+                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">OPANG</span>
+                    <span style="color: var(--accent); font-size: 11px;">● Korlap</span>
+                </div>
+                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">NOVY</span>
+                    <span style="color: var(--accent); font-size: 11px;">● Marketing</span>
+                </div> </div> </div> </div>
+      
+    </div> <p style="margin-top: 15px; font-size: 12px; color: var(--text-muted); text-align: center;">
+<div id="project" class="section">
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: var(--accent); margin: 0;">PORTOFOLIO KERJA</h2>
+        <p style="font-size: 11px; color: var(--text-muted); letter-spacing: 1px;">DOKUMENTASI PT. BBS</p>
+    </div>
+
+    <div class="menu-container">
+        <div class="menu-header" onclick="toggleMenu('galeri-baja')">
+            <b>🏗️ Galeri Konstruksi</b>
+            <span>▼</span>
+        </div>
+        <div id="galeri-baja" class="menu-content" style="background: #2c2c2e; padding: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/Project.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/project2.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/project3.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/project4.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-container" style="margin-top: 15px;">
+        <div class="menu-header" onclick="toggleMenu('galeri-laut')">
+            <b>🚢 Galeri Logistik Laut</b>
+            <span>▼</span>
+        </div>
+        <div id="galeri-laut" class="menu-content" style="background: #2c2c2e; padding: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/fotokapal.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/fotokapal1.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); aspect-ratio: 1/1; object-fit: cover;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/fotokapal2.jpeg" style="width:100%; border-radius: 8px; border: 1px solid var(--accent); grid-column: span 2; height: 120px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-container" style="margin-top: 15px;">
+        <div class="menu-header" onclick="toggleMenu('semua-video')">
+            <b>🎥 Dokumentasi Video (All)</b>
+            <span>▼</span>
+        </div>
+        <div id="semua-video" class="menu-content" style="background: #1a1a1a; padding: 15px; text-align: center;">
+            <div style="max-width: 280px; margin: 0 auto; border: 2px solid var(--accent); border-radius: 12px; overflow: hidden; background: #000;">
+                <video id="mainVideo" width="100%" controls playsinline>
+                    <source src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/videoproject.mp4" type="video/mp4">
+                </video>
+            </div>
+            <p id="videoTitle" style="font-size: 11px; color: var(--accent); font-weight: bold; margin: 10px 0;">▶️ Video Proyek 1</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button onclick="changeVid('videoproject.mp4', 'Video Proyek 1')" style="background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 8px; font-size: 9px;">PROYEK 1</button>
+                <button onclick="changeVid('videoproject2.mp4', 'Video Proyek 2')" style="background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 8px; font-size: 9px;">PROYEK 2</button>
+                <button onclick="changeVid('tongkang.mp4', 'Loading Tongkang 1')" style="background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 8px; font-size: 9px;">TONGKANG 1</button>
+                <button onclick="changeVid('tongkang2.mp4', 'Loading Tongkang 2')" style="background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 8px; font-size: 9px;">TONGKANG 2</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="kontak" class="section">
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: var(--accent); margin: 0;">DATA & KONTAK</h2>
+        <p style="font-size: 11px; color: var(--text-muted); letter-spacing: 1px;">PT. BERKAH BAJA STEEL</p>
+    </div>
+
+    <div onclick="window.open('https://www.google.com/maps/search/?api=1&query=Jl.+Pasar+Kranggot+Cilegon', '_blank')" 
+     style="
+        cursor: pointer; 
+        background: #1a1a1a; 
+        border: 2px solid var(--accent); 
+        border-radius: 15px; 
+        padding: 20px; 
+        position: relative; 
+        overflow: hidden; 
+        box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); 
+        margin: 0 5px 20px 5px; /* KASIH JARAK KIRI KANAN DIKIT */
+        box-sizing: border-box; /* KUNCI BIAR GAK BABLAS */
+    ">
+    
+    <div style="position: absolute; top: 15px; right: 15px; width: 10px; height: 10px; background: #00ff00; border-radius: 50%; box-shadow: 0 0 10px #00ff00; animation: pulse 1.5s infinite;"></div>
+    
+    <h3 style="margin: 0; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 8px;">
+        📍 HEAD OFFICE LOCATION
+    </h3>
+    
+    <p style="font-size: 12px; color: #fff; line-height: 1.6; margin: 15px 0;">
+        <b style="color: var(--accent);">KANTOR:</b><br>
+        Jl. Pasar Kranggot. Link Kranggot Kel. Sukmajaya, Kec. JOMBANG, CILEGON - BANTEN 42411
+    </p>
+
+    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 10px; color: var(--accent); border: 1px dashed #444; text-align: center;">
+        STATUS: [ DIRECT LINK ACTIVE ]
+    </div>
+</div>
+
+<a href="mailto:yefrydesfirmanza@gmail.com" style="text-decoration: none; display: block;">
+    <div class="card email-card" style="
+        margin-bottom: 15px; 
+        border-left: 4px solid var(--accent); 
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(212,175,55,0.02) 100%); 
+        padding: 15px; 
+        transition: all 0.3s ease; 
+        cursor: pointer;
+        border-radius: 0 12px 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    ">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: 1px;">📧 EMAIL OFFICIAL</span>
+            <span style="color: #fff; font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 0.5px;">yefrydesfirmanza@gmail.com</span>
+        </div>
+
+        <div style="color: var(--accent); font-size: 18px; opacity: 0.6; transform: translateX(0); transition: 0.3s;" class="arrow-icon">
+            ➜
+        </div>
+    </div>
+</a>
+
+    <a href="https://wa.me/628164991986?text=Halo%20PT.%20BBS,%20saya%20tertarik%20dengan%20layanan%20anda" 
+       target="_blank" 
+       style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #25d366; color: white; text-decoration: none; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 14px; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); transition: 0.3s;">
+       <span style="font-size: 20px;">💬</span> HUBUNGI WHATSAPP
+    </a>
+
+    <p style="text-align: center; font-size: 10px; color: #555; margin-top: 20px;">
+        © 2026 PT. BERKAH BAJA STEEL - SYSTEM BY. YEFRY ZA
+    </p>
+</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="showPage('home', this)">🏠<br>HOME</div>
+    <div class="nav-item" onclick="showPage('project', this)">🏗️<br>PROJECT</div>
+    <div class="nav-item" onclick="showPage('kontak', this)">📁<br>DATA</div>
+    <div class="nav-item" onclick="bukaBrankas(this)" style="color: #d4af37; font-weight: bold;">🔐<br>LEGAL</div>
+</nav>
+
+<div id="legalitas-viewer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; z-index: 9999; overflow-y: auto; padding: 20px; box-sizing: border-box;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--accent); padding-bottom: 15px;">
+        <span style="color: var(--accent); font-weight: bold; font-size: 14px; letter-spacing: 2px;">📂 ARCHIVE BBS</span>
+        <button onclick="closeLegalitas()" style="background: #ff4444; border: none; color: white; font-weight: bold; border-radius: 5px; padding: 8px 15px; cursor: pointer;">KELUAR</button>
+    </div>
+
+    <div id="menu-folder-legal" style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+        
+        <div onclick="bukaDokumen('foto-akta')" style="background: #1a1a1c; border-left: 5px solid #d4af37; padding: 20px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 15px;">
+            <span style="font-size: 25px;">📜</span>
+            <div>
+                <b style="color: #fff; font-size: 14px;">AKTA PERUSAHAAN</b><br>
+                <small style="color: #666; font-size: 10px;">Update: Pendirian & Perubahan</small>
+            </div>
+        </div>
+
+        <div onclick="bukaDokumen('foto-nib')" style="background: #1a1a1c; border-left: 5px solid #d4af37; padding: 20px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 15px;">
+            <span style="font-size: 25px;">📄</span>
+            <div>
+                <b style="color: #fff; font-size: 14px;">IZIN BERUSAHA (NIB)</b><br>
+                <small style="color: #666; font-size: 10px;">Sistem OSS RBA Aktif</small>
+            </div>
+        </div>
+
+        <div onclick="bukaDokumen('foto-pajak')" style="background: #1a1a1c; border-left: 5px solid #d4af37; padding: 20px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 15px;">
+            <span style="font-size: 25px;">📊</span>
+            <div>
+                <b style="color: #fff; font-size: 14px;">PERPAJAKAN (NPWP/PKP)</b><br>
+                <small style="color: #666; font-size: 10px;">Status: Valid & Terverifikasi</small>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="view-foto-legal" style="display: none; margin-top: 20px; text-align: center;">
+        <button onclick="kembaliKeMenu()" style="background: #333; color: #fff; border: 1px solid #444; padding: 10px; width: 100%; border-radius: 8px; margin-bottom: 20px;">⬅ KEMBALI KE FOLDER</button>
+        
+        <img id="gambar-tampil" src="" style="width: 100%; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.1);">
+    </div>
+
+</div>
+
+<script>
+    // Fungsi Pindah Halaman
+    function showPage(pageId, element) {
+        // Sembunyikan semua section (Paksa!)
+        document.querySelectorAll('.section').forEach(s => {
+            s.style.display = 'none';
+            s.classList.remove('active');
+        });
+        
+        // Tampilkan target
+        const target = document.getElementById(pageId);
+        if(target) {
+            target.style.display = 'block';
+            setTimeout(() => target.classList.add('active'), 50);
+        }
+
+        // Update Navigasi
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        element.classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+  function masukApp() {
+    // 🎤 1. EFEK SUARA JARVIS
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = "Selamat datang di PT. Berkah Baja Steel";
+    msg.lang = 'id-ID'; 
+    msg.rate = 0.9;     
+    window.speechSynthesis.speak(msg);
+
+    // 📺 2. EKSEKUSI FULLSCREEN
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) { 
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { 
+        elem.msRequestFullscreen();
+    }
+
+    // 🏃 3. PINDAH HALAMAN (EFEK TRANSISI)
+    const welcome = document.getElementById('welcome');
+    if(welcome) {
+        welcome.style.opacity = '0';
+        setTimeout(() => {
+            welcome.style.display = 'none';
+            showPage('home', document.querySelector('.nav-item'));
+        }, 800);
+    }
+} 
+
+    // Fungsi Accordion
+    function toggleMenu(id) {
+        const content = document.getElementById(id);
+        const isOpen = content.style.display === "block";
+        document.querySelectorAll('.menu-content').forEach(c => c.style.display = 'none');
+        content.style.display = isOpen ? "none" : "block";
+    }
+
+
+    function changeVid(fileName, title) {
+    const video = document.getElementById('mainVideo');
+    const titleText = document.getElementById('videoTitle');
+    const baseUrl = "https://raw.githubusercontent.com/yefryZA/PT.BBS/main/";
+    
+    video.src = baseUrl + fileName;
+    titleText.innerHTML = "▶️ " + title;
+    
+    video.load();
+    video.play();
+}
+
+function updateTime() {
+    const now = new Date();
+    const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+    
+    document.getElementById('current-day').innerText = days[now.getDay()];
+    document.getElementById('current-date').innerText = now.toLocaleDateString('id-ID');
+    document.getElementById('current-clock').innerText = now.toLocaleTimeString('id-ID');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// --- JURUS PENGUNCI WELCOME (Taruh di paling bawah script) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Sembunyikan Home secara paksa saat pertama buka
+    document.getElementById('home').style.display = 'none';
+    
+    // 2. Pastikan Welcome yang muncul
+    const welcome = document.getElementById('welcome');
+    if(welcome) {
+        welcome.style.display = 'flex';
+        welcome.style.opacity = '1';
+    }
+});
+function openModal(dataId) {
+    // 1. Ambil data dari gudang
+    const dataHtml = document.getElementById(dataId).innerHTML;
+    
+    // 2. Set judul otomatis
+    const titles = {
+        'misi-data': '🎯 VISI & MISI',
+        'legal-data': '⚖️ LEGALITAS RESMI',
+        'layanan-data': '🏗️ LAYANAN KAMI',
+        'struktur-data': '👔 MANAGEMENT TEAM'
+    };
+    
+    document.getElementById('modalTitle').innerText = titles[dataId];
+    document.getElementById('modalContent').innerHTML = dataHtml;
+    
+    // 3. Munculkan jendela
+    const modal = document.getElementById('modalOverlay');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeModal() {
+    const modal = document.getElementById('modalOverlay');
+    modal.classList.remove('active');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
+// Tutup jika klik area hitam (luar jendela)
+window.onclick = function(event) {
+    const modal = document.getElementById('modalOverlay');
+    if (event.target == modal) closeModal();
+}
+
+function bukaBrankas(element) {
+        let sandi = prompt("⚠️ AREA TERBATAS ⚠️\nMasukkan Kode Otoritas PT. BBS:");
+
+        if (sandi === "BBS2026") { 
+            alert("✅ Akses Diterima! Membuka Brankas Arsip BBS...");
+            const brankas = document.getElementById('legalitas-viewer');
+            brankas.style.display = 'block';
+            
+            // Kembali ke menu 3 folder
+            kembaliKeMenu(); 
+            
+            // Efek Fullscreen Gahar
+            if (brankas.requestFullscreen) brankas.requestFullscreen();
+        } else if (sandi !== null) {
+            alert("❌ KODE SALAH!\nAkses ditolak.");
+        }
+    }
+
+   function bukaDokumen(jenis) {
+    // 🔗 BANK DATA LEGALITAS PT. BBS
+    const linkAkta  = "https://drive.google.com/drive/folders/1tU9r6bcp8-YcruArNjIPPJoIe7Q-Spqa?usp=sharing";
+    const linkNIB   = "https://drive.google.com/drive/folders/1Gd9W8jrvWC1jKfrmToGXosyciiyMAPx_?usp=sharing";
+    const linkPajak = "https://drive.google.com/drive/folders/1eUGyzhrVB0S4_FgfGWdjiRlFDQA6hOR7?usp=sharing";
+
+    // 🚀 EKSEKUSI BABLAS KE DRIVE (PASTI JERNIIIIH!)
+    if(jenis === 'foto-akta') {
+        // Klik AKTA -> Buka Folder Akta (30 lembar aman!)
+        window.open(linkAkta, '_blank');
+    } else if(jenis === 'foto-nib') {
+        // Klik NIB -> Buka File NIB Langsung
+        window.open(linkNIB, '_blank');
+    } else if(jenis === 'foto-pajak') {
+        // Klik PAJAK -> Buka Folder Pajak
+        window.open(linkPajak, '_blank');
+    }
+}
+    // 3. Fungsi Kembali ke Tampilan 3 Folder
+    function kembaliKeMenu() {
+        document.getElementById('menu-folder-legal').style.display = 'grid';
+        document.getElementById('view-foto-legal').style.display = 'none';
+    }
+
+    // 4. Fungsi Tutup Brankas & Keluar
+    function closeLegalitas() {
+        document.getElementById('legalitas-viewer').style.display = 'none';
+        // Keluar dari mode fullscreen jika aktif
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+</script>
+
+</body>
+</html>
