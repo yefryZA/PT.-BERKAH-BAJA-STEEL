@@ -3,113 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LSI MONITORING</title>
+    <title>PT. LSI - MONITORING SYSTEM</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --yellow: #FFEA00; --green-bg: #1B3022; --green-light: #2E7D32; 
-            --card: rgba(0, 50, 30, 0.9); --text: #FFFFFF;
-        }
+        :root { --yellow: #FFEA00; --green-bg: #1B3022; --green-light: #2E7D32; --card: rgba(0, 50, 30, 0.9); --text: #FFFFFF; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Poppins', sans-serif; background: radial-gradient(circle, var(--green-light) 0%, var(--green-bg) 100%); 
-            color: var(--text); margin: 0; height: 100vh; overflow: hidden;
-        }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle, var(--green-light) 0%, var(--green-bg) 100%); color: var(--text); margin: 0; height: 100vh; overflow: hidden; }
 
-        /* HEADER TETAP SAMA */
-       /* HEADER GAGAH LSI */
-        .header-lsi { 
-            padding: 15px 10px; 
-            background: linear-gradient(to bottom, #000 0%, rgba(0,40,20,0.9) 100%); 
-            border-bottom: 4px solid var(--yellow); 
-            text-align: center; 
-            position: relative; 
-            z-index: 10;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-        .header-lsi h1 { 
-            font-family: 'Cinzel', serif; 
-            font-size: 18px; 
-            color: var(--yellow); 
-            margin: 0; 
-            letter-spacing: 2px; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            line-height: 1.2;
-        }
-        .header-lsi p { 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 9px; 
-            color: #fff; 
-            margin: 5px 0 0 0; 
-            letter-spacing: 1px; 
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
-        .gear-icon { position: absolute; right: 15px; top: 20px; color: var(--yellow); cursor: pointer; font-size: 22px; filter: drop-shadow(0 0 5px var(--yellow)); }
+        .header-lsi { padding: 15px 10px; background: linear-gradient(to bottom, #000 0%, rgba(0,40,20,0.9) 100%); border-bottom: 4px solid var(--yellow); text-align: center; position: relative; z-index: 10; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .header-lsi h1 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--yellow); margin: 0; letter-spacing: 1.5px; }
+        .header-lsi p { font-family: 'Orbitron', sans-serif; font-size: 8px; color: #fff; margin: 5px 0 0 0; letter-spacing: 1px; text-transform: uppercase; }
+        .gear-icon { position: absolute; right: 15px; top: 18px; color: var(--yellow); cursor: pointer; font-size: 20px; }
 
-        /* KONTINER UTAMA */
-        .container { height: calc(100vh - 50px); display: none; overflow-y: auto; padding: 15px; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
-
-        /* STYLE DASHBOARD */
+        .container { height: calc(100vh - 80px); display: none; overflow-y: auto; padding: 15px; flex-direction: column; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         .card { background: var(--card); border: 2px solid var(--yellow); border-radius: 15px; padding: 12px; text-align: center; }
         .lbl { font-size: 9px; color: var(--yellow); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .val-big { font-family: 'Orbitron'; font-size: 22px; font-weight: 700; color: #fff; }
-        
-        .circle-box { position: relative; width: 120px; height: 120px; margin: 0 auto; }
+        .val-big { font-family: 'Orbitron'; font-size: 20px; font-weight: 700; color: #fff; }
+
+        /* PERSENTASE BERDIRI SENDIRI */
+        .circle-box { position: relative; width: 130px; height: 130px; margin: 10px auto; }
         .circle-fill { fill: none; stroke: var(--yellow); stroke-width: 12; stroke-linecap: round; transition: 1.5s; stroke-dasharray: 440; stroke-dashoffset: 440; }
         
+        /* TIGA SERANGKAI SEJAJAR */
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
+        .box-mini { background: rgba(0,0,0,0.3); padding: 8px 2px; border-radius: 8px; border: 1px solid rgba(255,234,0,0.3); }
+        .box-mini .val { font-family: 'Orbitron'; font-size: 13px; font-weight: bold; color: #fff; display: block; margin-top: 3px; }
+
         .bar-wrap { background: #000; border-radius: 50px; height: 22px; border: 1.5px solid var(--yellow); overflow: hidden; position: relative; margin-top: 5px; }
         .bar-fill { height: 100%; width: 0%; transition: 1s; }
         .bar-txt { position: absolute; width: 100%; text-align: center; top: 2px; font-size: 12px; font-weight: bold; color: #fff; text-shadow: 1px 1px #000; }
 
-        /* STYLE INPUT CEKER (DIBUAT BEDA) */
-        .in-box { background: rgba(0,0,0,0.4); border: 1px solid var(--yellow); padding: 20px; border-radius: 15px; margin-bottom: 15px; }
-        .in-box label { color: var(--yellow); font-weight: bold; font-size: 12px; }
-        input { width: 100%; padding: 15px; background: #000; border: 1px solid #555; color: var(--yellow); border-radius: 8px; font-family: 'Orbitron'; font-size: 20px; margin-top: 10px; }
-        
-        .palka-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
-        .btn-p { padding: 15px 5px; background: #000; border: 1px solid #555; color: #fff; border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; }
+        .in-box { background: rgba(0,0,0,0.4); border: 1px solid var(--yellow); padding: 20px; border-radius: 15px; margin-bottom: 10px; }
+        input { width: 100%; padding: 15px; background: #000; border: 1px solid #555; color: var(--yellow); border-radius: 8px; font-family: 'Orbitron'; font-size: 18px; margin-top: 10px; }
+        .palka-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+        .btn-p { padding: 12px 5px; background: #000; border: 1px solid #555; color: #fff; border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; }
         .btn-p.active { background: var(--yellow); color: #000; border-color: var(--yellow); }
-        
         .btn-send { width: 100%; padding: 20px; background: var(--yellow); color: #000; border: none; border-radius: 50px; font-weight: bold; font-family: 'Cinzel'; font-size: 16px; margin-top: 10px; cursor: pointer; }
 
-        /* MODAL */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal-body { background: var(--green-bg); border: 2px solid var(--yellow); padding: 20px; border-radius: 15px; width: 100%; max-width: 350px; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
 
-   <div class="header-lsi">
-        <h1 id="main-title">PT. LINGGA SAMUDRA INDONESIA</h1>
+    <div class="header-lsi">
+        <h1>PT. LINGGA SAMUDRA INDONESIA</h1>
         <p id="sub-title">Ship Unloading Real-Time Monitoring</p>
         <div id="gear-icon" class="gear-icon" onclick="openAdmin()" style="display:none;">⚙️</div>
     </div>
 
     <div id="view-dashboard" class="container">
         <div class="card"><span class="lbl">NAMA KAPAL</span><div id="d-kapal" class="val-big" style="font-size:16px;">-</div></div>
-        <div class="grid-2">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="card"><span class="lbl">HARI KE</span><div id="d-h-skrg" class="val-big">0</div></div>
             <div id="card-countdown" class="card"><span class="lbl">ESTIMASI</span><div id="d-h-sisa" class="val-big">-</div></div>
         </div>
+
         <div class="card">
             <span class="lbl">TOTAL PROGRESS</span>
             <div class="circle-box">
-                <svg viewBox="0 0 160 160" style="transform: rotate(-90deg);">
+                <svg viewBox="0 0 160 160" style="transform: rotate(-90deg); width:100%; height:100%;">
                     <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
                     <circle id="c-fill" class="circle-fill" cx="80" cy="80" r="70"/>
                 </svg>
-                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
-                    <div id="c-pct" class="val-big">0%</div>
-                </div>
-            </div>
-            <div class="grid-2" style="margin-top:10px;">
-                <div><span class="lbl">REALISASI</span><div id="d-real-t" style="font-weight:bold;">0</div></div>
-                <div><span class="lbl">SISA</span><div id="d-sisa-t" style="font-weight:bold; color:var(--yellow);">0</div></div>
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;"><div id="c-pct" class="val-big" style="font-size:28px;">0%</div></div>
             </div>
         </div>
+
+        <div class="card">
+            <span class="lbl">MONITORING MUATAN (TON)</span>
+            <div class="row-3">
+                <div class="box-mini"><span class="lbl" style="font-size:7px;">TOTAL</span><span id="d-total-muat" class="val">0</span></div>
+                <div class="box-mini"><span class="lbl" style="font-size:7px;">REALISASI</span><span id="d-real-t" class="val">0</span></div>
+                <div class="box-mini" style="border-color:var(--yellow);"><span class="lbl" style="font-size:7px; color:var(--yellow);">SISA</span><span id="d-sisa-t" class="val" style="color:var(--yellow);">0</span></div>
+            </div>
+        </div>
+
         <div class="card">
             <div style="display:flex; justify-content:space-between;"><span class="lbl">PROGRESS HARIAN</span><span id="d-target-h" style="font-size:9px;">Target: 0</span></div>
             <div class="bar-wrap"><div id="bar-f" class="bar-fill"></div><div id="bar-t" class="bar-txt">0%</div></div>
@@ -118,25 +88,16 @@
     </div>
 
     <div id="view-input" class="container">
-        <div class="in-box">
-            <label>NOMOR PLAT MOBIL</label>
-            <input type="text" id="i-plat" placeholder="B 1234 BBS" style="text-transform:uppercase;">
-        </div>
-        <div class="in-box">
-            <label>MUATAN TIMBANGAN (TON)</label>
-            <input type="number" id="i-muat" placeholder="0.00">
-        </div>
-        <div class="in-box">
-            <label>PILIH NOMOR PALKA</label>
+        <div class="in-box"><label class="lbl">NOMOR PLAT MOBIL</label><input type="text" id="i-plat" placeholder="B 1234 BBS" style="text-transform:uppercase;"></div>
+        <div class="in-box"><label class="lbl">MUATAN TIMBANGAN (TON)</label><input type="number" id="i-muat" placeholder="0.00"></div>
+        <div class="in-box"><label class="lbl">PILIH NOMOR PALKA</label>
             <div class="palka-grid">
-                <button class="btn-p" onclick="selPalka(1)">1</button>
-                <button class="btn-p" onclick="selPalka(2)">2</button>
-                <button class="btn-p" onclick="selPalka(3)">3</button>
-                <button class="btn-p" onclick="selPalka(4)">4</button>
+                <button class="btn-p" onclick="selPalka(1)">1</button><button class="btn-p" onclick="selPalka(2)">2</button>
+                <button class="btn-p" onclick="selPalka(3)">3</button><button class="btn-p" onclick="selPalka(4)">4</button>
                 <button class="btn-p" onclick="selPalka(5)">5</button>
             </div>
         </div>
-        <button class="btn-send" onclick="sendData()">KIRIM DATA ⚓</button>
+        <button class="btn-send" onclick="sendData()">KIRIM DATA KE SYSTEM ⚓</button>
     </div>
 
     <div id="m-admin" class="modal">
@@ -154,7 +115,7 @@
                 <label class="lbl">TARGET HARIAN</label><input type="number" id="s-harian">
                 <label class="lbl">TARGET DURASI (HARI)</label><input type="number" id="s-hari">
                 <button class="btn-send" onclick="saveConfig()">SIMPAN</button>
-                <button class="btn-send" style="background:#ff4444; color:#fff;" onclick="resetLSI()">RESET DATA</button>
+                <button class="btn-send" style="background:#ff4444; color:#fff;" onclick="resetLSI()">RESET TOTAL DATA</button>
             </div>
         </div>
     </div>
@@ -169,13 +130,11 @@
     let shipKey = "LSI_PROYEK_UTAMA";
     let selectedPalka = null;
 
-    // --- LOGIKA PEMISAH HALAMAN ---
     const isInputMode = new URLSearchParams(window.location.search).get('mode') === 'input';
-    
     if(isInputMode) {
         document.getElementById('view-input').style.display = 'flex';
         document.getElementById('gear-icon').style.display = 'block';
-        document.getElementById('main-title').innerText = "INPUT DATA CEKER";
+        document.getElementById('sub-title').innerText = "FIELD INPUT MODE (CEKER)";
     } else {
         document.getElementById('view-dashboard').style.display = 'flex';
     }
@@ -193,15 +152,17 @@
         const pctTotal = s.total > 0 ? Math.round((totalReal / s.total) * 100) : 0;
 
         if(!isInputMode) {
-            document.getElementById('d-kapal').innerText = s.nama;
+            document.getElementById('d-kapal').innerText = s.nama.toUpperCase();
+            document.getElementById('d-total-muat').innerText = Number(s.total).toLocaleString();
             document.getElementById('d-real-t').innerText = totalReal.toLocaleString();
-            document.getElementById('d-sisa-t').innerText = (s.total - totalReal).toLocaleString();
+            document.getElementById('d-sisa-t').innerText = Math.max(0, s.total - totalReal).toLocaleString();
             document.getElementById('c-pct').innerText = pctTotal + "%";
             document.getElementById('c-fill').style.strokeDashoffset = 440 - (pctTotal/100*440);
 
             const tglStart = new Date(s.tglMulai);
-            const hariKe = Math.ceil((new Date() - tglStart) / (1000*60*60*24));
-            const sisaHari = Number(s.durasi) - hariKe + 1;
+            const diffTime = Math.abs(new Date() - tglStart);
+            const hariKe = s.total > 0 ? Math.ceil(diffTime / (1000*60*60*24)) : 0;
+            const sisaHari = s.total > 0 ? (Number(s.durasi) - hariKe + 1) : 0;
             
             document.getElementById('d-h-skrg').innerText = hariKe;
             document.getElementById('d-h-sisa').innerText = (sisaHari >= 0 ? sisaHari : Math.abs(sisaHari)) + " HARI";
@@ -210,7 +171,6 @@
             const today = new Date().toLocaleDateString('id-ID');
             const realHarian = logs.filter(l => l.tgl === today).reduce((a, b) => a + Number(b.m), 0);
             const pctHarian = s.targetHarian > 0 ? (realHarian / s.targetHarian * 100) : 0;
-            
             const bf = document.getElementById('bar-f');
             bf.style.width = Math.min(pctHarian, 100) + "%";
             bf.style.backgroundColor = pctHarian < 50 ? "#ff4444" : (pctHarian < 85 ? "#ffea00" : "#77DD77");
@@ -220,41 +180,27 @@
         }
     }
 
-    window.selPalka = (n) => {
-        selectedPalka = n;
-        document.querySelectorAll('.btn-p').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-    };
-
+    window.selPalka = (n) => { selectedPalka = n; document.querySelectorAll('.btn-p').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); };
     window.sendData = async () => {
-        const plat = document.getElementById('i-plat').value;
-        const muat = document.getElementById('i-muat').value;
+        const plat = document.getElementById('i-plat').value; const muat = document.getElementById('i-muat').value;
         if(!plat || !muat || !selectedPalka) return alert("ISI SEMUA DATA!");
         await push(ref(db, `lsi_logs/${shipKey}`), { p: plat, m: Number(muat), pk: selectedPalka, tgl: new Date().toLocaleDateString('id-ID') });
-        alert("BERHASIL!");
-        location.reload();
+        alert("BERHASIL!"); location.reload();
     };
 
     window.openAdmin = () => document.getElementById('m-admin').style.display = 'flex';
     window.closeAdmin = () => document.getElementById('m-admin').style.display = 'none';
-    window.doLogin = () => {
-        if(document.getElementById('adm-pass').value === "LSI2026") {
-            document.getElementById('adm-login').style.display = 'none';
-            document.getElementById('adm-form').style.display = 'block';
-        } else { alert("SALAH!"); }
-    };
+    window.doLogin = () => { if(document.getElementById('adm-pass').value === "LSI2026") { document.getElementById('adm-login').style.display = 'none'; document.getElementById('adm-form').style.display = 'block'; } else { alert("SALAH!"); } };
     window.saveConfig = async () => {
-        await set(ref(db, `lsi_settings/${shipKey}`), {
-            nama: document.getElementById('s-kapal').value,
-            total: Number(document.getElementById('s-total').value),
-            targetHarian: Number(document.getElementById('s-harian').value),
-            durasi: Number(document.getElementById('s-hari').value),
-            tglMulai: Date.now()
-        });
+        await set(ref(db, `lsi_settings/${shipKey}`), { nama: document.getElementById('s-kapal').value, total: Number(document.getElementById('s-total').value), targetHarian: Number(document.getElementById('s-harian').value), durasi: Number(document.getElementById('s-hari').value), tglMulai: Date.now() });
         alert("OK!"); closeAdmin();
     };
     window.resetLSI = async () => {
-        if(confirm("HAPUS SEMUA?")) { await remove(ref(db, `lsi_logs/${shipKey}`)); alert("BERSIH!"); }
+        if(confirm("HAPUS TOTAL SEMUA DATA? (Kapal akan Reset ke nol)")) {
+            await remove(ref(db, `lsi_logs/${shipKey}`));
+            await remove(ref(db, `lsi_settings/${shipKey}`));
+            alert("SISTEM BERSIH TOTAL!"); location.reload();
+        }
     };
 </script>
 </body>
