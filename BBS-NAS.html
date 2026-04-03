@@ -215,13 +215,26 @@
     }
 
     window.prosesBongkar = async () => {
-        const id = document.getElementById('b-pilih-mobil').value;
+        const selectMobil = document.getElementById('b-pilih-mobil');
+        const id = selectMobil.value;
+        const plat = selectMobil.options[selectMobil.selectedIndex].text; // AMBIL NAMA PLATNYA
         const vol = document.getElementById('b-vol').value;
         const file = document.getElementById('b-foto').files[0];
+        
         if(!id || !vol || !file) return alert("LENGKAPI DATA & JEPRET FOTO!");
-        const urlFoto = await uploadFoto(file, `BONGKAR_${id}.jpg`);
-        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { volB: Number(vol), status: 'DONE', fotoB: urlFoto, jamB: new Date().toLocaleTimeString() });
-        alert("DATA BONGKAR TERSELESAIKAN!"); location.reload();
+        
+        // SEKARANG NAMA FILENYA PAKAI PLAT NOMOR BOS!
+        const urlFoto = await uploadFoto(file, `BONGKAR_${plat}.jpg`);
+        
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
+            volB: Number(vol), 
+            status: 'DONE', 
+            fotoB: urlFoto, 
+            jamB: new Date().toLocaleTimeString() 
+        });
+        
+        alert("DATA BONGKAR TERSELESAIKAN!"); 
+        location.reload();
     }
 
     let rawData = [];
