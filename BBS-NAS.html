@@ -72,22 +72,36 @@
             </div>
 
             <div id="margin-area">
-                <div class="stat-grid">
-                    <div class="stat-box"><span class="lbl">OMZET</span><div id="d-omzet" class="val">0</div></div>
-                    <div class="stat-box"><span class="lbl">MODAL</span><div id="d-modal" class="val">0</div></div>
-                    <div class="stat-box" style="grid-column: span 2; background: rgba(100, 255, 218, 0.1);">
-                        <span id="d-margin" class="val" style="color:var(--green); font-size:18px;">Rp 0</span>
+                <div class="stat-grid" style="margin-top:15px;">
+                    <div class="stat-box">
+                        <span class="lbl">HARGA JUAL</span>
+                        <div id="d-omzet" class="val" style="font-size:12px;">RP 0</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="lbl">MODAL</span>
+                        <div id="d-modal" class="val" style="font-size:12px;">RP 0</div>
+                    </div>
+                    
+                    <div class="stat-box" style="grid-column: span 2; background: rgba(100, 255, 218, 0.1); border: 1px solid var(--green);">
+                        <span class="lbl" style="color:var(--green)">TOTAL MARGIN BERSIH</span>
+                        <div id="d-margin" class="val" style="color:var(--green); font-size:18px;">RP 0</div>
+                    </div>
+
+                    <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--gold); background: rgba(255, 215, 0, 0.05); margin-top: 5px;">
+                        <span class="lbl" style="color:var(--gold); font-size: 10px;">BAGI HASIL</span>
+                        <div id="d-bagi-hasil" class="val" style="color:#fff; font-size:18px;">RP 0</div>
                     </div>
                 </div>
-                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ PENGATURAN HARGA / RESET</button>
-            </div>
-        </div>
 
-        <div class="card">
+                <button class="btn" style="background:var(--silver); color:#000; margin-top:15px; font-size:12px;" onclick="generatePDF()">DOWNLOAD REKAP PDF 📄</button>
+
+                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ PENGATURAN HARGA / RESET</button>
+            </div> 
+        </div> <div class="card">
             <span class="lbl">DAFTAR AKTIVITAS KENDARAAN</span>
             <div id="log-list"></div>
-            <button class="btn" style="background:var(--silver); color:#000; margin-top:15px;" onclick="generatePDF()">DOWNLOAD REKAP PDF 📄</button>
         </div>
+
     </div>
 
     <div id="view-cilegon" class="container">
@@ -238,9 +252,18 @@
     async function updateMoney(tb) {
         const s = await get(ref(db, `bbs_settings/${dbKey}`));
         const c = s.val() || { beli: 0, jual: 0 };
-        document.getElementById('d-omzet').innerText = "RP " + (tb*c.jual).toLocaleString();
-        document.getElementById('d-modal').innerText = "RP " + (tb*c.beli).toLocaleString();
-        document.getElementById('d-margin').innerText = "MARGIN: RP " + (tb*(c.jual-c.beli)).toLocaleString();
+        
+        const totalOmzet = tb * c.jual;
+        const totalModal = tb * c.beli;
+        const totalMargin = totalOmzet - totalModal;
+        const bagiTiga = totalMargin / 3; // Logika Bagi 3
+
+        document.getElementById('d-omzet').innerText = "RP " + totalOmzet.toLocaleString();
+        document.getElementById('d-modal').innerText = "RP " + totalModal.toLocaleString();
+        document.getElementById('d-margin').innerText = "RP " + totalMargin.toLocaleString();
+        
+        // Tampilkan ke Box Bagi Hasil Tunggal
+        document.getElementById('d-bagi-hasil').innerText = "RP " + Math.floor(bagiTiga).toLocaleString();
     }
 
     // FUNGSI PDF REKAP
@@ -249,40 +272,72 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Header
-        doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
-        doc.setFontSize(10); doc.text("GENERAL CONTRACTOR & LOGISTIK", 105, 22, { align: "center" });
-        doc.line(20, 25, 190, 25);
-        
-        // Isi Tabel
-        const tableBody = rawData.map(i => [i.tgl, i.plat, i.volM, i.volB, (i.volM - i.volB).toFixed(2), i.status]);
-        doc.autoTable({ 
-            head: [['TANGGAL', 'PLAT', 'MUAT (M3)', 'BONGKAR (M3)', 'LOSS', 'STATUS']], 
-            body: tableBody, 
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [10, 25, 47] } // Warna biru gelap BBS
-        });
-        
-        // Bagian Tanda Tangan (Posisi Kanan Bawah)
-        let finalY = doc.lastAutoTable.finalY + 20;
-        const signatureX = 160; // Titik koordinat horizontal
+        get(ref(db, `bbs_settings/${dbKey}`)).then((s) => {
+            const cfg = s.val() || { beli: 0, jual: 0 };
+            const hargaJual = cfg.jual;
 
-        doc.setFontSize(11);
-        doc.text("MENGETAHUI,", signatureX, finalY, { align: "center" });
-        
-        // Ruang kosong untuk tanda tangan diberikan jarak 25-30 unit
-        doc.setFont("helvetica", "bold"); // Nama dibuat tebal
-        doc.text("YEFRY ZA.", signatureX, finalY + 30, { align: "center" });
-        
-        doc.setFont("helvetica", "normal"); // Jabatan normal
-        doc.text("MANAGER", signatureX, finalY + 35, { align: "center" });
-        
-        // Simpan File
-        doc.save("REKAP_BBS_" + new Date().toLocaleDateString() + ".pdf");
+            // HEADER
+            doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
+            doc.setFontSize(10); doc.text("REKAPITULASI PENGIRIMAN BB-NAS", 105, 22, { align: "center" });
+            doc.line(20, 25, 190, 25);
+            
+            let totalM = 0, totalB = 0, totalRp = 0;
+            
+            // ISI TABEL UTAMA
+            const tableBody = rawData.map(i => {
+                const subTotal = i.volB * hargaJual;
+                totalM += i.volM; totalB += i.volB; totalRp += subTotal;
+                return [
+                    i.tgl, 
+                    i.plat, 
+                    i.volM.toFixed(2), 
+                    i.volB.toFixed(2), 
+                    "RP " + hargaJual.toLocaleString(),
+                    "RP " + subTotal.toLocaleString()
+                ];
+            });
+
+            doc.autoTable({ 
+                head: [['TANGGAL', 'PLAT', 'MUAT', 'BONGKAR', 'HRG JUAL', 'SUBTOTAL']], 
+                body: tableBody, 
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [10, 25, 47], halign: 'center' },
+                styles: { fontSize: 8, halign: 'center' }
+            });
+            
+            // TABEL SUMMARY (TOTAL DI BAWAH)
+            let finalY = doc.lastAutoTable.finalY + 5;
+            doc.autoTable({
+                body: [
+                    ['TOTAL VOLUME MUAT', `${totalM.toFixed(2)} M3`],
+                    ['TOTAL VOLUME BONGKAR', `${totalB.toFixed(2)} M3`],
+                    ['TOTAL NILAI UANG (PENAGIHAN)', `RP ${totalRp.toLocaleString()}`]
+                ],
+                startY: finalY,
+                theme: 'grid',
+                styles: { fontSize: 9, fontStyle: 'bold' },
+                columnStyles: {
+                    0: { cellWidth: 60, fillColor: [240, 240, 240] }, // Kolom Label
+                    1: { halign: 'right' } // Kolom Angka
+                }
+            });
+            
+            // TANDA TANGAN
+            let signY = doc.lastAutoTable.finalY + 15;
+            const signatureX = 160;
+            doc.setFontSize(10);
+            doc.text("MENGETAHUI,", signatureX, signY, { align: "center" });
+            doc.setFont("helvetica", "bold");
+            doc.text("YEFRY ZA.", signatureX, signY + 25, { align: "center" });
+            doc.setFont("helvetica", "normal");
+            doc.text("MANAGER", signatureX, signY + 30, { align: "center" });
+            
+            doc.save("REKAP_BB-NAS_" + new Date().toLocaleDateString() + ".pdf");
+        });
     };
 
-    window.toggleMargin = () => { if(prompt("PASS ADMIN?") === "LSI2026") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
+    window.toggleMargin = () => { if(prompt("PASS ADMIN?") === "bbs-nas") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
     window.openAdmin = () => document.getElementById('modal-admin').style.display = 'block';
     window.closeAdmin = () => document.getElementById('modal-admin').style.display = 'none';
     window.saveSettings = async () => {
