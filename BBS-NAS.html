@@ -318,12 +318,13 @@
 "  ID SURAT: " + data.id + "\n\n" +
                 
 "--- SCAN BARCODE DI BAWAH ---\n" +
-"https://berkahbajasteel.web.app/verifikasi?id=" + data.id + "\n\n" + 
+
+"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=https://berkahbajasteel.web.app/verifikasi?id=" + data.id + "\n\n" +
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
-"  Hati-hati pak sopir, keluarga\n" +
-"  menunggu anda di rumah.\n\n\n\n\n";
+"  Hati-hati pak sopir,\n" +
+"  KELUARGA menunggu ANDA di rumah.\n\n\n\n\n";
 
     // Jurus "Bagikan" (Share) - Paling Aman untuk Android
     if (navigator.share) {
@@ -339,6 +340,7 @@
         alert("HP tidak mendukung fitur Share, silakan copy manual.");
     }
 }
+            
   window.prosesMuat = async () => {
         const p = document.getElementById('m-plat').value.toUpperCase();
         const s = document.getElementById('m-sopir').value.toUpperCase();
