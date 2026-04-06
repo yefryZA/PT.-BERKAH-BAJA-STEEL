@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         :root { --blue-dark: #0A192F; --silver: #C0C0C0; --gold: #FFD700; --red: #FF4D4D; --glass: rgba(255, 255, 255, 0.1); --green: #64FFDA; }
@@ -257,6 +257,13 @@ function printSuratJalan(data) {
     const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const jam = new Date().toLocaleTimeString('id-ID');
 
+    // Link asli verifikasi HABI
+    const linkVerifikasi = "https://berkahbajasteel.web.app/verifikasi?id=" + data.id;
+
+    // Kita buat Link Gambar JPG kotak barcode pakai Google Chart
+    // chs=150x150 (Ukuran Gambar), cht=qr (Jenis Barcode), chl=link (Isi Barcode)
+    const linkGambarJPG = "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" + linkVerifikasi;
+
     // Kita susun teksnya satu kali saja, rapih dan bersih
     let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
@@ -274,14 +281,16 @@ function printSuratJalan(data) {
 "  ID SURAT: " + data.id + "\n\n" +
                 
 "--- SCAN BARCODE DI BAWAH ---\n" +
-"{QR:https://berkahbajasteel.web.app/verifikasi?id=" + data.id + "}\n\n" +
+
+// Kita titipin Google buat buatin Gambar JPG-nya
+linkGambarJPG + "\n\n" + 
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
 "  Hati-hati pak sopir,\n" +
 "  KELUARGA menunggu ANDA di rumah.\n\n\n\n\n";
 
-    // Panggil menu Bagikan Android
+    // Panggil menu Bagikan Android (Kodingan Asli HABI yang Stabil)
     if (navigator.share) {
         navigator.share({
             text: textToPrint
