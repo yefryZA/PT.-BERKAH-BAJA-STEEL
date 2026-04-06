@@ -245,32 +245,40 @@
         }
     }
 // --- LOGIKA CETAK JALUR CEPAT (RAWBT) ---
-    function printSuratJalan(data) {
+    async function printSuratJalan(data) {
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
         const jam = new Date().toLocaleTimeString('id-ID');
-        
-        // Format Teks Bersih (Rata Kiri agar tidak kepotong)
-        let textToPrint = 
-"      PT. BERKAH BAJA STEEL\n" +
-" GENERAL CONTRACTOR & LOGISTIK\n" +
-"--------------------------------\n" +
-"TGL/JAM : " + tgl + " / " + jam + "\n" +
-"PLAT NO : " + data.plat + "\n" +
-"SOPIR   : " + data.sopir + "\n" +
-"BARANG  : " + data.barang + "\n" +
-"VOLUME  : " + data.volM + " M3\n" +
-"--------------------------------\n" +
-"ID SURAT: " + data.id + "\n\n" +
-// INI KODE BARCODE SAKTI UNTUK RAWBT
-"[qr]" + data.id + "[/qr]\n\n" + 
-"--------------------------------\n" +
-"NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
-"Hati-hati pak sopir, keluarga\n" +
-"menunggu anda dirumah.\n\n\n\n";
 
-        // Kirim ke RawBT pakai format Base64 (biar bersih gak ada tulisan "text/")
-        const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
-        window.location.href = rawBTUrl;
+        // 1. BUAT QR CODE SECARA TERSEMBUNYI
+        const qrDiv = document.createElement('div');
+        new QRCode(qrDiv, { text: data.id, width: 200, height: 200 });
+
+        // Tunggu sebentar sampai QR selesai digambar
+        setTimeout(() => {
+            const qrImage = qrDiv.querySelector('img').src; // Ambil gambar QR-nya
+            
+            // 2. SUSUN STRUK (Gunakan tag image RawBT)
+            let textToPrint = 
+                "      PT. BERKAH BAJA STEEL\n" +
+                " GENERAL CONTRACTOR & LOGISTIK\n" +
+                "--------------------------------\n" +
+                "TGL/JAM : " + tgl + " / " + jam + "\n" +
+                "PLAT NO : " + data.plat + "\n" +
+                "SOPIR   : " + data.sopir + "\n" +
+                "BARANG  : " + data.barang + "\n" +
+                "VOLUME  : " + data.volM + " M3\n" +
+                "--------------------------------\n" +
+                "ID SURAT: " + data.id + "\n\n" +
+                "[image]" + qrImage + "[/image]\n\n" + // KIRIM SEBAGAI GAMBAR
+                "--------------------------------\n" +
+                "NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
+                "Hati-hati pak sopir, keluarga\n" +
+                "menunggu anda dirumah.\n\n\n\n";
+
+            // 3. TERBANGKAN KE PRINTER
+            const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
+            window.location.href = rawBTUrl;
+        }, 500); // Kasih jeda 0.5 detik buat proses gambar
     }
 
     window.prosesMuat = async () => {
