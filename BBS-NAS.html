@@ -251,57 +251,12 @@
             document.getElementById('loader').style.display = 'none';
         }
     }
-// --- LOGIKA CETAK JALUR CEPAT (RAWBT) ---
-    function printSuratJalan(data) {
+// --- LOGIKA CETAK JALUR AMAN (SHARE + GOOGLE CHART) ---
+function printSuratJalan(data) {
     const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const jam = new Date().toLocaleTimeString('id-ID');
 
-    // 1. Buat elemen struk visual (Sesuai teks asli HABI)
-    const printArea = document.createElement('div');
-    printArea.style = "width: 380px; padding: 20px; background: white; font-family: monospace; color: black; position: absolute; left: -9999px;";
-    printArea.innerHTML = `
-        <div style="text-align: center; font-weight: bold;">PT. BERKAH BAJA STEEL</div>
-        <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
-        <div style="text-align: center;">--------------------------------</div>
-        <div style="font-size: 14px;">
-            TGL/JAM : ${tgl}<br>
-            JAM     : ${jam}<br>
-            PLAT NO : ${data.plat}<br>
-            SOPIR   : ${data.sopir || "-"}<br>
-            BARANG  : ${data.barang || "-"}<br>
-        </div>
-        <div style="text-align: center;">--------------------------------</div>
-        <div style="font-size: 14px;">
-            P : ${data.p||0} | L : ${data.l||0} | T : ${data.t||0} (m)<br>
-            TOTAL   : ${data.volM || 0} M3
-        </div>
-        <div style="text-align: center;">--------------------------------</div>
-        <div style="text-align: center; font-size: 14px;">ID SURAT: ${data.id}</div>
-        <div id="qrcode-kertas" style="display: flex; justify-content: center; padding: 15px;"></div>
-        <div style="text-align: center;">--------------------------------</div>
-        <div style="text-align: center; font-size: 12px; font-weight: bold;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
-        <div style="text-align: center; font-size: 12px;"><br>Hati-hati pak sopir,<br>KELUARGA menunggu ANDA di rumah.</div>
-    `;
-    document.body.appendChild(printArea);
-
-    // 2. Munculkan Barcode asli di dalam struk
-    new QRCode(document.getElementById("qrcode-kertas"), {
-        text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
-        width: 180,
-        height: 180
-    });
-
-    // 3. Proses "Foto" dan Kirim ke Thermer
-    setTimeout(() => {
-        html2canvas(printArea).then(canvas => {
-            const imgData = canvas.toDataURL("image/png");
-            
-            // Mengirim sebagai gambar ke Thermer (Localhost 8080 yang tadi HABI aktifkan)
-           function printSuratJalan(data) {
-    const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    const jam = new Date().toLocaleTimeString('id-ID');
-
-    // Kita buat teks yang rapih untuk dikirim ke menu "Bagikan"
+    // Kita susun teksnya satu kali saja, rapih dan bersih
     let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
 "  GENERAL CONTRACTOR & LOGISTIK\n" +
@@ -312,32 +267,31 @@
 "  SOPIR   : " + (data.sopir || "-") + "\n" +
 "  BARANG  : " + (data.barang || "-") + "\n" +
 " --------------------------------\n" +
-"  P: " + (data.p||0) + " | L: " + (data.l||0) + " | T: " + (data.t||0) + " (m)\n" +
+"  P : " + (data.p||0) + " | L : " + (data.l||0) + " | T : " + (data.t||0) + " (m)\n" +
 "  TOTAL   : " + (data.volM || 0) + " M3\n" +
 " --------------------------------\n" +
 "  ID SURAT: " + data.id + "\n\n" +
                 
 "--- SCAN BARCODE DI BAWAH ---\n" +
-
-"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=https://berkahbajasteel.web.app/verifikasi?id=" + data.id + "\n\n" +
+"https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=https://berkahbajasteel.web.app/verifikasi?id=" + data.id + "\n\n" + 
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
 "  Hati-hati pak sopir,\n" +
 "  KELUARGA menunggu ANDA di rumah.\n\n\n\n\n";
 
-    // Jurus "Bagikan" (Share) - Paling Aman untuk Android
+    // Panggil menu Bagikan Android
     if (navigator.share) {
         navigator.share({
             text: textToPrint
         }).then(() => {
-            // Setelah share dipilih, halaman akan reload
+            // Berhasil memicu menu share, halaman reload otomatis setelah 2 detik
             setTimeout(() => { location.reload(); }, 2000);
         }).catch((error) => {
-            console.log('Batal Share atau Error', error);
+            console.log('User membatalkan share', error);
         });
     } else {
-        alert("HP tidak mendukung fitur Share, silakan copy manual.");
+        alert("HP HABI tidak mendukung fitur Share, silakan update browser Chrome-nya.");
     }
 }
             
