@@ -233,36 +233,34 @@
             document.getElementById('loader').style.display = 'none';
         }
     }
-    // LOGIKA CETAK PRINTER CP-80KI
+// --- LOGIKA CETAK JALUR CEPAT (RAWBT) ---
     function printSuratJalan(data) {
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
         const jam = new Date().toLocaleTimeString('id-ID');
         
-        let printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <html>
-            <body style="font-family:monospace; width:80mm; padding:5px; text-align:center;">
-                <h3 style="margin:0;">PT. BERKAH BAJA STEEL</h3>
-                <p style="font-size:10px; margin:0;">GENERAL CONTRACTOR & LOGISTIK</p>
-                <p>--------------------------------</p>
-                <p style="text-align:left; font-size:12px;">
-                    HARI/TGL: ${tgl}<br>
-                    JAM     : ${jam}<br>
-                    PLAT NO : ${data.plat}<br>
-                    VOLUME  : ${data.volM} M3
-                </p>
-                <p>--------------------------------</p>
-                <div id="qrcode" style="display:inline-block; margin:10px 0;"></div>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-                <script>new QRCode(document.getElementById("qrcode"), {text: "${data.id}", width: 128, height: 128});<\/script>
-                <p>--------------------------------</p>
-                <p style="font-size:11px; font-weight:bold;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</p>
-                <p style="font-size:10px;">Hati-hati dijalan ya pak sopir,<br>ingat keluarga menunggu anda dirumah</p>
-                <script>setTimeout(() => { window.print(); window.close(); }, 500);<\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+        // Buat format teks struk yang rapi untuk printer thermal 80mm
+        let textToPrint = 
+            "      PT. BERKAH BAJA STEEL\n" +
+            "  GENERAL CONTRACTOR & LOGISTIK\n" +
+            "--------------------------------\n" +
+            "HARI/TGL: " + tgl + "\n" +
+            "JAM     : " + jam + "\n" +
+            "PLAT NO : " + data.plat + "\n" +
+            "VOLUME  : " + data.volM + " M3\n" +
+            "--------------------------------\n" +
+            "ID SURAT: " + data.id + "\n" +
+            "--------------------------------\n" +
+            " NIAT BAIK * KERJA BAIK * REZEKI\n" +
+            "           BAIK\n\n" +
+            "Hati-hati dijalan pak sopir,\n" +
+            "keluarga menunggu anda dirumah.\n\n\n\n"; // Kasih space kosong biar bisa disobek
+
+        // Perintah sakti untuk kirim ke aplikasi RawBT
+        // Pastikan Bos sudah install RawBT di Playstore
+        const rawBTUrl = "rawbt:text/" + encodeURIComponent(textToPrint);
+        
+        // Eksekusi cetak!
+        window.location.href = rawBTUrl;
     }
 
     window.prosesMuat = async () => {
