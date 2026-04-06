@@ -178,22 +178,61 @@
     }
     else document.getElementById('view-dashboard').style.display = 'flex';
 
-    async function uploadFoto(file, fileName) {
-        if(!file) return "";
-        document.getElementById('loader').style.display = 'flex';
+// --- FUNGSI KOMPRESOR (BIAR LOADING CEPAT) ---
+    async function compressAndGetBase64(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64 = e.target.result.split(',')[1];
-                const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ base64, type: "image/jpeg", name: fileName }) });
-                const json = await res.json();
-                document.getElementById('loader').style.display = 'none';
-                resolve(json.url || "");
-            };
             reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const max_size = 800; // Ukuran foto disusutkan ke 800px (Sangat cukup untuk bukti)
+
+                    if (width > height) {
+                        if (width > max_size) { height *= max_size / width; width = max_size; }
+                    } else {
+                        if (height > max_size) { width *= max_size / height; height = max_size; }
+                    }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Kualitas 0.7 (70%) sudah jernih tapi file jadi kecil (KB bukan MB lagi)
+                    resolve(canvas.toDataURL("image/jpeg", 0.7).split(',')[1]);
+                };
+            };
         });
     }
 
+    // --- FUNGSI UPLOAD YANG SUDAH DIOPTIMALKAN ---
+    async function uploadFoto(file, fileName) {
+        if(!file) return "";
+        document.getElementById('loader').style.display = 'flex';
+        document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO..."; // Kasih tau admin lagi dikompres
+
+        // 1. Kompres dulu di HP
+        const base64Sut = await compressAndGetBase64(file);
+        
+        document.getElementById('load-txt').innerText = "MENGIRIM DATA (" + fileName.split('_')[0] + ")...";
+
+        // 2. Kirim hasil kompresi ke Google Apps Script (GAS)
+        try {
+            const res = await fetch(GAS_URL, { 
+                method: "POST", 
+                body: JSON.stringify({ base64: base64Sut, type: "image/jpeg", name: fileName }) 
+            });
+            const json = await res.json();
+            return json.url || "";
+        } catch (err) {
+            console.error("Gagal Upload:", err);
+            return "";
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
     // LOGIKA CETAK PRINTER CP-80KI
     function printSuratJalan(data) {
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
