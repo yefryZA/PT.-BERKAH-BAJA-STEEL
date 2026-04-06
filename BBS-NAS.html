@@ -120,13 +120,24 @@
         </div>
     </div>
 
-    <div id="view-cilegon" class="container">
+   <div id="view-cilegon" class="container">
         <div class="card">
             <h2 style="color:var(--green)">INPUT MUAT</h2>
-            <input type="text" id="m-plat" placeholder="PLAT NOMOR">
-            <input type="number" id="m-vol" placeholder="VOL MUAT" step="0.01">
-            <label class="lbl">FOTO MUATAN (RATA/MUNJUNG)</label><input type="file" capture="camera" id="m-foto">
-            <label class="lbl">FOTO KTP</label><input type="file" capture="camera" id="m-ktp">
+            
+            <label class="lbl">DATA KENDARAAN & DRIVER</label>
+            <input type="text" id="m-plat" placeholder="PLAT NOMOR (Cth: A 1234 BB)">
+            <input type="text" id="m-sopir" placeholder="NAMA SOPIR">
+            
+            <label class="lbl">DETAIL MUATAN</label>
+            <input type="text" id="m-barang" placeholder="NAMA BARANG (Cth: PASIR RANGKAS)">
+            <input type="number" id="m-vol" placeholder="VOL MUAT (M3)" step="0.01">
+            
+            <label class="lbl">FOTO MUATAN (RATA/MUNJUNG)</label>
+            <input type="file" capture="camera" id="m-foto">
+            
+            <label class="lbl">FOTO KTP</label>
+            <input type="file" capture="camera" id="m-ktp">
+            
             <button class="btn btn-green" onclick="prosesMuat()">SIMPAN & CETAK SURAT JALAN</button>
             
             <div id="qr-canvas"></div>
@@ -238,45 +249,62 @@
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
         const jam = new Date().toLocaleTimeString('id-ID');
         
-        // Buat format teks struk yang rapi untuk printer thermal 80mm
         let textToPrint = 
-            "      PT. BERKAH BAJA STEEL\n" +
-            "  GENERAL CONTRACTOR & LOGISTIK\n" +
-            "--------------------------------\n" +
-            "HARI/TGL: " + tgl + "\n" +
-            "JAM     : " + jam + "\n" +
-            "PLAT NO : " + data.plat + "\n" +
-            "VOLUME  : " + data.volM + " M3\n" +
-            "--------------------------------\n" +
-            "ID SURAT: " + data.id + "\n" +
-            "--------------------------------\n" +
-            " NIAT BAIK * KERJA BAIK * REZEKI\n" +
-            "           BAIK\n\n" +
-            "Hati-hati dijalan pak sopir,\n" +
-            "keluarga menunggu anda dirumah.\n\n\n\n"; // Kasih space kosong biar bisa disobek
+"      PT. BERKAH BAJA STEEL\n" +
+" GENERAL CONTRACTOR & LOGISTIK\n" +
+"--------------------------------\n" +
+"TGL/JAM : " + tgl + " / " + jam + "\n" +
+"PLAT NO : " + data.plat + "\n" +
+"SOPIR   : " + data.sopir + "\n" +
+"BARANG  : " + data.barang + "\n" +
+"VOLUME  : " + data.volM + " M3\n" +
+"--------------------------------\n" +
+"ID SURAT: " + data.id + "\n\n" +
+"$qr$" + data.id + "$/qr$\n\n" + 
+"--------------------------------\n" +
+" NIAT BAIK * KERJA BAIK * REZEKI\n" +
+"           BAIK\n\n" +
+"Hati-hati dijalan pak sopir,\n" +
+"keluarga menunggu anda dirumah.\n\n\n\n";
 
-        // Perintah sakti untuk kirim ke aplikasi RawBT
-        // Pastikan Bos sudah install RawBT di Playstore
-        const rawBTUrl = "rawbt:text/" + encodeURIComponent(textToPrint);
-        
-        // Eksekusi cetak!
+        const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
         window.location.href = rawBTUrl;
     }
 
     window.prosesMuat = async () => {
         const p = document.getElementById('m-plat').value.toUpperCase();
+        const s = document.getElementById('m-sopir').value.toUpperCase(); // Ambil Nama Sopir
+        const b = document.getElementById('m-barang').value.toUpperCase(); // Ambil Nama Barang
         const v = document.getElementById('m-vol').value;
         const fS = document.getElementById('m-foto').files[0];
         const fK = document.getElementById('m-ktp').files[0];
-        if(!p || !v || !fS || !fK) return alert("LENGKAPI DATA!");
         
+        // Cek apakah semua sudah diisi
+        if(!p || !s || !b || !v || !fS || !fK) return alert("LENGKAPI SEMUA DATA!");
+        
+        document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO...";
+        document.getElementById('loader').style.display = 'flex';
+
+        // Proses upload (menggunakan fungsi uploadFoto yang sudah ada kompresnya)
         const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
         const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
         
         const newRef = push(ref(db, `bbs_logs/${dbKey}`));
-        const logData = { plat: p, volM: Number(v), volB: 0, status: 'OTW', fotoM: uS, fotoKTP: uK, tgl: new Date().toLocaleDateString('id-ID') };
+        const logData = { 
+            plat: p, 
+            sopir: s, 
+            barang: b, 
+            volM: Number(v), 
+            volB: 0, 
+            status: 'OTW', 
+            fotoM: uS, 
+            fotoKTP: uK, 
+            tgl: new Date().toLocaleDateString('id-ID') 
+        };
         
         await set(newRef, logData);
+        
+        // Kirim data lengkap ke fungsi print
         printSuratJalan({ ...logData, id: newRef.key });
         location.reload();
     }
