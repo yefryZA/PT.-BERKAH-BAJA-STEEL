@@ -249,44 +249,41 @@
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
         const jam = new Date().toLocaleTimeString('id-ID');
 
-        // 1. KITA BUAT DIV TERSEMBUNYI UNTUK GAMBAR QR
+        // 1. BUAT QR CODE JADI GAMBAR (WAJIB ADA LIBRARY QRCode di atas)
         const tempDiv = document.createElement('div');
         new QRCode(tempDiv, {
             text: data.id,
-            width: 160, // Ukuran pas untuk kertas 80mm
-            height: 160,
+            width: 180,
+            height: 180,
             correctLevel: QRCode.CorrectLevel.H
         });
 
-        // Tunggu sebentar biar gambarnya jadi dulu
         setTimeout(() => {
             const qrImg = tempDiv.querySelector('img').src;
 
-            // 2. SUSUN STRUK (QR Code dikirim sebagai TAG IMAGE)
+            // 2. SUSUN STRUK (Cimi kasih spasi di depan biar geser ke kanan)
             let textToPrint = 
-                "      PT. BERKAH BAJA STEEL\n" +
-                " GENERAL CONTRACTOR & LOGISTIK\n" +
-                "--------------------------------\n" +
-                "TGL/JAM : " + tgl + " / " + jam + "\n" +
-                "PLAT NO : " + data.plat + "\n" +
-                "SOPIR   : " + data.sopir + "\n" +
-                "BARANG  : " + data.barang + "\n" +
-                "VOLUME  : " + data.volM + " M3\n" +
-                "--------------------------------\n" +
-                "ID SURAT: " + data.id + "\n\n" +
+"       PT. BERKAH BAJA STEEL\n" +
+"  GENERAL CONTRACTOR & LOGISTIK\n" +
+" --------------------------------\n" +
+"  TGL/JAM : " + tgl + " / " + jam + "\n" +
+"  PLAT NO : " + data.plat + "\n" +
+"  SOPIR   : " + (data.sopir || "-") + "\n" +
+"  BARANG  : " + (data.barang || "-") + "\n" +
+"  VOLUME  : " + data.volM + " M3\n" +
+" --------------------------------\n" +
+"  ID SURAT: " + data.id + "\n\n" +
                 
-                // INI JURUSNYA: Kirim gambar QR yang sudah jadi
-                "[image]" + qrImg + "[/image]\n\n" + 
+" [image]" + qrImg + "[/image]\n\n" + // INI PASTI JADI KOTAK
                 
-                "--------------------------------\n" +
-                "NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
-                "Hati-hati pak sopir, keluarga\n" +
-                "menunggu anda dirumah.\n\n\n\n";
+" --------------------------------\n" +
+" NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
+"  Hati-hati pak sopir, keluarga\n" +
+"  menunggu anda dirumah.\n\n\n\n";
 
-            // 3. TERBANGKAN KE RAWBT
             const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
             window.location.href = rawBTUrl;
-        }, 600); // Jeda 0.6 detik biar proses gambar selesai
+        }, 800); 
     }
 
     window.prosesMuat = async () => {
