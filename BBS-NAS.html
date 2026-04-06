@@ -249,6 +249,8 @@
         const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
         const jam = new Date().toLocaleTimeString('id-ID');
         
+        // Kita pakai simbol Barcode standar printer (GS k)
+        // Kalau printer CP-80KI, dia biasanya otomatis baca tag ini:
         let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
 " GENERAL CONTRACTOR & LOGISTIK\n" +
@@ -260,12 +262,11 @@
 "VOLUME  : " + data.volM + " M3\n" +
 "--------------------------------\n" +
 "ID SURAT: " + data.id + "\n\n" +
-"~qr" + data.id + "\n\n" +
+"~qr" + data.id + "\n\n" + // Simbol alternatif RawBT untuk QR
 "--------------------------------\n" +
-" NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
-"           
-"Hati-hati dijalan pak sopir,\n" +
-"keluarga menunggu anda dirumah.\n\n\n\n";
+"NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
+"Hati-hati pak sopir, keluarga\n" +
+"menunggu anda dirumah.\n\n\n\n";
 
         const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
         window.location.href = rawBTUrl;
