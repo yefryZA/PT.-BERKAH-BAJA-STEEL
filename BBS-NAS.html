@@ -10,7 +10,7 @@
     
     <style>
         :root { --blue-dark: #0A192F; --silver: #C0C0C0; --gold: #FFD700; --red: #FF4D4D; --glass: rgba(255, 255, 255, 0.1); --green: #64FFDA; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; text-transform: uppercase; } /* SEMUA HURUF BESAR */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; text-transform: uppercase; }
         body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle, #112240 0%, var(--blue-dark) 100%); color: #fff; margin: 0; min-height: 100vh; text-transform: none; }
         b, h1, h2, .lbl, .val, input { text-transform: uppercase; }
 
@@ -34,18 +34,22 @@
         .btn-green { background: var(--green); color: #0A192F; }
         .btn-gold { background: var(--gold); color: #0A192F; }
 
-        #margin-area { display: none; border: 1px dashed var(--gold); padding: 15px; border-radius: 10px; margin-top: 15px; background: rgba(255,215,0,0.05); }
+        #margin-area { display: none; border: 1px dashed var(--gold); padding: 15px; border-radius: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); }
         .lock-btn { position: absolute; right: 15px; top: 15px; cursor: pointer; font-size: 20px; }
 
         .truck-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
         #loader { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
+
+        .m-table { width: 100%; font-size: 10px; border-collapse: collapse; margin: 10px 0; }
+        .m-table td { padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .ops-btn { background: var(--red); color: white; border: none; padding: 10px; border-radius: 8px; font-size: 10px; cursor: pointer; width: 100%; margin-bottom: 10px; font-weight:bold; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div style="border: 5px solid #f3f3f3; border-top: 5px solid var(--gold); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
-        <div id="load-txt" style="color:var(--gold); font-family:Orbitron; margin-top:15px; font-size:12px;">MENGOMPRES & MENGIRIM FOTO...</div>
+        <div id="load-txt" style="color:var(--gold); font-family:Orbitron; margin-top:15px; font-size:12px;">MENGIRIM DATA...</div>
     </div>
 
     <div class="header-bbs">
@@ -65,80 +69,79 @@
             <div class="stat-grid">
                 <div class="stat-box"><span class="lbl">TOTAL MUAT</span><span id="d-total-muat" class="val">0</span></div>
                 <div class="stat-box"><span class="lbl">TOTAL BONGKAR</span><span id="d-total-bongkar" class="val">0</span></div>
-                <div class="stat-box" style="grid-column: span 2; border-color: var(--red);">
-                    <span class="lbl" style="color:var(--red)">TOTAL LOSS</span>
-                    <span id="d-total-loss" class="val" style="color:var(--red); font-size: 24px;">0</span>
+                <div class="stat-box" style="grid-column: span 2; border: 1.5px solid var(--glass);">
+                    <span class="lbl">TOTAL LOSS / GAIN</span>
+                    <span id="d-total-loss" class="val" style="font-size: 24px;">0</span>
                 </div>
             </div>
 
             <div id="margin-area">
-                <div class="stat-grid" style="margin-top:15px;">
-                    <div class="stat-box">
-                        <span class="lbl">HARGA JUAL</span>
-                        <div id="d-omzet" class="val" style="font-size:12px;">RP 0</div>
-                    </div>
-                    <div class="stat-box">
-                        <span class="lbl">MODAL</span>
-                        <div id="d-modal" class="val" style="font-size:12px;">RP 0</div>
-                    </div>
-                    
-                    <div class="stat-box" style="grid-column: span 2; background: rgba(100, 255, 218, 0.1); border: 1px solid var(--green);">
-                        <span class="lbl" style="color:var(--green)">TOTAL MARGIN BERSIH</span>
-                        <div id="d-margin" class="val" style="color:var(--green); font-size:18px;">RP 0</div>
-                    </div>
+                <button class="ops-btn" onclick="openOps()">⚙️ TOTAL OPERASIONAL : <span id="d-ops-total">RP 0</span></button>
+                
+                <table class="m-table">
+                    <tr><td>MARGIN 5K (Team BBS)</td><td align="right"><b id="res-m5">RP 0</b><br><small id="res-m5-p">/ORG: RP 0</small></td></tr>
+                    <tr><td>MARGIN 7K (BBS-NAS - OPS)</td><td align="right"><b id="res-m7">RP 0</b><br><small id="res-m7-p">/ORG: RP 0</small></td></tr>
+                    <tr><td>MARGIN 1K (BBS-NAS)</td><td align="right"><b id="res-m1">RP 0</b><br><small id="res-m1-p">/ORG: RP 0</small></td></tr>
+                </table>
 
-                    <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--gold); background: rgba(255, 215, 0, 0.05); margin-top: 5px;">
-                        <span class="lbl" style="color:var(--gold); font-size: 10px;">BAGI HASIL</span>
-                        <div id="d-bagi-hasil" class="val" style="color:#fff; font-size:18px;">RP 0</div>
-                    </div>
+                <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--green); background: rgba(100, 255, 218, 0.05);">
+                    <span class="lbl" style="color:var(--green); font-size: 10px;">MARGIN BESIH TEAM BBS</span>
+                    <div id="d-hak-total" class="val" style="color:var(--green); font-size:22px;">RP 0</div>
                 </div>
 
-                <button class="btn" style="background:var(--silver); color:#000; margin-top:15px; font-size:12px;" onclick="generatePDF()">DOWNLOAD REKAP PDF 📄</button>
-
-                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ PENGATURAN HARGA / RESET</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                    <button class="btn" style="background:var(--silver); font-size:10px; padding:10px;" onclick="generatePDF('NAS')">📄 REKAP NAS (PDF)</button>
+                    <button class="btn" style="background:var(--green); font-size:10px; padding:10px; color:#000;" onclick="generatePDF('BBS')">🔐 RINCIAN BBS (PDF)</button>
+                </div>
+                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ HARGA & RESET</button>
             </div> 
-        </div> <div class="card">
+        </div>
+
+        <div class="card">
             <span class="lbl">DAFTAR AKTIVITAS KENDARAAN</span>
             <div id="log-list"></div>
         </div>
+    </div>
 
+    <div id="modal-ops" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; padding:20px;">
+        <div class="card" style="max-width:400px; margin:auto;">
+            <h3 style="color:var(--gold)">BIAYA OPERASIONAL</h3>
+            <div id="ops-list" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
+            <input type="text" id="ops-ket" placeholder="KETERANGAN">
+            <input type="number" id="ops-nom" placeholder="NOMINAL (RP)">
+            <button class="btn btn-green" onclick="addOps()">TAMBAH DATA</button>
+            <button class="btn" style="background:none; color:#8892B0" onclick="closeOps()">TUTUP</button>
+        </div>
     </div>
 
     <div id="view-cilegon" class="container">
         <div class="card">
-            <h2 style="font-family:Orbitron; color:var(--green); font-size:18px;">INPUT MUAT - QUARY</h2>
-            <label class="lbl">NOMOR PLAT</label><input type="text" id="m-plat" placeholder="B 1234 BBS">
-            <label class="lbl">VOLUME MUAT (M3)</label><input type="number" id="m-vol" step="0.01">
-            
-            <label class="lbl">FOTO SURAT JALAN (WAJIB)</label>
-            <input type="file" capture="camera" id="m-foto" accept="image/*">
-            
-            <label class="lbl">FOTO KTP / SIM SOPIR (IDENTITAS)</label>
-            <input type="file" capture="camera" id="m-ktp" accept="image/*">
-            
-            <button class="btn btn-green" onclick="prosesMuat()">KIRIM DATA MUAT 🚛</button>
+            <h2 style="color:var(--green)">INPUT MUAT</h2>
+            <input type="text" id="m-plat" placeholder="PLAT NOMOR">
+            <input type="number" id="m-vol" placeholder="VOL MUAT" step="0.01">
+            <label class="lbl">FOTO SJ</label><input type="file" capture="camera" id="m-foto">
+            <label class="lbl">FOTO KTP</label><input type="file" capture="camera" id="m-ktp">
+            <button class="btn btn-green" onclick="prosesMuat()">KIRIM DATA</button>
         </div>
     </div>
 
     <div id="view-jakarta" class="container">
         <div class="card">
-            <h2 style="font-family:Orbitron; color:var(--gold); font-size:18px;">INPUT BONGKAR - VINFAST</h2>
-            <label class="lbl">PILIH PLAT MOBIL</label><select id="b-pilih-mobil"></select>
-            <label class="lbl">VOLUME BONGKAR (M3)</label><input type="number" id="b-vol" step="0.01">
-            <label class="lbl">FOTO AKTUAL BONGKAR (KAMERA)</label>
-            <input type="file" capture="camera" id="b-foto" accept="image/*">
-            <button class="btn btn-gold" onclick="prosesBongkar()">KONFIRMASI BONGKAR ⚓</button>
+            <h2 style="color:var(--gold)">INPUT BONGKAR</h2>
+            <select id="b-pilih-mobil"></select>
+            <input type="number" id="b-vol" placeholder="VOL BONGKAR" step="0.01">
+            <label class="lbl">FOTO BONGKAR</label><input type="file" capture="camera" id="b-foto">
+            <button class="btn btn-gold" onclick="prosesBongkar()">KONFIRMASI</button>
         </div>
     </div>
 
-    <div id="modal-admin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; padding:20px; overflow-y:auto;">
+    <div id="modal-admin" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; padding:20px;">
         <div class="card" style="max-width:400px; margin:auto;">
             <h3 style="color:var(--gold)">ADMIN PANEL</h3>
             <label class="lbl">HARGA BELI /M3</label><input type="number" id="cfg-beli">
             <label class="lbl">HARGA JUAL /M3</label><input type="number" id="cfg-jual">
-            <button class="btn btn-green" onclick="saveSettings()">SIMPAN</button>
-            <hr style="border:0.5px solid var(--glass); margin:15px 0;">
-            <button class="btn" style="background:var(--red); color:#fff" onclick="resetBBS()">RESET TOTAL DATA</button>
+            <button class="btn btn-green" onclick="saveSettings()">SIMPAN HARGA</button>
+            <button class="btn" style="background:var(--red); color:#fff; margin-top:20px;" onclick="resetBBS()">RESET TOTAL DATA</button>
             <button class="btn" style="background:none; color:#8892B0" onclick="closeAdmin()">TUTUP</button>
         </div>
     </div>
@@ -158,206 +161,161 @@
     else if(mode === 'jakarta') document.getElementById('view-jakarta').style.display = 'flex';
     else document.getElementById('view-dashboard').style.display = 'flex';
 
-    // FUNGSI KOMPRES FOTO & UPLOAD
+    // FUNGSI UPLOAD
     async function uploadFoto(file, fileName) {
         if(!file) return "";
         document.getElementById('loader').style.display = 'flex';
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Ukuran kecil biar loading cepat
-                    let width = img.width, height = img.height;
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const base64 = canvas.toDataURL("image/jpeg", 0.7).split(',')[1];
-                    const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ base64, type: "image/jpeg", name: fileName }) });
-                    const json = await res.json();
-                    document.getElementById('loader').style.display = 'none';
-                    resolve(json.url || "");
-                };
-                img.src = event.target.result;
+            reader.onload = async (e) => {
+                const base64 = e.target.result.split(',')[1];
+                const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ base64, type: "image/jpeg", name: fileName }) });
+                const json = await res.json();
+                document.getElementById('loader').style.display = 'none';
+                resolve(json.url || "");
             };
             reader.readAsDataURL(file);
         });
     }
 
     window.prosesMuat = async () => {
-        const plat = document.getElementById('m-plat').value.toUpperCase();
-        const vol = document.getElementById('m-vol').value;
-        const fileSJ = document.getElementById('m-foto').files[0];
-        const fileKTP = document.getElementById('m-ktp').files[0]; // Foto Identitas
-        
-        if(!plat || !vol || !fileSJ || !fileKTP) return alert("LENGKAPI DATA, FOTO SURAT JALAN & KTP!");
-        
-        // Upload Foto Surat Jalan
-        const urlFotoSJ = await uploadFoto(fileSJ, `MUAT_SJ_${plat}.jpg`);
-        // Upload Foto KTP
-        const urlFotoKTP = await uploadFoto(fileKTP, `KTP_${plat}.jpg`);
-        
-        await push(ref(db, `bbs_logs/${dbKey}`), { 
-            plat, 
-            volM: Number(vol), 
-            volB: 0, 
-            status: 'OTW', 
-            fotoM: urlFotoSJ, 
-            fotoKTP: urlFotoKTP, // Data KTP masuk ke Database
-            jamM: new Date().toLocaleTimeString(), 
-            tgl: new Date().toLocaleDateString('id-ID') 
-        });
-        
-        alert("DATA MUAT & IDENTITAS TERKIRIM!"); 
+        const p = document.getElementById('m-plat').value.toUpperCase();
+        const v = document.getElementById('m-vol').value;
+        const fS = document.getElementById('m-foto').files[0];
+        const fK = document.getElementById('m-ktp').files[0];
+        if(!p || !v || !fS || !fK) return alert("LENGKAPI DATA!");
+        const uS = await uploadFoto(fS, `SJ_${p}.jpg`);
+        const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
+        await push(ref(db, `bbs_logs/${dbKey}`), { plat: p, volM: Number(v), volB: 0, status: 'OTW', fotoM: uS, fotoKTP: uK, tgl: new Date().toLocaleDateString('id-ID') });
         location.reload();
     }
 
     window.prosesBongkar = async () => {
-        const selectMobil = document.getElementById('b-pilih-mobil');
-        const id = selectMobil.value;
-        const plat = selectMobil.options[selectMobil.selectedIndex].text; // AMBIL NAMA PLATNYA
-        const vol = document.getElementById('b-vol').value;
-        const file = document.getElementById('b-foto').files[0];
-        
-        if(!id || !vol || !file) return alert("LENGKAPI DATA & JEPRET FOTO!");
-        
-        // SEKARANG NAMA FILENYA PAKAI PLAT NOMOR BOS!
-        const urlFoto = await uploadFoto(file, `BONGKAR_${plat}.jpg`);
-        
-        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
-            volB: Number(vol), 
-            status: 'DONE', 
-            fotoB: urlFoto, 
-            jamB: new Date().toLocaleTimeString() 
-        });
-        
-        alert("DATA BONGKAR TERSELESAIKAN!"); 
+        const id = document.getElementById('b-pilih-mobil').value;
+        const v = document.getElementById('b-vol').value;
+        const f = document.getElementById('b-foto').files[0];
+        if(!id || !v || !f) return alert("LENGKAPI DATA!");
+        const u = await uploadFoto(f, `BONGKAR_${id}.jpg`);
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { volB: Number(v), status: 'DONE', fotoB: u });
         location.reload();
     }
 
     let rawData = [];
+    let totalOps = 0;
+
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
-        const list = document.getElementById('log-list');
-        const select = document.getElementById('b-pilih-mobil');
-        list.innerHTML = ""; select.innerHTML = '<option value="">-- PILIH MOBIL --</option>';
         let tm = 0, tb = 0, otw = 0; rawData = [];
+        const list = document.getElementById('log-list');
+        const sel = document.getElementById('b-pilih-mobil');
+        list.innerHTML = ""; sel.innerHTML = '<option value="">-- PILIH MOBIL --</option>';
         if(data) {
             Object.keys(data).forEach(k => {
                 const i = data[k]; tm += i.volM; tb += i.volB; rawData.push(i);
                 if(i.status === 'OTW') {
-                    otw++; let opt = document.createElement('option'); opt.value = k; opt.text = i.plat; select.appendChild(opt);
+                    otw++; let opt = document.createElement('option'); opt.value = k; opt.text = i.plat; sel.appendChild(opt);
                 }
-                let item = document.createElement('div'); item.className = 'truck-item';
-                item.innerHTML = `<div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div> <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">${i.status}</span>`;
-                list.appendChild(item);
+                // KEMBALIKAN FOTO MUAT & BONGKAR
+                list.innerHTML += `<div class="truck-item">
+                    <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
+                    <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">${i.status}</span>
+                </div>`;
             });
         }
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
-        document.getElementById('d-total-loss').innerText = (tm - tb).toFixed(2);
-        updateMoney(tb);
+        
+        // LOGIKA LOSS/GAIN WARNA DINAMIS
+        const lossVal = tb - tm;
+        const lossEl = document.getElementById('d-total-loss');
+        lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
+        lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
+        
+        hitungUang(tb);
     });
 
-    async function updateMoney(tb) {
-        const s = await get(ref(db, `bbs_settings/${dbKey}`));
-        const c = s.val() || { beli: 0, jual: 0 };
-        
-        const totalOmzet = tb * c.jual;
-        const totalModal = tb * c.beli;
-        const totalMargin = totalOmzet - totalModal;
-        const bagiTiga = totalMargin / 3; // Logika Bagi 3
+    async function hitungUang(tb) {
+        const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
+        totalOps = 0;
+        const oList = document.getElementById('ops-list'); oList.innerHTML = "";
+        if(snapOps.val()) {
+            Object.keys(snapOps.val()).forEach(k => {
+                const o = snapOps.val()[k]; totalOps += Number(o.nom);
+                oList.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>- ${o.ket}</span><span>RP ${o.nom.toLocaleString()} <b onclick="delOps('${k}')" style="color:red; cursor:pointer">X</b></span></div>`;
+            });
+        }
+        document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
 
-        document.getElementById('d-omzet').innerText = "RP " + totalOmzet.toLocaleString();
-        document.getElementById('d-modal').innerText = "RP " + totalModal.toLocaleString();
-        document.getElementById('d-margin').innerText = "RP " + totalMargin.toLocaleString();
-        
-        // Tampilkan ke Box Bagi Hasil Tunggal
-        document.getElementById('d-bagi-hasil').innerText = "RP " + Math.floor(bagiTiga).toLocaleString();
+        // LOGIKA MARGIN PATEN
+        const h5 = (tb * 5000) / 3;
+        const h7 = ((tb * 7000) - totalOps) / 4;
+        const h1 = (tb * 1000) / 4;
+
+        document.getElementById('res-m5').innerText = "RP " + (tb*5000).toLocaleString();
+        document.getElementById('res-m5-p').innerText = "/ORG: RP " + Math.floor(h5).toLocaleString();
+        document.getElementById('res-m7').innerText = "RP " + (tb*7000).toLocaleString();
+        document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.floor(h7).toLocaleString();
+        document.getElementById('res-m1').innerText = "RP " + (tb*1000).toLocaleString();
+        document.getElementById('res-m1-p').innerText = "/ORG: RP " + Math.floor(h1).toLocaleString();
+
+        // ESTIMASI BERSIH PER ORANG (H5 + H7 + H1)
+        document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1).toLocaleString();
     }
 
-    // FUNGSI PDF REKAP
-    // FUNGSI PDF REKAP (VERSI TANDA TANGAN RAPI)
-    window.generatePDF = () => {
+    // OPERASIONAL
+    window.openOps = () => document.getElementById('modal-ops').style.display = 'block';
+    window.closeOps = () => document.getElementById('modal-ops').style.display = 'none';
+    window.addOps = async () => {
+        const k = document.getElementById('ops-ket').value;
+        const n = document.getElementById('ops-nom').value;
+        if(k && n) { await push(ref(db, `bbs_operasional/${dbKey}`), { ket: k, nom: Number(n) }); location.reload(); }
+    };
+    window.delOps = async (id) => { if(confirm("HAPUS?")) { await remove(ref(db, `bbs_operasional/${dbKey}/${id}`)); location.reload(); } };
+
+    // PDF GENERATOR
+    window.generatePDF = async (tipe) => {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const s = await get(ref(db, `bbs_settings/${dbKey}`));
+        const cfg = s.val() || { beli: 0, jual: 0 };
+        const tb = Number(document.getElementById('d-total-bongkar').innerText);
+
+        doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
         
-        get(ref(db, `bbs_settings/${dbKey}`)).then((s) => {
-            const cfg = s.val() || { beli: 0, jual: 0 };
-            const hargaJual = cfg.jual;
-
-            // HEADER
-            doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
-            doc.setFontSize(10); doc.text("REKAPITULASI PENGIRIMAN BB-NAS", 105, 22, { align: "center" });
-            doc.line(20, 25, 190, 25);
-            
-            let totalM = 0, totalB = 0, totalRp = 0;
-            
-            // ISI TABEL UTAMA
-            const tableBody = rawData.map(i => {
-                const subTotal = i.volB * hargaJual;
-                totalM += i.volM; totalB += i.volB; totalRp += subTotal;
-                return [
-                    i.tgl, 
-                    i.plat, 
-                    i.volM.toFixed(2), 
-                    i.volB.toFixed(2), 
-                    "RP " + hargaJual.toLocaleString(),
-                    "RP " + subTotal.toLocaleString()
-                ];
-            });
-
-            doc.autoTable({ 
-                head: [['TANGGAL', 'PLAT', 'MUAT', 'BONGKAR', 'HRG JUAL', 'SUBTOTAL']], 
-                body: tableBody, 
-                startY: 30,
-                theme: 'grid',
-                headStyles: { fillColor: [10, 25, 47], halign: 'center' },
-                styles: { fontSize: 8, halign: 'center' }
-            });
-            
-            // TABEL SUMMARY (TOTAL DI BAWAH)
-            let finalY = doc.lastAutoTable.finalY + 5;
-            doc.autoTable({
-                body: [
-                    ['TOTAL VOLUME MUAT', `${totalM.toFixed(2)} M3`],
-                    ['TOTAL VOLUME BONGKAR', `${totalB.toFixed(2)} M3`],
-                    ['TOTAL NILAI UANG (PENAGIHAN)', `RP ${totalRp.toLocaleString()}`]
-                ],
-                startY: finalY,
-                theme: 'grid',
-                styles: { fontSize: 9, fontStyle: 'bold' },
-                columnStyles: {
-                    0: { cellWidth: 60, fillColor: [240, 240, 240] }, // Kolom Label
-                    1: { halign: 'right' } // Kolom Angka
-                }
-            });
-            
-            // TANDA TANGAN
-            let signY = doc.lastAutoTable.finalY + 15;
-            const signatureX = 160;
-            doc.setFontSize(10);
-            doc.text("MENGETAHUI,", signatureX, signY, { align: "center" });
-            doc.setFont("helvetica", "bold");
-            doc.text("YEFRY ZA.", signatureX, signY + 25, { align: "center" });
-            doc.setFont("helvetica", "normal");
-            doc.text("MANAGER", signatureX, signY + 30, { align: "center" });
-            
-            doc.save("REKAP_BB-NAS_" + new Date().toLocaleDateString() + ".pdf");
-        });
+        if(tipe === 'NAS') {
+            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BB-NAS", 105, 22, { align: "center" });
+            const body = rawData.map(i => [i.tgl, i.plat, i.volM, i.volB, cfg.jual.toLocaleString(), (i.volB*cfg.jual).toLocaleString()]);
+            doc.autoTable({ head: [['TGL', 'PLAT', 'MUAT', 'BONGKAR', 'HARGA', 'SUBTOTAL']], body, startY: 30, theme: 'grid' });
+        } else {
+            doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN & OPS", 105, 22, { align: "center" });
+            const body = [
+                ['MARGIN 5K', "RP " + (tb*5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((tb*5000)/3).toLocaleString()],
+                ['MARGIN 7K', "RP " + (tb*7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((tb*7000)-totalOps)/4).toLocaleString()],
+                ['MARGIN 1K', "RP " + (tb*1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((tb*1000)/4).toLocaleString()]
+            ];
+            doc.autoTable({ head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], body, startY: 30 });
+            doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, doc.lastAutoTable.finalY + 10);
+        }
+        
+        // TANDA TANGAN ATAS BAWAH
+        const finalY = doc.internal.pageSize.height - 30;
+        doc.setFont("helvetica", "bold");
+        doc.text("YEFRY ZA.", 160, finalY, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.text("MANAGER", 160, finalY + 7, { align: "center" });
+        
+        doc.save(`BBS_${tipe}.pdf`);
     };
 
-    window.toggleMargin = () => { if(prompt("PASS ADMIN?") === "bbs-nas") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
+    window.toggleMargin = () => { if(prompt("PASS?") === "bbs-nas") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
     window.openAdmin = () => document.getElementById('modal-admin').style.display = 'block';
     window.closeAdmin = () => document.getElementById('modal-admin').style.display = 'none';
     window.saveSettings = async () => {
         await set(ref(db, `bbs_settings/${dbKey}`), { beli: Number(document.getElementById('cfg-beli').value), jual: Number(document.getElementById('cfg-jual').value) });
-        alert("HARGA DISIMPAN!"); closeAdmin();
+        alert("SIMPAN BERHASIL!"); closeAdmin();
     };
-    window.resetBBS = async () => { if(confirm("HAPUS SEMUA DATA PROYEK?")) { await remove(ref(db, `bbs_logs/${dbKey}`)); location.reload(); } };
+    window.resetBBS = async () => { if(confirm("HAPUS SEMUA DATA?")) { await remove(ref(db, `bbs_logs/${dbKey}`)); await remove(ref(db, `bbs_operasional/${dbKey}`)); location.reload(); } };
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 </body>
