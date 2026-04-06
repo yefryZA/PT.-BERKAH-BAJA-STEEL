@@ -347,19 +347,46 @@
 
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
-        let tm = 0, tb = 0, otw = 0; rawData = [];
+        let tm = 0, tb = 0, otw = 0; 
+        rawData = []; 
         const list = document.getElementById('log-list');
         list.innerHTML = "";
+
         if(data) {
             Object.keys(data).forEach(k => {
-                const i = data[k]; tm += i.volM; tb += i.volB; rawData.push(i);
+                const i = data[k]; 
+                tm += i.volM; 
+                tb += (i.volB || 0); 
+                // Simpan ID k ke dalam data biar pas cetak ulang kodenya sama
+                const dataLengkap = { ...i, id: k };
+                rawData.push(dataLengkap);
+                
                 if(i.status === 'OTW') otw++;
-                list.innerHTML += `<div class="truck-item">
-                    <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
-                    <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">${i.status}</span>
+
+                // TAMPILAN LIST BARU DENGAN TOMBOL PRINT
+                list.innerHTML += `
+                <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
+                    <div>
+                        <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
+                        <small>
+                            <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
+                            <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
+                        </small>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
+                                style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
+                            🖨️
+                        </button>
+                        <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
+                            ${i.status}
+                        </span>
+                    </div>
                 </div>`;
             });
         }
+
+        // UPDATE RINGKASAN DASHBOARD
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
@@ -371,6 +398,13 @@
         
         hitungUang(tb);
     });
+
+    // FUNGSI KHUSUS UNTUK TOMBOL REPRINT
+    window.reprintData = (data) => {
+        if(confirm("Cetak ulang Surat Jalan untuk " + data.plat + "?")) {
+            printSuratJalan(data);
+        }
+    };
 
     async function hitungUang(tb) {
         const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
