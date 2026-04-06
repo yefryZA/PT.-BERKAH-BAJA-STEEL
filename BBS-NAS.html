@@ -129,8 +129,15 @@
             <input type="text" id="m-sopir" placeholder="NAMA SOPIR">
             
             <label class="lbl">DETAIL MUATAN</label>
-            <input type="text" id="m-barang" placeholder="NAMA BARANG (Cth: PASIR RANGKAS)">
-            <input type="number" id="m-vol" placeholder="VOL MUAT (M3)" step="0.01">
+<input type="text" id="m-barang" placeholder="NAMA BARANG (Cth: PASIR RANGKAS)">
+
+<div style="display:flex; gap:5px; margin-bottom:10px;">
+    <input type="number" id="m-p" placeholder="P (m)" step="0.01" style="flex:1; padding:12px; border-radius:8px; border:1px solid #444; background:#1a1a1a; color:white;">
+    <input type="number" id="m-l" placeholder="L (m)" step="0.01" style="flex:1; padding:12px; border-radius:8px; border:1px solid #444; background:#1a1a1a; color:white;">
+    <input type="number" id="m-t" placeholder="T (m)" step="0.01" style="flex:1; padding:12px; border-radius:8px; border:1px solid #444; background:#1a1a1a; color:white;">
+</div>
+
+<input type="number" id="m-vol" placeholder="TOTAL VOLUME (M3)" step="0.01" readonly style="background:#222; color:var(--gold); font-weight:bold; border:1px dashed var(--gold);">
             
             <label class="lbl">FOTO MUATAN (RATA/MUNJUNG)</label>
             <input type="file" capture="camera" id="m-foto">
@@ -262,45 +269,53 @@
             const qrImg = tempDiv.querySelector('img').src;
 
             // 2. SUSUN STRUK (Cimi kasih spasi di depan biar geser ke kanan)
+            // SUSUN TEKS STRUK (DENGAN RINCIAN L, T, P)
             let textToPrint = 
-"       PT. BERKAH BAJA STEEL\n" +
+"      PT. BERKAH BAJA STEEL\n" +
 "  GENERAL CONTRACTOR & LOGISTIK\n" +
 " --------------------------------\n" +
-"  TGL/JAM : " + tgl + " / " + jam + "\n" +
+"  TGL/JAM : " + tgl + "\n" +
+"  JAM     : " + jam + "\n" +
 "  PLAT NO : " + data.plat + "\n" +
 "  SOPIR   : " + (data.sopir || "-") + "\n" +
 "  BARANG  : " + (data.barang || "-") + "\n" +
-"  VOLUME  : " + data.volM + " M3\n" +
+" --------------------------------\n" +
+"  DIMENSI : " + (data.p||0) + "x" + (data.l||0) + "x" + (data.t||0) + " (m)\n" +
+"  VOLUME  : " + (data.volM || 0) + " M3\n" +
 " --------------------------------\n" +
 "  ID SURAT: " + data.id + "\n\n" +
                 
-" [image]" + qrImg + "[/image]\n\n" + // INI PASTI JADI KOTAK
+" [image]" + qrImg + "[/image]\n\n" + 
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
 "  Hati-hati pak sopir, keluarga\n" +
-"  menunggu anda dirumah.\n\n\n\n";
+"  menunggu anda di rumah.\n\n\n\n\n";
 
             const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
             window.location.href = rawBTUrl;
         }, 800); 
     }
 
-    window.prosesMuat = async () => {
+  window.prosesMuat = async () => {
         const p = document.getElementById('m-plat').value.toUpperCase();
-        const s = document.getElementById('m-sopir').value.toUpperCase(); // Ambil Nama Sopir
-        const b = document.getElementById('m-barang').value.toUpperCase(); // Ambil Nama Barang
+        const s = document.getElementById('m-sopir').value.toUpperCase();
+        const b = document.getElementById('m-barang').value.toUpperCase();
         const v = document.getElementById('m-vol').value;
         const fS = document.getElementById('m-foto').files[0];
         const fK = document.getElementById('m-ktp').files[0];
+        const p_dim = document.getElementById('m-p').value;
+        const l_dim = document.getElementById('m-l').value;
+        const t_dim = document.getElementById('m-t').value;
         
-        // Cek apakah semua sudah diisi
-        if(!p || !s || !b || !v || !fS || !fK) return alert("LENGKAPI SEMUA DATA!");
+        // --- PERBAIKAN DI SINI: Tambahkan p_dim, l_dim, t_dim ke dalam syarat ---
+        if(!p || !s || !b || !v || !fS || !fK || !p_dim || !l_dim || !t_dim) {
+            return alert("LENGKAPI SEMUA DATA! (Termasuk P, L, T)");
+        }
         
         document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO...";
         document.getElementById('loader').style.display = 'flex';
 
-        // Proses upload (menggunakan fungsi uploadFoto yang sudah ada kompresnya)
         const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
         const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
         
@@ -309,6 +324,9 @@
             plat: p, 
             sopir: s, 
             barang: b, 
+            p: Number(p_dim) || 0, 
+            l: Number(l_dim) || 0, 
+            t: Number(t_dim) || 0, 
             volM: Number(v), 
             volB: 0, 
             status: 'OTW', 
@@ -323,7 +341,6 @@
         printSuratJalan({ ...logData, id: newRef.key });
         location.reload();
     }
-
     // LOGIKA SCANNER JAKARTA
     function initScanner() {
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
@@ -493,6 +510,57 @@
         alert("SIMPAN BERHASIL!"); closeAdmin();
     };
     window.resetBBS = async () => { if(confirm("HAPUS SEMUA DATA?")) { await remove(ref(db, `bbs_logs/${dbKey}`)); await remove(ref(db, `bbs_operasional/${dbKey}`)); location.reload(); } };
+    document.getElementById('m-plat').addEventListener('input', function (e) {
+    let v = e.target.value.toUpperCase().replace(/\s+/g, ''); // Buang semua spasi dulu
+    let r = "";
+    
+    // Daftar Kode Wilayah 2 Huruf (BE, BG, KH, KT, dll)
+    const duaHuruf = ["BE", "BG", "BH", "BK", "BL", "BM", "BP", "DA", "DB", "DC", "DD", "DE", "DG", "DH", "DK", "DL", "DM", "DN", "DP", "DR", "DS", "DT", "DW", "EA", "EB", "ED", "EE", "EF", "EG", "EH", "EJ", "EK", "EL", "EM", "EN", "EO", "EP", "EQ", "ER", "ES", "ET", "EU", "EV", "EW", "EX", "EY", "EZ", "GA", "GB", "GC", "GD", "GE", "GF", "GG", "GH", "GI", "GJ", "GK", "GL", "GM", "GN", "GO", "GP", "GQ", "GR", "GS", "GT", "GU", "GV", "GW", "GX", "GY", "GZ", "KA", "KB", "KC", "KD", "KE", "KF", "KG", "KH", "KI", "KJ", "KK", "KL", "KM", "KN", "KO", "KP", "KQ", "KR", "KS", "KT", "KU", "KV", "KW", "KX", "KY", "KZ", "PA", "PB", "PC", "PD", "PE", "PF", "PG", "PH", "PI", "PJ", "PK", "PL", "PM", "PN", "PO", "PP", "PQ", "PR", "PS", "PT", "PU", "PV", "PW", "PX", "PY", "PZ"];
+
+    if (v.length > 0) {
+        // Cek 2 huruf pertama
+        let prefix2 = v.substring(0, 2);
+        let splitIdx = duaHuruf.includes(prefix2) ? 2 : 1;
+
+        // Bagian Depan (Huruf)
+        r += v.substring(0, splitIdx);
+        
+        // Bagian Tengah (Angka)
+        let sisa = v.substring(splitIdx);
+        let angkaMatch = sisa.match(/\d+/);
+        
+        if (angkaMatch) {
+            let angka = angkaMatch[0].substring(0, 4); // Maks 4 angka
+            r += " " + angka;
+            
+            // Bagian Belakang (Huruf Seri)
+            let seri = sisa.substring(angka.length).replace(/[^A-Z]/g, '');
+            if (seri.length > 0) {
+                r += " " + seri.substring(0, 3); // Maks 3 huruf seri
+            }
+        } else if (sisa.length > 0) {
+            // Jika baru ngetik huruf kedua/ketiga tapi belum ada angka
+            r += sisa.substring(0, 1).replace(/[^0-9]/g, ''); 
+        }
+    }
+    e.target.value = r;
+});
+    // Logika Hitung Otomatis P x L x T
+['m-p', 'm-l', 'm-t'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', () => {
+            const p = parseFloat(document.getElementById('m-p').value) || 0;
+            const l = parseFloat(document.getElementById('m-l').value) || 0;
+            const t = parseFloat(document.getElementById('m-t').value) || 0;
+            
+            // Rumus Volume: P x L x T
+            const total = p * l * t;
+            // Masukkan hasil ke m-vol dengan 2 angka di belakang koma
+            document.getElementById('m-vol').value = total.toFixed(2);
+        });
+    }
+});
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 </body>
