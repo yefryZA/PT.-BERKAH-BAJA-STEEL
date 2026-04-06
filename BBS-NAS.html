@@ -291,9 +291,9 @@
 "  Hati-hati pak sopir, keluarga\n" +
 "  menunggu anda di rumah.\n\n\n\n\n";
 
-      const dataCetak = btoa(unescape(encodeURIComponent(textToPrint)));
-      const printUrl = "http://localhost:8080/print?data=" + dataCetak;
-      window.location.href = printUrl;
+      // Hapus baris localhost tadi, ganti dengan ini:
+const dataCetak = btoa(unescape(encodeURIComponent(textToPrint)));
+window.location.href = "intent://print?data=" + dataCetak + "#Intent;scheme=http;package=com.mtechno.thermer;end";
         
         // --- POIN PENTING: Kasih jeda 3 detik baru reload halaman ---
         setTimeout(() => { location.reload(); }, 3000); 
