@@ -291,8 +291,9 @@
 "  Hati-hati pak sopir, keluarga\n" +
 "  menunggu anda di rumah.\n\n\n\n\n";
 
-      const printUrl = "bluetoothprint:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
-window.location.href = printUrl;
+      const dataCetak = btoa(unescape(encodeURIComponent(textToPrint)));
+      const printUrl = "http://localhost:8080/print?data=" + dataCetak;
+      window.location.href = printUrl;
         
         // --- POIN PENTING: Kasih jeda 3 detik baru reload halaman ---
         setTimeout(() => { location.reload(); }, 3000); 
