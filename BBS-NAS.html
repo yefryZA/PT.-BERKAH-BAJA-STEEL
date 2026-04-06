@@ -253,24 +253,23 @@
     }
 // --- LOGIKA CETAK JALUR CEPAT (RAWBT) ---
     function printSuratJalan(data) {
-        const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-        const jam = new Date().toLocaleTimeString('id-ID');
+    const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    const jam = new Date().toLocaleTimeString('id-ID');
 
-        // 1. BUAT QR CODE JADI GAMBAR (WAJIB ADA LIBRARY QRCode di atas)
-        const tempDiv = document.createElement('div');
-        new QRCode(tempDiv, {
-            text: data.id,
-            width: 180,
-            height: 180,
-            correctLevel: QRCode.CorrectLevel.H
-        });
+    const tempDiv = document.createElement('div');
+    new QRCode(tempDiv, {
+        text: data.id,
+        width: 160,
+        height: 160,
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
-        setTimeout(() => {
-            const qrImg = tempDiv.querySelector('img').src;
+    // Jeda 1 detik biar QR Code jadi gambar dulu
+    setTimeout(() => {
+        const qrCanvas = tempDiv.querySelector('canvas');
+        const qrImg = qrCanvas.toDataURL("image/png"); // Ambil data gambar murni
 
-            // 2. SUSUN STRUK (Cimi kasih spasi di depan biar geser ke kanan)
-            // SUSUN TEKS STRUK (DENGAN RINCIAN L, T, P)
-            let textToPrint = 
+        let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
 "  GENERAL CONTRACTOR & LOGISTIK\n" +
 " --------------------------------\n" +
@@ -280,22 +279,25 @@
 "  SOPIR   : " + (data.sopir || "-") + "\n" +
 "  BARANG  : " + (data.barang || "-") + "\n" +
 " --------------------------------\n" +
-"  DIMENSI : " + (data.p||0) + "x" + (data.l||0) + "x" + (data.t||0) + " (m)\n" +
-"  VOLUME  : " + (data.volM || 0) + " M3\n" +
+"  P: " + (data.p||0) + " | L: " + (data.l||0) + " | T: " + (data.t||0) + " (m)\n" +
+"  TOTAL   : " + (data.volM || 0) + " M3\n" +
 " --------------------------------\n" +
 "  ID SURAT: " + data.id + "\n\n" +
                 
-" [image]" + qrImg + "[/image]\n\n" + 
+"[image]" + qrImg + "[/image]\n\n" + 
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
 "  Hati-hati pak sopir, keluarga\n" +
 "  menunggu anda di rumah.\n\n\n\n\n";
 
-            const rawBTUrl = "rawbt:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
-            window.location.href = rawBTUrl;
-        }, 800); 
-    }
+      const printUrl = "bluetoothprint:base64," + btoa(unescape(encodeURIComponent(textToPrint)));
+window.location.href = printUrl;
+        
+        // --- POIN PENTING: Kasih jeda 3 detik baru reload halaman ---
+        setTimeout(() => { location.reload(); }, 3000); 
+    }, 1000); 
+}
 
   window.prosesMuat = async () => {
         const p = document.getElementById('m-plat').value.toUpperCase();
