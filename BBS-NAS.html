@@ -253,19 +253,24 @@
     }
 
 // --- LOGIKA CETAK JALUR AMAN (SHARE + GOOGLE CHART) ---
+// --- FUNGSI PRINT (REVISI LOGIKA GAMBAR) ---
 function printSuratJalan(data) {
     const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const jam = new Date().toLocaleTimeString('id-ID');
 
-    // Link asli verifikasi HABI
-    const linkVerifikasi = "https://berkahbajasteel.web.app/verifikasi?id=" + data.id;
+    // 1. Buat elemen QR Code tersembunyi untuk "DIFOTO"
+    const qrDiv = document.createElement('div');
+    new QRCode(qrDiv, {
+        text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
+        width: 150,
+        height: 150
+    });
 
-    // Kita buat Link Gambar JPG kotak barcode pakai Google Chart
-    // chs=150x150 (Ukuran Gambar), cht=qr (Jenis Barcode), chl=link (Isi Barcode)
-    const linkGambarJPG = "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" + linkVerifikasi;
+    // Tunggu QR Code digambar sebentar
+    setTimeout(() => {
+        const qrImage = qrDiv.querySelector('img').src; // Ini adalah DATA JPG barcodenya
 
-    // Kita susun teksnya satu kali saja, rapih dan bersih
-    let textToPrint = 
+        let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
 "  GENERAL CONTRACTOR & LOGISTIK\n" +
 " --------------------------------\n" +
@@ -281,74 +286,71 @@ function printSuratJalan(data) {
 "  ID SURAT: " + data.id + "\n\n" +
                 
 "--- SCAN BARCODE DI BAWAH ---\n" +
-
-// Kita titipin Google buat buatin Gambar JPG-nya
-linkGambarJPG + "\n\n" + 
+"{IMAGE:" + qrImage + "}\n\n" + // <--- Kode Khusus untuk ESC/POS Service
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
 "  Hati-hati pak sopir,\n" +
 "  KELUARGA menunggu ANDA di rumah.\n\n\n\n\n";
 
-    // Panggil menu Bagikan Android (Kodingan Asli HABI yang Stabil)
-    if (navigator.share) {
-        navigator.share({
-            text: textToPrint
-        }).then(() => {
-            // Berhasil memicu menu share, halaman reload otomatis setelah 2 detik
-            setTimeout(() => { location.reload(); }, 2000);
-        }).catch((error) => {
-            console.log('User membatalkan share', error);
-        });
-    } else {
-        alert("HP HABI tidak mendukung fitur Share, silakan update browser Chrome-nya.");
-    }
-}
-            
-  window.prosesMuat = async () => {
-        const p = document.getElementById('m-plat').value.toUpperCase();
-        const s = document.getElementById('m-sopir').value.toUpperCase();
-        const b = document.getElementById('m-barang').value.toUpperCase();
-        const v = document.getElementById('m-vol').value;
-        const fS = document.getElementById('m-foto').files[0];
-        const fK = document.getElementById('m-ktp').files[0];
-        const p_dim = document.getElementById('m-p').value;
-        const l_dim = document.getElementById('m-l').value;
-        const t_dim = document.getElementById('m-t').value;
-        
-        // --- PERBAIKAN DI SINI: Tambahkan p_dim, l_dim, t_dim ke dalam syarat ---
-        if(!p || !s || !b || !v || !fS || !fK || !p_dim || !l_dim || !t_dim) {
-            return alert("LENGKAPI SEMUA DATA! (Termasuk P, L, T)");
+        if (navigator.share) {
+            navigator.share({ text: textToPrint })
+            .then(() => {
+                // RELOAD DI SINI setelah share sukses
+                setTimeout(() => { location.reload(); }, 1000);
+            })
+            .catch(err => console.log(err));
         }
-        
-        document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO...";
-        document.getElementById('loader').style.display = 'flex';
+    }, 500);
+}
 
-        const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
-        const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
-        
-        const newRef = push(ref(db, `bbs_logs/${dbKey}`));
-        const logData = { 
-            plat: p, 
-            sopir: s, 
-            barang: b, 
-            p: Number(p_dim) || 0, 
-            l: Number(l_dim) || 0, 
-            t: Number(t_dim) || 0, 
-            volM: Number(v), 
-            volB: 0, 
-            status: 'OTW', 
-            fotoM: uS, 
-            fotoKTP: uK, 
-            tgl: new Date().toLocaleDateString('id-ID') 
-        };
-        
-        await set(newRef, logData);
-        
-        // Kirim data lengkap ke fungsi print
-        printSuratJalan({ ...logData, id: newRef.key });
-        location.reload();
+// --- FUNGSI PROSES MUAT (REVISI) ---
+window.prosesMuat = async () => {
+    const p = document.getElementById('m-plat').value.toUpperCase();
+    const s = document.getElementById('m-sopir').value.toUpperCase();
+    const b = document.getElementById('m-barang').value.toUpperCase();
+    const v = document.getElementById('m-vol').value;
+    const fS = document.getElementById('m-foto').files[0];
+    const fK = document.getElementById('m-ktp').files[0];
+    const p_dim = document.getElementById('m-p').value;
+    const l_dim = document.getElementById('m-l').value;
+    const t_dim = document.getElementById('m-t').value;
+    
+    if(!p || !s || !b || !v || !fS || !fK || !p_dim || !l_dim || !t_dim) {
+        return alert("LENGKAPI SEMUA DATA!");
     }
+    
+    document.getElementById('load-txt').innerText = "MENYIMPAN DATA...";
+    document.getElementById('loader').style.display = 'flex';
+
+    const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
+    const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
+    
+    const newRef = push(ref(db, `bbs_logs/${dbKey}`));
+    const logData = { 
+        plat: p, 
+        sopir: s, 
+        barang: b, 
+        p: Number(p_dim) || 0, 
+        l: Number(l_dim) || 0, 
+        t: Number(t_dim) || 0, 
+        volM: Number(v), 
+        volB: 0, 
+        status: 'OTW', 
+        fotoM: uS, 
+        fotoKTP: uK, 
+        tgl: new Date().toLocaleDateString('id-ID') 
+    };
+    
+    await set(newRef, logData);
+    
+    // 1. Panggil Print
+    printSuratJalan({ ...logData, id: newRef.key });
+    
+    // 2. MATIKAN LOADER (Jangan reload dulu!)
+    document.getElementById('loader').style.display = 'none';
+    alert("Data Berhasil Disimpan! Silakan pilih printer.");
+}
     // LOGIKA SCANNER JAKARTA
     function initScanner() {
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
