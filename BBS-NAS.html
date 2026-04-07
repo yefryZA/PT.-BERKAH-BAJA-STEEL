@@ -377,7 +377,6 @@ function onScanError(err) {
 
 // --- 2. LOGIKA SAAT SCAN BERHASIL (TETAP SEPERTI SEBELUMNYA) ---
 async function onScanSuccess(decodedText) {
-    // Ambil ID dari Link
     let idSurat = decodedText;
     if (decodedText.includes("id=")) {
         idSurat = decodedText.split("id=")[1];
@@ -388,23 +387,15 @@ async function onScanSuccess(decodedText) {
 
     try {
         const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
-        
         if(snap.exists()) {
             const data = snap.val();
-            
-            // Isi data ke form bongkar
             document.getElementById('b-id-mobil').value = idSurat;
-            
-            // Tampilan Nama & Plat untuk Ceker
             document.getElementById('res-scan-plat').innerHTML = `
                 <span style="font-size:22px; color:var(--green); font-weight:bold;">${data.plat}</span><br>
                 <span style="font-size:16px; color:white;">SOPIR: ${data.sopir || "-"}</span>
             `;
-            
-            // Tukar tampilan: Scanner hilang, Form muncul
             document.getElementById('form-bongkar').style.display = 'block';
             document.getElementById('reader').style.display = 'none';
-            
         } else {
             alert("QR CODE TIDAK TERDAFTAR!");
         }
@@ -413,30 +404,42 @@ async function onScanSuccess(decodedText) {
         alert("Gagal koneksi database!");
     } finally {
         document.getElementById('loader').style.display = 'none';
-    }          
-    // TAMPILAN LIST BARU DENGAN TOMBOL PRINT
-                list.innerHTML += `
-                <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
-                    <div>
-                        <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
-                        <small>
-                            <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
-                            <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
-                        </small>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
-                                style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
-                            🖨️
-                        </button>
-                        <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
-                            ${i.status}
-                        </span>
-                    </div>
-                </div>`;
-            });
-        }
+    }
+}
 
+    onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
+    const data = snap.val();
+    const list = document.getElementById('log-list');
+    list.innerHTML = ""; // Kosongkan list dulu
+
+    if (data) {
+        Object.keys(data).forEach(k => {
+            const i = data[k];
+            const dataLengkap = { ...i, id: k }; // Untuk keperluan tombol print ulang
+
+            list.innerHTML += `
+            <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
+                <div>
+                    <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
+                    <small>
+                        <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
+                        <a href="${i.fotoB || '#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
+                    </small>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
+                            style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
+                        🖨️
+                    </button>
+                    <span class="badge" style="background:${i.status === 'OTW' ? '#FF9800' : '#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
+                        ${i.status}
+                    </span>
+                </div>
+            </div>`;
+        });
+    }
+});
+    
         // UPDATE RINGKASAN DASHBOARD
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
