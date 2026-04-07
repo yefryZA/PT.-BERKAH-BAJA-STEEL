@@ -354,30 +354,47 @@ window.prosesMuat = async () => {
     
     printSuratJalan({ ...logData, id: newRef.key });
 }
-   // --- 1. INISIALISASI SCANNER (VERSI KAMERA BELAKANG) ---
-function initScanner() {
+    
+// --- 1. INISIALISASI SCANNER (FOKUS CEKER JAKARTA) ---
+let html5QrCode; 
+
+async function initScanner() {
+    const readerEl = document.getElementById("reader");
+    if(!readerEl) return;
+
+    // MATIKAN SCANNER LAMA JIKA MASIH JALAN (Cegah Crash Kamera)
+    if (html5QrCode && html5QrCode.isScanning) {
+        await html5QrCode.stop();
+    }
+
+    html5QrCode = new Html5Qrcode("reader");
+    
     const config = { 
         fps: 15, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-        // Kunci otomatis ke kamera belakang
-        videoConstraints: {
-            facingMode: "environment" 
-        }
+        qrbox: { width: 250, height: 250 }
     };
 
-    const html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
-    html5QrcodeScanner.render(onScanSuccess, onScanError);
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        config, 
+        (decodedText) => {
+            // STOP kamera segera setelah QR terbaca agar HP tidak panas & browser stabil
+            html5QrCode.stop().then(() => {
+                onScanSuccess(decodedText); 
+            });
+        }
+    ).catch(err => {
+        console.error("Gagal Kamera:", err);
+        // Fallback jika kamera belakang tidak terdeteksi (misal di laptop/tablet tertentu)
+        html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
+    });
 }
 
-// Fungsi tambahan supaya tidak muncul error merah di layar saat nyari fokus
-function onScanError(err) {
-    // Biarkan kosong
-}
-
-// --- 2. LOGIKA SAAT SCAN BERHASIL (TETAP SEPERTI SEBELUMNYA) ---
+// --- 2. LOGIKA SAAT SCAN BERHASIL ---
 async function onScanSuccess(decodedText) {
     let idSurat = decodedText;
+    
+    // Jika isi QR berupa URL (Verifikasi), kita ambil ID-nya saja
     if (decodedText.includes("id=")) {
         idSurat = decodedText.split("id=")[1];
     }
@@ -389,24 +406,56 @@ async function onScanSuccess(decodedText) {
         const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
         if(snap.exists()) {
             const data = snap.val();
+            
+            // Masukkan ID ke input tersembunyi untuk proses update bongkar nanti
             document.getElementById('b-id-mobil').value = idSurat;
+            
+            // Tampilkan info mobil hasil scan agar Ceker tidak salah input
             document.getElementById('res-scan-plat').innerHTML = `
-                <span style="font-size:22px; color:var(--green); font-weight:bold;">${data.plat}</span><br>
-                <span style="font-size:16px; color:white;">SOPIR: ${data.sopir || "-"}</span>
+                <div style="background:#1a2a44; padding:10px; border-radius:5px; border:1px solid var(--green);">
+                    <span style="font-size:20px; color:var(--green); font-weight:bold;">${data.plat}</span><br>
+                    <span style="font-size:14px; color:white;">MUAT: ${data.volM} M3 | SOPIR: ${data.sopir || "-"}</span>
+                </div>
             `;
+            
+            // TAMPILKAN FORM BONGKAR & SEMBUNYIKAN SCANNER
             document.getElementById('form-bongkar').style.display = 'block';
             document.getElementById('reader').style.display = 'none';
         } else {
-            alert("QR CODE TIDAK TERDAFTAR!");
+            alert("QR CODE TIDAK TERDAFTAR DI DATABASE!");
+            initScanner(); // Nyalakan lagi kamera jika salah scan
         }
     } catch (error) {
         console.error(error);
-        alert("Gagal koneksi database!");
+        alert("Gagal koneksi database! Cek internet.");
     } finally {
         document.getElementById('loader').style.display = 'none';
     }
 }
 
+// --- 3. FUNGSI PINDAH MENU (PASTIKAN ID SESUAI HTML) ---
+window.bukaMenuJakarta = () => {
+    // Sembunyikan semua view dulu
+    ['view-cilegon', 'view-dashboard', 'view-jakarta'].forEach(v => {
+        const el = document.getElementById(v);
+        if(el) el.style.display = 'none';
+    });
+
+    // Tampilkan Jakarta & Reset tampilan awal
+    const vJKT = document.getElementById('view-jakarta');
+    if(vJKT) {
+        vJKT.style.display = 'flex';
+        document.getElementById('form-bongkar').style.display = 'none';
+        document.getElementById('reader').style.display = 'block';
+        document.getElementById('res-scan-plat').innerHTML = ""; // Bersihkan bekas scan sebelumnya
+        
+        initScanner(); // Jalankan kamera
+    }
+};
+
+// Pasang fungsi ke window agar bisa dipanggil onclick dari HTML
+window.initScanner = initScanner;
+    
     // --- REVISI DASHBOARD TOTAL ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
@@ -632,7 +681,7 @@ window.prosesBongkar = async () => {
             document.getElementById('m-vol').value = total.toFixed(2);
         });
     }
-});
+}); 
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 </body>
