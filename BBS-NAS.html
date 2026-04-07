@@ -466,7 +466,42 @@ async function onScanSuccess(decodedText) {
         // Panggil hitung uang
         hitungUang(tb);
     }); // <--- PENUTUP SAKTI!
-    // FUNGSI KHUSUS UNTUK TOMBOL REPRINT
+    
+// --- FUNGSI PROSES BONGKAR (CEKER JAKARTA) ---
+window.prosesBongkar = async () => {
+    const id = document.getElementById('b-id-mobil').value;
+    const v = document.getElementById('b-vol').value;
+    const f = document.getElementById('b-foto').files[0];
+
+    // Validasi data
+    if(!id || !v || !f) return alert("LENGKAPI DATA BONGKAR (FOTO & VOLUME)!");
+
+    document.getElementById('load-txt').innerText = "MENGUNGGAH BUKTI BONGKAR...";
+    document.getElementById('loader').style.display = 'flex';
+
+    try {
+        // 1. Upload Foto Bongkar ke Server (GAS)
+        const u = await uploadFoto(f, `BONGKAR_${id}.jpg`);
+        
+        if(!u) throw new Error("Gagal upload foto");
+
+        // 2. Update data di Firebase (Isi Volume Bongkar & Ubah Status jadi DONE)
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
+            volB: Number(v), 
+            status: 'DONE', 
+            fotoB: u 
+        });
+
+        alert("SUKSES! DATA BONGKAR TELAH TERSIMPAN.");
+        location.reload(); // Refresh biar balik ke scanner lagi
+    } catch (err) {
+        console.error(err);
+        alert("Gagal memproses data bongkar. Cek koneksi internet!");
+    } finally {
+        document.getElementById('loader').style.display = 'none';
+    }
+}
+    
     window.reprintData = (data) => {
         if(confirm("Cetak ulang Surat Jalan untuk " + data.plat + "?")) {
             printSuratJalan(data);
