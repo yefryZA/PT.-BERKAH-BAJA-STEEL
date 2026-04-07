@@ -266,7 +266,8 @@ async function printSuratJalan(data) {
         <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
         <div style="text-align: center;">--------------------------------</div>
         <div style="font-size: 14px; line-height: 1.5;">
-TGL/JAM : ${tgl}<br>
+            <div style="font-family: monospace; width: 100%; font-size: 12px;">
+            TGL/JAM : ${tgl} ‖ ${jam}<br>
             PLAT NO : ${data.plat}<br>
             SOPIR   : ${data.sopir || "-"}<br>
             BARANG  : ${data.barang || "-"}<br>
@@ -278,7 +279,7 @@ TGL/JAM : ${tgl}<br>
             <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
             ----------------------------------------<br>
 
-            <div style="text-align: right; margin-top: 10px; font-size: 11px;">
+            <div style="margin-left: 50%; text-align: center; font-size: 11px;">
                 Mengetahui,<br><br><br>
                 <b>SOFYAN</b><br>
                 Supervisor
