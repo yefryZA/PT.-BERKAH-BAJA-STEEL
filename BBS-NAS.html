@@ -407,40 +407,53 @@ async function onScanSuccess(decodedText) {
     }
 }
 
+    // --- REVISI DASHBOARD TOTAL ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
-    const data = snap.val();
-    const list = document.getElementById('log-list');
-    list.innerHTML = ""; // Kosongkan list dulu
+        const data = snap.val();
+        const list = document.getElementById('log-list');
+        list.innerHTML = ""; // Bersihkan list
 
-    if (data) {
-        Object.keys(data).forEach(k => {
-            const i = data[k];
-            const dataLengkap = { ...i, id: k }; // Untuk keperluan tombol print ulang
+        // Siapkan variabel hitung
+        let tm = 0, tb = 0, otw = 0;
+        window.rawData = []; // Reset rawData untuk PDF
 
-            list.innerHTML += `
-            <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
-                <div>
-                    <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
-                    <small>
-                        <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
-                        <a href="${i.fotoB || '#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
-                    </small>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
-                            style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
-                        🖨️
-                    </button>
-                    <span class="badge" style="background:${i.status === 'OTW' ? '#FF9800' : '#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
-                        ${i.status}
-                    </span>
-                </div>
-            </div>`;
-        });
-    }
-});
-    
-        // UPDATE RINGKASAN DASHBOARD
+        if (data) {
+            Object.keys(data).forEach(k => {
+                const i = data[k];
+                const dataLengkap = { ...i, id: k };
+                
+                // Tambahkan ke rawData untuk PDF
+                window.rawData.push(dataLengkap);
+
+                // Hitung angka ringkasan
+                tm += Number(i.volM || 0);
+                tb += Number(i.volB || 0);
+                if (i.status === 'OTW') otw++;
+
+                // Tampilkan ke List
+                list.innerHTML += `
+                <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
+                    <div>
+                        <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
+                        <small>
+                            <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
+                            <a href="${i.fotoB || '#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
+                        </small>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
+                                style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
+                            🖨️
+                        </button>
+                        <span class="badge" style="background:${i.status === 'OTW' ? '#FF9800' : '#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
+                            ${i.status}
+                        </span>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // UPDATE ANGKA RINGKASAN DASHBOARD
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
@@ -450,9 +463,9 @@ async function onScanSuccess(decodedText) {
         lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
         lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
         
+        // Panggil hitung uang
         hitungUang(tb);
-    });
-
+    }); // <--- PENUTUP SAKTI!
     // FUNGSI KHUSUS UNTUK TOMBOL REPRINT
     window.reprintData = (data) => {
         if(confirm("Cetak ulang Surat Jalan untuk " + data.plat + "?")) {
