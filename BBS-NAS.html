@@ -367,19 +367,36 @@ window.prosesMuat = async () => {
 }
 
     async function onScanSuccess(decodedText) {
-        document.getElementById('loader').style.display = 'flex';
-        const snap = await get(ref(db, `bbs_logs/${dbKey}/${decodedText}`));
+    // 1. POTONG LINK: Ambil ID saja dari link QR di struk
+    let idSurat = decodedText;
+    if (decodedText.includes("id=")) {
+        idSurat = decodedText.split("id=")[1];
+    }
+
+    document.getElementById('loader').style.display = 'flex';
+
+    try {
+        // 2. CARI PAKAI ID: Cari di database menggunakan ID yang sudah dipotong
+        const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
+        
         if(snap.exists()) {
             const data = snap.val();
-            document.getElementById('b-id-mobil').value = decodedText;
+            document.getElementById('b-id-mobil').value = idSurat;
             document.getElementById('res-scan-plat').innerText = data.plat;
+            
+            // Tampilkan form bongkar, sembunyikan kamera
             document.getElementById('form-bongkar').style.display = 'block';
             document.getElementById('reader').style.display = 'none';
         } else {
-            alert("QR CODE TIDAK DIKENALI!");
+            alert("ID TIDAK DITEMUKAN!");
+            location.reload(); 
         }
+    } catch (err) {
+        alert("Koneksi Error!");
+    } finally {
         document.getElementById('loader').style.display = 'none';
     }
+}
 
     window.prosesBongkar = async () => {
         const id = document.getElementById('b-id-mobil').value;
