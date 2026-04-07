@@ -197,7 +197,18 @@
     }
     else document.getElementById('view-dashboard').style.display = 'flex';
 
-// --- FUNGSI KOMPRESOR (BIAR LOADING CEPAT) ---
+    // --- FUNGSI DURASI ---
+    function hitungDurasi(jamM, jamB) {
+        if(!jamM || !jamB) return "-";
+        const [h1, m1] = jamM.split(':').map(Number);
+        const [h2, m2] = jamB.split(':').map(Number);
+        let totalMenit = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (totalMenit < 0) totalMenit += 1440; 
+        const jam = Math.floor(totalMenit / 60);
+        const mnt = totalMenit % 60;
+        return `${jam} jam ${mnt} menit`;
+    }
+
     async function compressAndGetBase64(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -209,8 +220,7 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    const max_size = 800; // Ukuran foto disusutkan ke 800px (Sangat cukup untuk bukti)
-
+                    const max_size = 800;
                     if (width > height) {
                         if (width > max_size) { height *= max_size / width; width = max_size; }
                     } else {
@@ -219,25 +229,18 @@
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    // Kualitas 0.7 (70%) sudah jernih tapi file jadi kecil (KB bukan MB lagi)
                     resolve(canvas.toDataURL("image/jpeg", 0.7).split(',')[1]);
                 };
             };
         });
     }
 
-    // --- FUNGSI UPLOAD YANG SUDAH DIOPTIMALKAN ---
     async function uploadFoto(file, fileName) {
         if(!file) return "";
         document.getElementById('loader').style.display = 'flex';
-        document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO..."; // Kasih tau admin lagi dikompres
-
-        // 1. Kompres dulu di HP
+        document.getElementById('load-txt').innerText = "MENYUSUTKAN FOTO...";
         const base64Sut = await compressAndGetBase64(file);
-        
         document.getElementById('load-txt').innerText = "MENGIRIM DATA (" + fileName.split('_')[0] + ")...";
-
-        // 2. Kirim hasil kompresi ke Google Apps Script (GAS)
         try {
             const res = await fetch(GAS_URL, { 
                 method: "POST", 
@@ -253,159 +256,113 @@
         }
     }
 
-
-async function printSuratJalan(data) {
-    const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    const jam = new Date().toLocaleTimeString('id-ID');
-
-    // 1. Buat elemen struk visual (Tidak terlihat di layar)
-    const printArea = document.createElement('div');
-    printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
-    printArea.innerHTML = `
-        <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
-        <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
-        <div style="text-align: center;">--------------------------------</div>
-        <div style="font-size: 14px; line-height: 1.5;">
-            <div style="font-family: monospace; width: 100%; font-size: 12px;">
-            TGL/JAM : ${tgl} ‖ ${jam}<br>
-            PLAT NO : ${data.plat}<br>
-            SOPIR   : ${data.sopir || "-"}<br>
-            BARANG  : ${data.barang || "-"}<br>
-            -----------------------------------------------<br>
-            panjang : ${data.p||0} | lebar : ${data.l||0} | tinggi : ${data.t||0} (m)<br>
-            TOTAL   : ${data.volM || 0} M3<br>
-            -----------------------------------------------<br>
-            <div style="text-align: center;">ID SURAT: ${data.id}</div>
-            <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
-            -----------------------------------------------<br>
-
-            <div style="margin-left: 50%; text-align: center; font-size: 11px;">
-                Mengetahui,<br><br><br>
-                <b>SOFYAN</b><br>
-                Supervisor
+    async function printSuratJalan(data) {
+        const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+        const jam = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+        const printArea = document.createElement('div');
+        printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
+        printArea.innerHTML = `
+            <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
+            <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
+            <div style="text-align: center;">--------------------------------</div>
+            <div style="font-size: 14px; line-height: 1.5;">
+                <div style="font-family: monospace; width: 100%; font-size: 12px;">
+                TGL/JAM : ${tgl} ‖ ${jam}<br>
+                PLAT NO : ${data.plat}<br>
+                SOPIR   : ${data.sopir || "-"}<br>
+                BARANG  : ${data.barang || "-"}<br>
+                -----------------------------------------------<br>
+                panjang :${data.p||0} | lebar :${data.l||0} | tinggi :${data.t||0} (m)<br>
+                TOTAL   : ${data.volM || 0} M3<br>
+                -----------------------------------------------<br>
+                <div style="text-align: center;">ID SURAT: ${data.id}</div>
+                <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
+                -----------------------------------------------<br>
+                <div style="margin-left: 50%; text-align: center; font-size: 11px;">
+                    Mengetahui,<br><br><br>
+                    <b>SOFYAN</b><br>
+                    Supervisor
+                </div>
+                -----------------------------------------------<br>
+                <div style="text-align: center; font-size: 11px; margin-top: 15px;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
+                <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
             </div>
-            -----------------------------------------------<br>
-
-            <div style="text-align: center; font-size: 11px; margin-top: 15px;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
-            <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
-        </div>
-    `;
-    document.body.appendChild(printArea);
-
-    // 2. Gambar Barcodenya
-    new QRCode(document.getElementById("qrcode-box"), {
-        text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
-        width: 150,
-        height: 150
-    });
-
-    // 3. Ubah HTML jadi Gambar (Capture)
-    setTimeout(() => {
-        html2canvas(printArea).then(canvas => {
-            const imageData = canvas.toDataURL("image/png");
-            
-            // 4. Download Otomatis ke HP
-            const link = document.createElement('a');
-            link.download = `STRUK_${data.plat}_${data.id.substring(0,5)}.png`;
-            link.href = imageData;
-            link.click();
-
-            document.body.removeChild(printArea);
-            
-            // Tampilkan pesan sukses kecil tanpa Alert yang ganggu
-            document.getElementById('load-txt').innerHTML = "<b style='color:green'>STRUK TERDOWNLOAD!</b><br>Buka Galeri & Cetak Gambar.";
-            document.getElementById('loader').style.display = 'flex';
-            
-            setTimeout(() => { location.reload(); }, 3000);
+        `;
+        document.body.appendChild(printArea);
+        new QRCode(document.getElementById("qrcode-box"), {
+            text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
+            width: 150, height: 150
         });
-    }, 1000);
-}
+        setTimeout(() => {
+            html2canvas(printArea).then(canvas => {
+                const imageData = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                link.download = `STRUK_${data.plat}_${data.id.substring(0,5)}.png`;
+                link.href = imageData;
+                link.click();
+                document.body.removeChild(printArea);
+                document.getElementById('load-txt').innerHTML = "<b style='color:green'>STRUK TERDOWNLOAD!</b><br>Buka Galeri & Cetak Gambar.";
+                document.getElementById('loader').style.display = 'flex';
+                setTimeout(() => { location.reload(); }, 3000);
+            });
+        }, 1000);
+    }
 
-// --- FUNGSI PROSES MUAT (REVISI) ---
-window.prosesMuat = async () => {
-    const p = document.getElementById('m-plat').value.toUpperCase();
-    const s = document.getElementById('m-sopir').value.toUpperCase();
-    const b = document.getElementById('m-barang').value.toUpperCase();
-    const v = document.getElementById('m-vol').value;
-    const fS = document.getElementById('m-foto').files[0];
-    const fK = document.getElementById('m-ktp').files[0];
-    const p_dim = document.getElementById('m-p').value;
-    const l_dim = document.getElementById('m-l').value;
-    const t_dim = document.getElementById('m-t').value;
-    
-    if(!p || !s || !b || !v || !fS || !fK || !p_dim || !l_dim || !t_dim) {
-        return alert("LENGKAPI SEMUA DATA!");
+    window.prosesMuat = async () => {
+        const p = document.getElementById('m-plat').value.toUpperCase();
+        const s = document.getElementById('m-sopir').value.toUpperCase();
+        const b = document.getElementById('m-barang').value.toUpperCase();
+        const v = document.getElementById('m-vol').value;
+        const fS = document.getElementById('m-foto').files[0];
+        const fK = document.getElementById('m-ktp').files[0];
+        const p_dim = document.getElementById('m-p').value;
+        const l_dim = document.getElementById('m-l').value;
+        const t_dim = document.getElementById('m-t').value;
+        
+        if(!p || !s || !b || !v || !fS || !fK || !p_dim || !l_dim || !t_dim) return alert("LENGKAPI SEMUA DATA!");
+        
+        document.getElementById('load-txt').innerText = "MENYIMPAN DATA...";
+        document.getElementById('loader').style.display = 'flex';
+
+        const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
+        const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
+        
+        const newRef = push(ref(db, `bbs_logs/${dbKey}`));
+        const logData = { 
+            plat: p, sopir: s, barang: b, 
+            p: Number(p_dim), l: Number(l_dim), t: Number(t_dim),
+            volM: Number(v), volB: 0, status: 'OTW', 
+            fotoM: uS, fotoKTP: uK, 
+            tgl: new Date().toLocaleDateString('id-ID'),
+            jamM: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
+        };
+        await set(newRef, logData);
+        printSuratJalan({ ...logData, id: newRef.key });
     }
     
-    document.getElementById('load-txt').innerText = "MENYIMPAN DATA...";
-    document.getElementById('loader').style.display = 'flex';
-
-    const uS = await uploadFoto(fS, `MUAT_${p}.jpg`);
-    const uK = await uploadFoto(fK, `KTP_${p}.jpg`);
-    
-    const newRef = push(ref(db, `bbs_logs/${dbKey}`));
-    const logData = { 
-        plat: p, 
-        sopir: s, 
-        barang: b, 
-        p: Number(p_dim) || 0, 
-        l: Number(l_dim) || 0, 
-        t: Number(t_dim) || 0,
-        volM: Number(v), 
-        volB: 0, 
-        status: 'OTW', 
-        fotoM: uS, 
-        fotoKTP: uK, 
-        tgl: new Date().toLocaleDateString('id-ID') 
-    };
-    
-    await set(newRef, logData);
-    
-    printSuratJalan({ ...logData, id: newRef.key });
-}
-    
-  async function initScanner() {
-    const html5QrCode = new Html5Qrcode("reader");
-    await html5QrCode.start(
-        { facingMode: "environment" }, 
-        { fps: 10, qrbox: 250 },
-        (decodedText) => {
+    async function initScanner() {
+        const html5QrCode = new Html5Qrcode("reader");
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
             html5QrCode.stop().then(() => onScanSuccess(decodedText));
-        }
-    );
-}
+        });
+    }
 
     async function onScanSuccess(decodedText) {
-    // 1. POTONG LINK: Ambil ID saja dari link QR di struk
-    let idSurat = decodedText;
-    if (decodedText.includes("id=")) {
-        idSurat = decodedText.split("id=")[1];
+        let idSurat = decodedText.includes("id=") ? decodedText.split("id=")[1] : decodedText;
+        document.getElementById('loader').style.display = 'flex';
+        try {
+            const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
+            if(snap.exists()) {
+                const data = snap.val();
+                document.getElementById('b-id-mobil').value = idSurat;
+                document.getElementById('res-scan-plat').innerText = data.plat;
+                document.getElementById('form-bongkar').style.display = 'block';
+                document.getElementById('reader').style.display = 'none';
+            } else {
+                alert("ID TIDAK DITEMUKAN!"); location.reload(); 
+            }
+        } catch (err) { alert("Koneksi Error!"); } finally { document.getElementById('loader').style.display = 'none'; }
     }
-
-    document.getElementById('loader').style.display = 'flex';
-
-    try {
-        // 2. CARI PAKAI ID: Cari di database menggunakan ID yang sudah dipotong
-        const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
-        
-        if(snap.exists()) {
-            const data = snap.val();
-            document.getElementById('b-id-mobil').value = idSurat;
-            document.getElementById('res-scan-plat').innerText = data.plat;
-            
-            // Tampilkan form bongkar, sembunyikan kamera
-            document.getElementById('form-bongkar').style.display = 'block';
-            document.getElementById('reader').style.display = 'none';
-        } else {
-            alert("ID TIDAK DITEMUKAN!");
-            location.reload(); 
-        }
-    } catch (err) {
-        alert("Koneksi Error!");
-    } finally {
-        document.getElementById('loader').style.display = 'none';
-    }
-}
 
     window.prosesBongkar = async () => {
         const id = document.getElementById('b-id-mobil').value;
@@ -413,7 +370,12 @@ window.prosesMuat = async () => {
         const f = document.getElementById('b-foto').files[0];
         if(!id || !v || !f) return alert("LENGKAPI DATA!");
         const u = await uploadFoto(f, `BONGKAR_${id}.jpg`);
-        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { volB: Number(v), status: 'DONE', fotoB: u });
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
+            volB: Number(v), 
+            status: 'DONE', 
+            fotoB: u,
+            jamB: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
+        });
         location.reload();
     }
 
@@ -427,7 +389,11 @@ window.prosesMuat = async () => {
         list.innerHTML = "";
         if(data) {
             Object.keys(data).forEach(k => {
-                const i = data[k]; tm += i.volM; tb += i.volB; rawData.push(i);
+                const i = data[k];
+                // --- DASHBOARD GLOWING: SEMBUNYIKAN ARCHIVED ---
+                if(i.status === 'ARCHIVED') return;
+
+                tm += i.volM; tb += i.volB; rawData.push(i);
                 if(i.status === 'OTW') otw++;
                 list.innerHTML += `<div class="truck-item">
                     <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
@@ -438,20 +404,12 @@ window.prosesMuat = async () => {
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
-        
         const lossVal = tb - tm;
         const lossEl = document.getElementById('d-total-loss');
         lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
         lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
-        
         hitungUang(tb);
     });
-        
-    window.reprintData = (data) => {
-        if(confirm("Cetak ulang Surat Jalan untuk " + data.plat + "?")) {
-            printSuratJalan(data);
-        }
-    };
 
     async function hitungUang(tb) {
         const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
@@ -464,18 +422,15 @@ window.prosesMuat = async () => {
             });
         }
         document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
-
         const h5 = (tb * 5000) / 3;
         const h7 = ((tb * 7000) - totalOps) / 4;
         const h1 = (tb * 1000) / 4;
-
         document.getElementById('res-m5').innerText = "RP " + (tb*5000).toLocaleString();
         document.getElementById('res-m5-p').innerText = "/ORG: RP " + Math.floor(h5).toLocaleString();
         document.getElementById('res-m7').innerText = "RP " + (tb*7000).toLocaleString();
         document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.floor(h7).toLocaleString();
         document.getElementById('res-m1').innerText = "RP " + (tb*1000).toLocaleString();
         document.getElementById('res-m1-p').innerText = "/ORG: RP " + Math.floor(h1).toLocaleString();
-
         document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1).toLocaleString();
     }
 
@@ -488,107 +443,80 @@ window.prosesMuat = async () => {
     };
     window.delOps = async (id) => { if(confirm("HAPUS?")) { await remove(ref(db, `bbs_operasional/${dbKey}/${id}`)); location.reload(); } };
 
-    // 1. FUNGSI GENERATE PDF DENGAN FITUR BATCH 20 & AUTO-CLEAN
+    // --- GENERATE PDF BATCH 20 ---
     window.generatePDF = async (tipe) => {
-        // Ambil hanya data yang sudah 'DONE' dan batasi maksimal 20 data
         const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 20);
-
-        // Proteksi: Jika belum 20 data, berhenti di sini
-        if (dataSiap.length < 20) {
-            return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE. Tunggu sampai genap 20 mobil.`);
-        }
+        if (dataSiap.length < 20) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const s = await get(ref(db, `bbs_settings/${dbKey}`));
         const cfg = s.val() || { beli: 0, jual: 0 };
         
-        // Kalkulasi Total khusus untuk 20 data ini
         const totalM = dataSiap.reduce((sum, i) => sum + (Number(i.volM) || 0), 0);
         const totalB = dataSiap.reduce((sum, i) => sum + (Number(i.volB) || 0), 0);
-        const selisih = totalB - totalM;
+        const selisihTotal = totalB - totalM;
 
         doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
 
         if(tipe === 'NAS') {
-            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BBS - NAS (BATCH 20)", 105, 22, { align: "center" });
-            
-            // Body Tabel dengan kolom tambahan NO dan JAM
-            const body = dataSiap.map((i, index) => [
-                index + 1, 
-                i.tgl, 
-                i.jam || "-", 
-                i.plat, 
-                Number(i.volM).toFixed(2), 
-                Number(i.volB).toFixed(2), 
-                (Number(i.volB) * cfg.jual).toLocaleString()
-            ]);
-
-            doc.autoTable({ 
-                head: [['NO', 'TGL', 'JAM', 'PLAT', 'MUAT', 'BONGKAR', 'SUBTOTAL']], 
-                body, 
-                startY: 30, 
-                theme: 'grid' 
+            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BB-NAS (BATCH 20)", 105, 22, { align: "center" });
+            const body = dataSiap.map((i, index) => {
+                const rowLoss = i.volB - i.volM;
+                return [index + 1, i.tgl, hitungDurasi(i.jamM, i.jamB), i.plat, i.volM.toFixed(2), i.volB.toFixed(2), (rowLoss > 0 ? "+" : "") + rowLoss.toFixed(2)];
             });
 
-            // Footer PDF NAS
+            doc.autoTable({ 
+                head: [['NO', 'TGL BONGKAR', 'DURASI', 'PLAT', 'MUAT', 'BONGKAR', '+/-']], 
+                body, startY: 30, theme: 'grid',
+                didDrawCell: (data) => {
+                    if (data.section === 'body' && data.column.index === 6) {
+                        const val = data.cell.raw;
+                        if (val.toString().includes('-')) { doc.setTextColor(255, 0, 0); doc.setFont("helvetica", "bold"); }
+                        else if (val.toString().includes('+')) { doc.setTextColor(0, 128, 0); }
+                    }
+                }
+            });
+
             const finalY = doc.lastAutoTable.finalY + 10;
-            doc.setFontSize(11);
+            doc.setTextColor(0,0,0); doc.setFont("helvetica", "normal");
             doc.text(`TOTAL MUAT: ${totalM.toFixed(2)} M3`, 14, finalY);
             doc.text(`TOTAL BONGKAR: ${totalB.toFixed(2)} M3`, 14, finalY + 7);
+            if(selisihTotal < 0) doc.setTextColor(255, 0, 0); else if(selisihTotal > 0) doc.setTextColor(0, 128, 0);
             doc.setFont("helvetica", "bold");
-            doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${selisih.toFixed(2)} M3`, 14, finalY + 14);
-
+            doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, 14, finalY + 14);
         } else {
-            // PDF INTERNAL MARGIN
             doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
-            
             const bodyMargin = [
                 ['MARGIN 5K', "RP " + (totalB * 5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((totalB * 5000) / 3).toLocaleString()],
                 ['MARGIN 7K', "RP " + (totalB * 7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((totalB * 7000) - totalOps) / 4).toLocaleString()],
                 ['MARGIN 1K', "RP " + (totalB * 1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((totalB * 1000) / 4).toLocaleString()]
             ];
-            
             doc.autoTable({ head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], body: bodyMargin, startY: 30 });
-            
             const finalYMargin = doc.lastAutoTable.finalY + 10;
-            doc.text(`TOTAL SELISIH BATCH INI: ${selisih.toFixed(2)} M3`, 15, finalYMargin);
+            doc.text(`TOTAL SELISIH BATCH INI: ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
             doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
         }
 
-        // Tanda Tangan
+        doc.setTextColor(0,0,0);
         const signY = doc.internal.pageSize.height - 30;
-        doc.setFont("helvetica", "bold");
-        doc.text("YEFRY ZA.", 160, signY, { align: "center" });
-        doc.setFont("helvetica", "normal");
-        doc.text("MANAGER", 160, signY + 7, { align: "center" });
-
+        doc.setFont("helvetica", "bold"); doc.text("YEFRY ZA.", 160, signY, { align: "center" });
+        doc.setFont("helvetica", "normal"); doc.text("MANAGER", 160, signY + 7, { align: "center" });
         doc.save(`BBS_${tipe}_BATCH.pdf`);
 
-        // AUTO-CLEAN: Ubah status data yang sudah dicetak menjadi ARCHIVED
-        if (tipe === 'BBS') {
-            if (confirm("Laporan Margin Berhasil! Bersihkan 20 data ini dari dashboard?")) {
-                const updates = {};
-                const snapshot = await get(ref(db, `bbs_logs/${dbKey}`));
-                const dbData = snapshot.val();
-
-                dataSiap.forEach(item => {
-                    const keyFirebase = Object.keys(dbData).find(k => 
-                        dbData[k].plat === item.plat && dbData[k].tgl === item.tgl && dbData[k].volM === item.volM
-                    );
-                    if (keyFirebase) {
-                        updates[`bbs_logs/${dbKey}/${keyFirebase}/status`] = 'ARCHIVED';
-                    }
-                });
-
-                await update(ref(db), updates);
-                alert("DASHBOARD BERSIH!");
-                location.reload();
-            }
+        if (tipe === 'BBS' && confirm("Laporan Margin Berhasil! Bersihkan 20 data ini dari dashboard?")) {
+            const updates = {};
+            const snapshot = await get(ref(db, `bbs_logs/${dbKey}`));
+            const dbData = snapshot.val();
+            dataSiap.forEach(item => {
+                const keyFirebase = Object.keys(dbData).find(k => dbData[k].plat === item.plat && dbData[k].tgl === item.tgl && dbData[k].volM === item.volM);
+                if (keyFirebase) updates[`bbs_logs/${dbKey}/${keyFirebase}/status`] = 'ARCHIVED';
+            });
+            await update(ref(db), updates);
+            alert("DASHBOARD BERSIH!"); location.reload();
         }
     };
 
-    // 2. FUNGSI TOGGLE, ADMIN, DAN RESET (TETAP SAMA)
     window.toggleMargin = () => { if(prompt("PASS?") === "bbs-nas") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
     window.openAdmin = () => document.getElementById('modal-admin').style.display = 'block';
     window.closeAdmin = () => document.getElementById('modal-admin').style.display = 'none';
@@ -596,20 +524,12 @@ window.prosesMuat = async () => {
         await set(ref(db, `bbs_settings/${dbKey}`), { beli: Number(document.getElementById('cfg-beli').value), jual: Number(document.getElementById('cfg-jual').value) });
         alert("SIMPAN BERHASIL!"); closeAdmin();
     };
-    window.resetBBS = async () => { 
-        if(confirm("HAPUS SEMUA DATA?")) { 
-            await remove(ref(db, `bbs_logs/${dbKey}`)); 
-            await remove(ref(db, `bbs_operasional/${dbKey}`)); 
-            location.reload(); 
-        } 
-    };
+    window.resetBBS = async () => { if(confirm("HAPUS SEMUA DATA?")) { await remove(ref(db, `bbs_logs/${dbKey}`)); await remove(ref(db, `bbs_operasional/${dbKey}`)); location.reload(); } };
 
-    // 3. LOGIKA INPUT PLAT NOMOR
     document.getElementById('m-plat').addEventListener('input', function (e) {
         let v = e.target.value.toUpperCase().replace(/\s+/g, '');
         let r = "";
         const duaHuruf = ["BE", "BA", "BG", "BH", "BK", "BL", "BM", "BP", "DA", "AB", "AA", "AE", "DE", "DG", "DH", "DK", "DL", "DM", "DN", "DP", "DR", "DS", "DT", "DW", "EA", "EB", "ED", "EE", "EF", "EG", "EH", "EJ", "EK", "EL", "EM", "EN", "EO", "EP", "EQ", "ER", "ES", "ET", "EU", "EV", "EW", "EX", "EY", "EZ", "GA", "GB", "GC", "GD", "GE", "GF", "GG", "GH", "GI", "GJ", "GK", "GL", "GM", "GN", "GO", "GP", "GQ", "GR", "GS", "GT", "GU", "GV", "GW", "GX", "GY", "GZ", "KA", "KB", "KC", "KD", "KE", "KF", "KG", "KH", "KI", "KJ", "KK", "KL", "KM", "KN", "KO", "KP", "KQ", "KR", "KS", "KT", "KU", "KV", "KW", "KX", "KY", "KZ", "PA", "PB", "PC", "PD", "PE", "PF", "PG", "PH", "PI", "PJ", "PK", "PL", "PM", "PN", "PO", "PP", "PQ", "PR", "PS", "PT", "PU", "PV", "PW", "PX", "PY", "PZ"];
-
         if (v.length > 0) {
             let prefix2 = v.substring(0, 2);
             let splitIdx = duaHuruf.includes(prefix2) ? 2 : 1;
@@ -620,28 +540,20 @@ window.prosesMuat = async () => {
                 let angka = angkaMatch[0].substring(0, 4);
                 r += " " + angka;
                 let seri = sisa.substring(angka.length).replace(/[^A-Z]/g, '');
-                if (seri.length > 0) {
-                    r += " " + seri.substring(0, 3);
-                }
-            } else if (sisa.length > 0) {
-                r += sisa.substring(0, 1).replace(/[^0-9]/g, ''); 
-            }
+                if (seri.length > 0) r += " " + seri.substring(0, 3);
+            } else if (sisa.length > 0) r += sisa.substring(0, 1).replace(/[^0-9]/g, '');
         }
         e.target.value = r;
     });
 
-    // 4. LOGIKA HITUNG OTOMATIS VOLUME P x L x T
     ['m-p', 'm-l', 'm-t'].forEach(id => {
         const el = document.getElementById(id);
-        if(el) {
-            el.addEventListener('input', () => {
-                const p = parseFloat(document.getElementById('m-p').value) || 0;
-                const l = parseFloat(document.getElementById('m-l').value) || 0;
-                const t = parseFloat(document.getElementById('m-t').value) || 0;
-                const total = p * l * t;
-                document.getElementById('m-vol').value = total.toFixed(2);
-            });
-        }
+        if(el) el.addEventListener('input', () => {
+            const p = parseFloat(document.getElementById('m-p').value) || 0;
+            const l = parseFloat(document.getElementById('m-l').value) || 0;
+            const t = parseFloat(document.getElementById('m-t').value) || 0;
+            document.getElementById('m-vol').value = (p * l * t).toFixed(2);
+        });
     }); 
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
