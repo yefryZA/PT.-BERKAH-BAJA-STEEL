@@ -273,9 +273,14 @@
                 <tr><td>SOPIR</td><td>:</td><td>${data.sopir || "-"}</td></tr>
                 <tr><td>BARANG</td><td>:</td><td>${data.barang || "-"}</td></tr>
             </table>
+            
             -----------------------------------------------<br>
-            panjang :${data.p||0} | lebar :${data.l||0} | tinggi :${data.t||0} (m)<br>
-            TOTAL   : ${data.volM || 0} M3<br>
+            panjang : ${data.p||0} ‖ lebar : ${data.l||0} ‖ tinggi : ${data.t||0} (m)<br>
+            
+            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px;">
+                <tr><td style="width: 70px;">TOTAL</td><td style="width: 10px;">:</td><td>${data.volM || 0} M3</td></tr>
+            </table>
+
             -----------------------------------------------<br>
             <div style="text-align: center;">ID SURAT: ${data.id}</div>
             <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
