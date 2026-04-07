@@ -182,7 +182,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+    import { Html5Qrcode } from "https://unpkg.com/html5-qrcode/html5-qrcode.min.js";
+    
     const firebaseConfig = { apiKey: "AIzaSyAfeLTKRQ66tjZjAt7tg6KcrWhtmv0y3fo", databaseURL: "https://berkah-baja-steel-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "berkah-baja-steel" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -190,12 +191,17 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyZhTJrSLlzeV8DyC1NcZciJyUrTLzMff5UahkTpZcDuF6PPX2o4E9Pc2K_guOhMjEh/exec";
 
     const mode = new URLSearchParams(window.location.search).get('mode');
-    if(mode === 'cilegon') document.getElementById('view-cilegon').style.display = 'flex';
-    else if(mode === 'jakarta') {
+    if(mode === 'cilegon') {
+        document.getElementById('view-cilegon').style.display = 'flex';
+    } else if(mode === 'jakarta') {
         document.getElementById('view-jakarta').style.display = 'flex';
-        initScanner();
+        // KASIH JEDA 500ms (0.5 detik) supaya elemen 'reader' siap di layar
+        setTimeout(() => { 
+            if(typeof initScanner === 'function') initScanner(); 
+        }, 500);
+    } else {
+        document.getElementById('view-dashboard').style.display = 'flex';
     }
-    else document.getElementById('view-dashboard').style.display = 'flex';
 
 // --- FUNGSI KOMPRESOR (BIAR LOADING CEPAT) ---
     async function compressAndGetBase64(file) {
@@ -358,35 +364,36 @@ window.prosesMuat = async () => {
 // --- 1. INISIALISASI SCANNER (FOKUS CEKER JAKARTA) ---
 let html5QrCode; 
 
-async function initScanner() {
+// Ganti baris ini: async function initScanner() {
+// Menjadi:
+window.initScanner = async function() { 
     const readerEl = document.getElementById("reader");
     if(!readerEl) return;
 
-    // MATIKAN SCANNER LAMA JIKA MASIH JALAN (Cegah Crash Kamera)
+    // Pastikan reader dalam kondisi bersih/tampil
+    readerEl.style.display = 'block';
+
     if (html5QrCode && html5QrCode.isScanning) {
         await html5QrCode.stop();
     }
 
     html5QrCode = new Html5Qrcode("reader");
-    
-    const config = { 
-        fps: 15, 
-        qrbox: { width: 250, height: 250 }
-    };
+    const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
     html5QrCode.start(
         { facingMode: "environment" }, 
         config, 
         (decodedText) => {
-            // STOP kamera segera setelah QR terbaca agar HP tidak panas & browser stabil
             html5QrCode.stop().then(() => {
                 onScanSuccess(decodedText); 
-            });
+            }).catch(err => console.error("Gagal Stop:", err));
         }
     ).catch(err => {
-        console.error("Gagal Kamera:", err);
-        // Fallback jika kamera belakang tidak terdeteksi (misal di laptop/tablet tertentu)
-        html5QrCode.start({ facingMode: "user" }, config, onScanSuccess);
+        console.error("Gagal Kamera Belakang:", err);
+        // Fallback ke kamera depan jika belakang gagal
+        html5QrCode.start({ facingMode: "user" }, config, (text) => {
+             html5QrCode.stop().then(() => { onScanSuccess(text); });
+        });
     });
 }
 
@@ -433,8 +440,7 @@ async function onScanSuccess(decodedText) {
     }
 }
 
-  
-    // --- REVISI DASHBOARD TOTAL ---
+      // --- REVISI DASHBOARD TOTAL ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
         const list = document.getElementById('log-list');
