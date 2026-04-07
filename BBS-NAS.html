@@ -182,8 +182,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { Html5Qrcode } from "https://unpkg.com/html5-qrcode/html5-qrcode.min.js";
-    
+
     const firebaseConfig = { apiKey: "AIzaSyAfeLTKRQ66tjZjAt7tg6KcrWhtmv0y3fo", databaseURL: "https://berkah-baja-steel-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "berkah-baja-steel" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -191,17 +190,12 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyZhTJrSLlzeV8DyC1NcZciJyUrTLzMff5UahkTpZcDuF6PPX2o4E9Pc2K_guOhMjEh/exec";
 
     const mode = new URLSearchParams(window.location.search).get('mode');
-    if(mode === 'cilegon') {
-        document.getElementById('view-cilegon').style.display = 'flex';
-    } else if(mode === 'jakarta') {
+    if(mode === 'cilegon') document.getElementById('view-cilegon').style.display = 'flex';
+    else if(mode === 'jakarta') {
         document.getElementById('view-jakarta').style.display = 'flex';
-        // KASIH JEDA 500ms (0.5 detik) supaya elemen 'reader' siap di layar
-        setTimeout(() => { 
-            if(typeof initScanner === 'function') initScanner(); 
-        }, 500);
-    } else {
-        document.getElementById('view-dashboard').style.display = 'flex';
+        initScanner();
     }
+    else document.getElementById('view-dashboard').style.display = 'flex';
 
 // --- FUNGSI KOMPRESOR (BIAR LOADING CEPAT) ---
     async function compressAndGetBase64(file) {
