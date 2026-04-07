@@ -453,9 +453,7 @@ window.bukaMenuJakarta = () => {
     }
 };
 
-// Pasang fungsi ke window agar bisa dipanggil onclick dari HTML
-window.initScanner = initScanner;
-    
+   
     // --- REVISI DASHBOARD TOTAL ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
