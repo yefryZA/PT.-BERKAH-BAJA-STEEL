@@ -361,132 +361,54 @@ window.prosesMuat = async () => {
     printSuratJalan({ ...logData, id: newRef.key });
 }
     
-// --- 1. INISIALISASI SCANNER (FOKUS CEKER JAKARTA) ---
-let html5QrCode; 
-
-// Ganti baris ini: async function initScanner() {
-// Menjadi:
-window.initScanner = async function() { 
-    const readerEl = document.getElementById("reader");
-    if(!readerEl) return;
-
-    // Pastikan reader dalam kondisi bersih/tampil
-    readerEl.style.display = 'block';
-
-    if (html5QrCode && html5QrCode.isScanning) {
-        await html5QrCode.stop();
+  function initScanner() {
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
     }
 
-    html5QrCode = new Html5Qrcode("reader");
-    const config = { fps: 15, qrbox: { width: 250, height: 250 } };
-
-    html5QrCode.start(
-        { facingMode: "environment" }, 
-        config, 
-        (decodedText) => {
-            html5QrCode.stop().then(() => {
-                onScanSuccess(decodedText); 
-            }).catch(err => console.error("Gagal Stop:", err));
-        }
-    ).catch(err => {
-        console.error("Gagal Kamera Belakang:", err);
-        // Fallback ke kamera depan jika belakang gagal
-        html5QrCode.start({ facingMode: "user" }, config, (text) => {
-             html5QrCode.stop().then(() => { onScanSuccess(text); });
-        });
-    });
-}
-
-// --- 2. LOGIKA SAAT SCAN BERHASIL ---
-async function onScanSuccess(decodedText) {
-    let idSurat = decodedText;
-    
-    // Jika isi QR berupa URL (Verifikasi), kita ambil ID-nya saja
-    if (decodedText.includes("id=")) {
-        idSurat = decodedText.split("id=")[1];
-    }
-
-    document.getElementById('loader').style.display = 'flex';
-    document.getElementById('load-txt').innerText = "MENCARI DATA SURAT...";
-
-    try {
-        const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
+    async function onScanSuccess(decodedText) {
+        document.getElementById('loader').style.display = 'flex';
+        const snap = await get(ref(db, `bbs_logs/${dbKey}/${decodedText}`));
         if(snap.exists()) {
             const data = snap.val();
-            
-            // Masukkan ID ke input tersembunyi untuk proses update bongkar nanti
-            document.getElementById('b-id-mobil').value = idSurat;
-            
-            // Tampilkan info mobil hasil scan agar Ceker tidak salah input
-            document.getElementById('res-scan-plat').innerHTML = `
-                <div style="background:#1a2a44; padding:10px; border-radius:5px; border:1px solid var(--green);">
-                    <span style="font-size:20px; color:var(--green); font-weight:bold;">${data.plat}</span><br>
-                    <span style="font-size:14px; color:white;">MUAT: ${data.volM} M3 | SOPIR: ${data.sopir || "-"}</span>
-                </div>
-            `;
-            
-            // TAMPILKAN FORM BONGKAR & SEMBUNYIKAN SCANNER
+            document.getElementById('b-id-mobil').value = decodedText;
+            document.getElementById('res-scan-plat').innerText = data.plat;
             document.getElementById('form-bongkar').style.display = 'block';
             document.getElementById('reader').style.display = 'none';
         } else {
-            alert("QR CODE TIDAK TERDAFTAR DI DATABASE!");
-            initScanner(); // Nyalakan lagi kamera jika salah scan
+            alert("QR CODE TIDAK DIKENALI!");
         }
-    } catch (error) {
-        console.error(error);
-        alert("Gagal koneksi database! Cek internet.");
-    } finally {
         document.getElementById('loader').style.display = 'none';
     }
-}
 
-      // --- REVISI DASHBOARD TOTAL ---
+    window.prosesBongkar = async () => {
+        const id = document.getElementById('b-id-mobil').value;
+        const v = document.getElementById('b-vol').value;
+        const f = document.getElementById('b-foto').files[0];
+        if(!id || !v || !f) return alert("LENGKAPI DATA!");
+        const u = await uploadFoto(f, `BONGKAR_${id}.jpg`);
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { volB: Number(v), status: 'DONE', fotoB: u });
+        location.reload();
+    }
+
+    let rawData = [];
+    let totalOps = 0;
+
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
+        let tm = 0, tb = 0, otw = 0; rawData = [];
         const list = document.getElementById('log-list');
-        list.innerHTML = ""; // Bersihkan list
-
-        // Siapkan variabel hitung
-        let tm = 0, tb = 0, otw = 0;
-        window.rawData = []; // Reset rawData untuk PDF
-
-        if (data) {
+        list.innerHTML = "";
+        if(data) {
             Object.keys(data).forEach(k => {
-                const i = data[k];
-                const dataLengkap = { ...i, id: k };
-                
-                // Tambahkan ke rawData untuk PDF
-                window.rawData.push(dataLengkap);
-
-                // Hitung angka ringkasan
-                tm += Number(i.volM || 0);
-                tb += Number(i.volB || 0);
-                if (i.status === 'OTW') otw++;
-
-                // Tampilkan ke List
-                list.innerHTML += `
-                <div class="truck-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:10px 0;">
-                    <div>
-                        <b>${i.plat}</b> <small style="color:var(--gold)">[${i.barang || 'MATERIAL'}]</small><br>
-                        <small>
-                            <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
-                            <a href="${i.fotoB || '#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
-                        </small>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick='reprintData(${JSON.stringify(dataLengkap)})' 
-                                style="background:#233554; border:1px solid var(--green); color:white; border-radius:4px; padding:6px; cursor:pointer;">
-                            🖨️
-                        </button>
-                        <span class="badge" style="background:${i.status === 'OTW' ? '#FF9800' : '#4CAF50'}; padding:3px 8px; border-radius:4px; font-size:10px;">
-                            ${i.status}
-                        </span>
-                    </div>
+                const i = data[k]; tm += i.volM; tb += i.volB; rawData.push(i);
+                if(i.status === 'OTW') otw++;
+                list.innerHTML += `<div class="truck-item">
+                    <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
+                    <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">${i.status}</span>
                 </div>`;
             });
         }
-
-        // UPDATE ANGKA RINGKASAN DASHBOARD
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
@@ -496,9 +418,8 @@ async function onScanSuccess(decodedText) {
         lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
         lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
         
-        // Panggil hitung uang
         hitungUang(tb);
-    }); // <--- PENUTUP SAKTI!
+    });
     
 // --- FUNGSI PROSES BONGKAR (CEKER JAKARTA) ---
 window.prosesBongkar = async () => {
