@@ -9,8 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <style>
+        <style>
         :root { --blue-dark: #0A192F; --silver: #C0C0C0; --gold: #FFD700; --red: #FF4D4D; --glass: rgba(255, 255, 255, 0.1); --green: #64FFDA; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; text-transform: uppercase; }
         body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle, #112240 0%, var(--blue-dark) 100%); color: #fff; margin: 0; min-height: 100vh; text-transform: none; }
@@ -252,23 +253,30 @@
         }
     }
 
-// --- LOGIKA CETAK JALUR AMAN (SHARE + GOOGLE CHART) ---
-// --- FUNGSI PRINT (REVISI LOGIKA GAMBAR) ---
+
 function printSuratJalan(data) {
     const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const jam = new Date().toLocaleTimeString('id-ID');
 
-    // 1. Buat elemen QR Code tersembunyi untuk "DIFOTO"
+    // Buat elemen QR tersembunyi
     const qrDiv = document.createElement('div');
+    qrDiv.style.display = 'none'; // Sembunyikan
+    document.body.appendChild(qrDiv); // Tempel ke body agar library qrcodejs bisa kerja
+
     new QRCode(qrDiv, {
         text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
         width: 150,
         height: 150
     });
 
-    // Tunggu QR Code digambar sebentar
+    // Tunggu sebentar sampai gambar QR selesai dibuat
     setTimeout(() => {
-        const qrImage = qrDiv.querySelector('img').src; // Ini adalah DATA JPG barcodenya
+        const qrImgElement = qrDiv.querySelector('img');
+        if (!qrImgElement) {
+            alert("Gagal membuat barcode, coba lagi.");
+            return;
+        }
+        const qrImageBase64 = qrImgElement.src; 
 
         let textToPrint = 
 "      PT. BERKAH BAJA STEEL\n" +
@@ -286,7 +294,7 @@ function printSuratJalan(data) {
 "  ID SURAT: " + data.id + "\n\n" +
                 
 "--- SCAN BARCODE DI BAWAH ---\n" +
-"{IMAGE:" + qrImage + "}\n\n" + // <--- Kode Khusus untuk ESC/POS Service
+"{IMAGE:" + qrImageBase64 + "}\n\n" + 
                 
 " --------------------------------\n" +
 " NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
@@ -296,12 +304,15 @@ function printSuratJalan(data) {
         if (navigator.share) {
             navigator.share({ text: textToPrint })
             .then(() => {
-                // RELOAD DI SINI setelah share sukses
-                setTimeout(() => { location.reload(); }, 1000);
+                document.body.removeChild(qrDiv); // Hapus sampah
+                setTimeout(() => { location.reload(); }, 1500);
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                document.body.removeChild(qrDiv);
+                console.log(err);
+            });
         }
-    }, 500);
+    }, 800); // Naikkan sedikit timernya biar aman
 }
 
 // --- FUNGSI PROSES MUAT (REVISI) ---
@@ -344,12 +355,14 @@ window.prosesMuat = async () => {
     
     await set(newRef, logData);
     
-    // 1. Panggil Print
-    printSuratJalan({ ...logData, id: newRef.key });
-    
-    // 2. MATIKAN LOADER (Jangan reload dulu!)
+    // Matikan loader dulu biar HP gak berat
     document.getElementById('loader').style.display = 'none';
-    alert("Data Berhasil Disimpan! Silakan pilih printer.");
+    
+    // Kasih tau sukses
+    alert("DATA BERHASIL DISIMPAN! Membuka menu cetak...");
+    
+    // Baru panggil print
+    printSuratJalan({ ...logData, id: newRef.key });
 }
     // LOGIKA SCANNER JAKARTA
     function initScanner() {
