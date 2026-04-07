@@ -433,27 +433,7 @@ async function onScanSuccess(decodedText) {
     }
 }
 
-// --- 3. FUNGSI PINDAH MENU (PASTIKAN ID SESUAI HTML) ---
-window.bukaMenuJakarta = () => {
-    // Sembunyikan semua view dulu
-    ['view-cilegon', 'view-dashboard', 'view-jakarta'].forEach(v => {
-        const el = document.getElementById(v);
-        if(el) el.style.display = 'none';
-    });
-
-    // Tampilkan Jakarta & Reset tampilan awal
-    const vJKT = document.getElementById('view-jakarta');
-    if(vJKT) {
-        vJKT.style.display = 'flex';
-        document.getElementById('form-bongkar').style.display = 'none';
-        document.getElementById('reader').style.display = 'block';
-        document.getElementById('res-scan-plat').innerHTML = ""; // Bersihkan bekas scan sebelumnya
-        
-        initScanner(); // Jalankan kamera
-    }
-};
-
-   
+  
     // --- REVISI DASHBOARD TOTAL ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
