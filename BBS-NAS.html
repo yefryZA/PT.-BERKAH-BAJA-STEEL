@@ -254,65 +254,62 @@
     }
 
 
-function printSuratJalan(data) {
+async function printSuratJalan(data) {
     const tgl = new Date().toLocaleString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     const jam = new Date().toLocaleTimeString('id-ID');
 
-    // Buat elemen QR tersembunyi
-    const qrDiv = document.createElement('div');
-    qrDiv.style.display = 'none'; // Sembunyikan
-    document.body.appendChild(qrDiv); // Tempel ke body agar library qrcodejs bisa kerja
+    // 1. Buat elemen struk visual (Tidak terlihat di layar)
+    const printArea = document.createElement('div');
+    printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
+    printArea.innerHTML = `
+        <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
+        <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
+        <div style="text-align: center;">--------------------------------</div>
+        <div style="font-size: 14px; line-height: 1.5;">
+            TGL/JAM : ${tgl}<br>
+            PLAT NO : ${data.plat}<br>
+            SOPIR   : ${data.sopir || "-"}<br>
+            BARANG  : ${data.barang || "-"}<br>
+            --------------------------------<br>
+            P:${data.p||0} | L:${data.l||0} | T:${data.t||0} (m)<br>
+            TOTAL   : ${data.volM || 0} M3<br>
+            --------------------------------<br>
+            <div style="text-align: center;">ID SURAT: ${data.id}</div>
+            <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
+            --------------------------------<br>
+            <div style="text-align: center; font-size: 11px;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
+            <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
+        </div>
+    `;
+    document.body.appendChild(printArea);
 
-    new QRCode(qrDiv, {
+    // 2. Gambar Barcodenya
+    new QRCode(document.getElementById("qrcode-box"), {
         text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
         width: 150,
         height: 150
     });
 
-    // Tunggu sebentar sampai gambar QR selesai dibuat
+    // 3. Ubah HTML jadi Gambar (Capture)
     setTimeout(() => {
-        const qrImgElement = qrDiv.querySelector('img');
-        if (!qrImgElement) {
-            alert("Gagal membuat barcode, coba lagi.");
-            return;
-        }
-        const qrImageBase64 = qrImgElement.src; 
+        html2canvas(printArea).then(canvas => {
+            const imageData = canvas.toDataURL("image/png");
+            
+            // 4. Download Otomatis ke HP
+            const link = document.createElement('a');
+            link.download = `STRUK_${data.plat}_${data.id.substring(0,5)}.png`;
+            link.href = imageData;
+            link.click();
 
-        let textToPrint = 
-"      PT. BERKAH BAJA STEEL\n" +
-"  GENERAL CONTRACTOR & LOGISTIK\n" +
-" --------------------------------\n" +
-"  TGL/JAM : " + tgl + "\n" +
-"  JAM     : " + jam + "\n" +
-"  PLAT NO : " + data.plat + "\n" +
-"  SOPIR   : " + (data.sopir || "-") + "\n" +
-"  BARANG  : " + (data.barang || "-") + "\n" +
-" --------------------------------\n" +
-"  P: " + (data.p||0) + " | L: " + (data.l||0) + " | T: " + (data.t||0) + " (m)\n" +
-"  TOTAL   : " + (data.volM || 0) + " M3\n" +
-" --------------------------------\n" +
-"  ID SURAT: " + data.id + "\n\n" +
-                
-"--- SCAN BARCODE DI BAWAH ---\n" +
-"{IMAGE:" + qrImageBase64 + "}\n\n" + 
-                
-" --------------------------------\n" +
-" NIAT BAIK * KERJA BAIK * REZEKI BAIK\n\n" +
-"  Hati-hati pak sopir,\n" +
-"  KELUARGA menunggu ANDA di rumah.\n\n\n\n\n";
-
-        if (navigator.share) {
-            navigator.share({ text: textToPrint })
-            .then(() => {
-                document.body.removeChild(qrDiv); // Hapus sampah
-                setTimeout(() => { location.reload(); }, 1500);
-            })
-            .catch(err => {
-                document.body.removeChild(qrDiv);
-                console.log(err);
-            });
-        }
-    }, 800); // Naikkan sedikit timernya biar aman
+            document.body.removeChild(printArea);
+            
+            // Tampilkan pesan sukses kecil tanpa Alert yang ganggu
+            document.getElementById('load-txt').innerHTML = "<b style='color:green'>STRUK TERDOWNLOAD!</b><br>Buka Galeri & Cetak Gambar.";
+            document.getElementById('loader').style.display = 'flex';
+            
+            setTimeout(() => { location.reload(); }, 3000);
+        });
+    }, 1000);
 }
 
 // --- FUNGSI PROSES MUAT (REVISI) ---
@@ -355,13 +352,6 @@ window.prosesMuat = async () => {
     
     await set(newRef, logData);
     
-    // Matikan loader dulu biar HP gak berat
-    document.getElementById('loader').style.display = 'none';
-    
-    // Kasih tau sukses
-    alert("DATA BERHASIL DISIMPAN! Membuka menu cetak...");
-    
-    // Baru panggil print
     printSuratJalan({ ...logData, id: newRef.key });
 }
     // LOGIKA SCANNER JAKARTA
