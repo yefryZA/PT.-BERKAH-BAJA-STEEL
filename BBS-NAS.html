@@ -348,22 +348,44 @@
     }
 
     async function onScanSuccess(decodedText) {
-        let idSurat = decodedText.includes("id=") ? decodedText.split("id=")[1] : decodedText;
-        document.getElementById('loader').style.display = 'flex';
-        try {
-            const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
-            if(snap.exists()) {
-                const data = snap.val();
-                document.getElementById('b-id-mobil').value = idSurat;
-                document.getElementById('res-scan-plat').innerText = data.plat;
-                document.getElementById('form-bongkar').style.display = 'block';
-                document.getElementById('reader').style.display = 'none';
-            } else {
-                alert("ID TIDAK DITEMUKAN!"); location.reload(); 
-            }
-        } catch (err) { alert("Koneksi Error!"); } finally { document.getElementById('loader').style.display = 'none'; }
-    }
+    let idSurat = decodedText.includes("id=") ? decodedText.split("id=")[1] : decodedText;
+    document.getElementById('loader').style.display = 'flex';
 
+    try {
+        const snap = await get(ref(db, `bbs_logs/${dbKey}/${idSurat}`));
+        
+        if(snap.exists()) {
+            const data = snap.val();
+
+            // --- PROTEKSI ANTI DOUBLE SCAN (Gembok Cimi) ---
+            if (data.status === 'DONE') {
+                alert("⚠️ DITOLAK: Mobil " + data.plat + " SUDAH BONGKAR sebelumnya!");
+                location.reload();
+                return;
+            } 
+            
+            if (data.status === 'ARCHIVED') {
+                alert("❌ BAHAYA: Barcode ini sudah kedaluwarsa & sudah masuk laporan (ARCHIVED)!");
+                location.reload();
+                return;
+            }
+
+            // Kalau statusnya OTW, baru boleh lanjut
+            document.getElementById('b-id-mobil').value = idSurat;
+            document.getElementById('res-scan-plat').innerText = data.plat;
+            document.getElementById('form-bongkar').style.display = 'block';
+            document.getElementById('reader').style.display = 'none';
+            
+        } else {
+            alert("🆔 ID TIDAK DITEMUKAN! Pastikan ini Barcode BBS.");
+            location.reload(); 
+        }
+    } catch (err) {
+        alert("Koneksi Error!");
+    } finally {
+        document.getElementById('loader').style.display = 'none';
+    }
+}
     window.prosesBongkar = async () => {
         const id = document.getElementById('b-id-mobil').value;
         const v = document.getElementById('b-vol').value;
