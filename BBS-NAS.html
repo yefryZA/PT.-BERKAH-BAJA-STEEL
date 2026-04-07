@@ -263,31 +263,36 @@
         printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
         printArea.innerHTML = `
             <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
-            <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
-            <div style="text-align: center;">--------------------------------</div>
-            <div style="font-size: 14px; line-height: 1.5;">
-                <div style="font-family: monospace; width: 100%; font-size: 12px;">
-                TGL/JAM : ${tgl} ‖ ${jam}<br>
-                PLAT NO : ${data.plat}<br>
-                SOPIR   : ${data.sopir || "-"}<br>
-                BARANG  : ${data.barang || "-"}<br>
-                -----------------------------------------------<br>
-                panjang :${data.p||0} | lebar :${data.l||0} | tinggi :${data.t||0} (m)<br>
-                TOTAL   : ${data.volM || 0} M3<br>
-                -----------------------------------------------<br>
-                <div style="text-align: center;">ID SURAT: ${data.id}</div>
-                <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
-                -----------------------------------------------<br>
-                <div style="margin-left: 50%; text-align: center; font-size: 11px;">
-                    Mengetahui,<br><br><br>
-                    <b>SOFYAN</b><br>
-                    Supervisor
-                </div>
-                -----------------------------------------------<br>
-                <div style="text-align: center; font-size: 11px; margin-top: 15px;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
-                <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
+    <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
+    <div style="text-align: center;">--------------------------------</div>
+    <div style="font-size: 14px; line-height: 1.5;">
+        <div style="font-family: monospace; width: 100%; font-size: 12px;">
+            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px;">
+                <tr><td style="width: 70px;">TGL/JAM</td><td style="width: 10px;">:</td><td>${tgl} ‖ ${jam}</td></tr>
+                <tr><td>PLAT NO</td><td>:</td><td>${data.plat}</td></tr>
+                <tr><td>SOPIR</td><td>:</td><td>${data.sopir || "-"}</td></tr>
+                <tr><td>BARANG</td><td>:</td><td>${data.barang || "-"}</td></tr>
+            </table>
+            -----------------------------------------------<br>
+            panjang :${data.p||0} | lebar :${data.l||0} | tinggi :${data.t||0} (m)<br>
+            TOTAL   : ${data.volM || 0} M3<br>
+            -----------------------------------------------<br>
+            <div style="text-align: center;">ID SURAT: ${data.id}</div>
+            <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
+            -----------------------------------------------<br>
+
+            <div style="margin-left: 50%; text-align: center; font-size: 11px;">
+                Mengetahui,<br><br><br>
+                <b>SOFYAN</b><br>
+                Supervisor
             </div>
-        `;
+            -----------------------------------------------<br>
+
+            <div style="text-align: center; font-size: 11px; margin-top: 15px;">NIAT BAIK * KERJA BAIK * REZEKI BAIK</div>
+            <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
+        </div>
+    </div>
+`;
         document.body.appendChild(printArea);
         new QRCode(document.getElementById("qrcode-box"), {
             text: "https://berkahbajasteel.web.app/verifikasi?id=" + data.id,
