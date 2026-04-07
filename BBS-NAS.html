@@ -356,7 +356,8 @@ window.prosesMuat = async () => {
         status: 'OTW', 
         fotoM: uS, 
         fotoKTP: uK, 
-        tgl: new Date().toLocaleDateString('id-ID') 
+        tgl: new Date().toLocaleDateString('id-ID'),
+        jam: new Date().toLocaleTimeString('id-ID')
     };
     
     await set(newRef, logData);
@@ -489,43 +490,106 @@ window.prosesMuat = async () => {
     window.delOps = async (id) => { if(confirm("HAPUS?")) { await remove(ref(db, `bbs_operasional/${dbKey}/${id}`)); location.reload(); } };
 
     window.generatePDF = async (tipe) => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const s = await get(ref(db, `bbs_settings/${dbKey}`));
-        const cfg = s.val() || { beli: 0, jual: 0 };
-        const tb = Number(document.getElementById('d-total-bongkar').innerText);
+    // 1. FILTER HANYA 20 DATA YANG STATUSNYA 'DONE'
+    // Ambil data dari rawData yang statusnya sudah DONE
+    const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 20);
 
-        doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
-        if(tipe === 'NAS') {
-            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BB-NAS", 105, 22, { align: "center" });
-            const body = rawData.map(i => [i.tgl, i.plat, i.volM, i.volB, cfg.jual.toLocaleString(), (i.volB*cfg.jual).toLocaleString()]);
-            doc.autoTable({ head: [['TGL', 'PLAT', 'MUAT', 'BONGKAR', 'HARGA', 'SUBTOTAL']], body, startY: 30, theme: 'grid' });
-        } else {
-            doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN & OPS", 105, 22, { align: "center" });
-            const body = [
-                ['MARGIN 5K', "RP " + (tb*5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((tb*5000)/3).toLocaleString()],
-                ['MARGIN 7K', "RP " + (tb*7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((tb*7000)-totalOps)/4).toLocaleString()],
-                ['MARGIN 1K', "RP " + (tb*1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((tb*1000)/4).toLocaleString()]
-            ];
-            doc.autoTable({ head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], body, startY: 30 });
-            doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, doc.lastAutoTable.finalY + 10);
-        }
+    // Proteksi: Jika data belum 20, jangan kasih cetak
+    if (dataSiap.length < 20) {
+        return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE. Tunggu sampai genap 20 mobil.`);
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const s = await get(ref(db, `bbs_settings/${dbKey}`));
+    const cfg = s.val() || { beli: 0, jual: 0 };
+    
+    // Kalkulasi Footer untuk 20 mobil ini
+    const totalM = dataSiap.reduce((sum, i) => sum + (i.volM || 0), 0);
+    const totalB = dataSiap.reduce((sum, i) => sum + (i.volB || 0), 0);
+    const selisih = totalB - totalM;
+
+    doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
+
+    if(tipe === 'NAS') {
+        doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BB-NAS (BATCH 20)", 105, 22, { align: "center" });
         
-        const finalY = doc.internal.pageSize.height - 30;
-        doc.setFont("helvetica", "bold");
-        doc.text("YEFRY ZA.", 160, finalY, { align: "center" });
-        doc.setFont("helvetica", "normal");
-        doc.text("MANAGER", 160, finalY + 7, { align: "center" });
-        doc.save(`BBS_${tipe}.pdf`);
-    };
+        // Tambahkan Kolom NO dan Jam (Data jam diambil dari database)
+        const body = dataSiap.map((i, index) => [
+            index + 1, 
+            i.tgl, 
+            i.jam || "-", 
+            i.plat, 
+            i.volM.toFixed(2), 
+            i.volB.toFixed(2), 
+            (i.volB * cfg.jual).toLocaleString()
+        ]);
 
-    window.toggleMargin = () => { if(prompt("PASS?") === "bbs-nas") { let a = document.getElementById('margin-area'); a.style.display = a.style.display==='block'?'none':'block'; } };
-    window.openAdmin = () => document.getElementById('modal-admin').style.display = 'block';
-    window.closeAdmin = () => document.getElementById('modal-admin').style.display = 'none';
-    window.saveSettings = async () => {
-        await set(ref(db, `bbs_settings/${dbKey}`), { beli: Number(document.getElementById('cfg-beli').value), jual: Number(document.getElementById('cfg-jual').value) });
-        alert("SIMPAN BERHASIL!"); closeAdmin();
-    };
+        doc.autoTable({ 
+            head: [['NO', 'TGL', 'JAM', 'PLAT', 'MUAT', 'BONGKAR', 'SUBTOTAL']], 
+            body, 
+            startY: 30, 
+            theme: 'grid' 
+        });
+
+        // FOOTER PENAGIHAN NAS
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(11);
+        doc.text(`TOTAL MUAT: ${totalM.toFixed(2)} M3`, 14, finalY);
+        doc.text(`TOTAL BONGKAR: ${totalB.toFixed(2)} M3`, 14, finalY + 7);
+        doc.setFont("helvetica", "bold");
+        doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${selisih.toFixed(2)} M3`, 14, finalY + 14);
+
+    } else {
+        // PDF MARGIN BBS (INTERNAL)
+        doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
+        
+        const bodyMargin = [
+            ['MARGIN 5K', "RP " + (totalB*5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((totalB*5000)/3).toLocaleString()],
+            ['MARGIN 7K', "RP " + (totalB*7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((totalB*7000)-totalOps)/4).toLocaleString()],
+            ['MARGIN 1K', "RP " + (totalB*1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((totalB*1000)/4).toLocaleString()]
+        ];
+        doc.autoTable({ head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], body: bodyMargin, startY: 30 });
+        
+        // FOOTER MARGIN BBS
+        const finalYMargin = doc.lastAutoTable.finalY + 10;
+        doc.text(`TOTAL SELISIH BATCH INI: ${selisih.toFixed(2)} M3`, 15, finalYMargin);
+        doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
+    }
+
+    // Tanda Tangan Tetap Sama
+    const signY = doc.internal.pageSize.height - 30;
+    doc.setFont("helvetica", "bold");
+    doc.text("YEFRY ZA.", 160, signY, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.text("MANAGER", 160, signY + 7, { align: "center" });
+
+    doc.save(`BBS_${tipe}_BATCH.pdf`);
+
+    // --- FITUR AUTO-CLEAN (Hanya Aktif Setelah Margin Dicetak) ---
+    if (tipe === 'BBS') {
+        if (confirm("Laporan Margin Berhasil! Bersihkan dashboard dari 20 data ini?")) {
+            const updates = {};
+            const snapshot = await get(ref(db, `bbs_logs/${dbKey}`));
+            const dbData = snapshot.val();
+
+            dataSiap.forEach(item => {
+                // Cari key unik firebase-nya
+                const keyFirebase = Object.keys(dbData).find(k => 
+                    dbData[k].plat === item.plat && dbData[k].tgl === item.tgl && dbData[k].volM === item.volM
+                );
+                if (keyFirebase) {
+                    updates[`bbs_logs/${dbKey}/${keyFirebase}/status`] = 'ARCHIVED';
+                }
+            });
+
+            await update(ref(db), updates);
+            alert("MANTAP! Dashboard Bersih.");
+            location.reload();
+        }
+    }
+};
+    
     window.resetBBS = async () => { if(confirm("HAPUS SEMUA DATA?")) { await remove(ref(db, `bbs_logs/${dbKey}`)); await remove(ref(db, `bbs_operasional/${dbKey}`)); location.reload(); } };
     document.getElementById('m-plat').addEventListener('input', function (e) {
     let v = e.target.value.toUpperCase().replace(/\s+/g, ''); // Buang semua spasi dulu
