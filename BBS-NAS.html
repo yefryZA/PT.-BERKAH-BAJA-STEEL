@@ -262,27 +262,30 @@
         const printArea = document.createElement('div');
         printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
         printArea.innerHTML = `
-            <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
+    <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
     <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
     <div style="text-align: center;">--------------------------------</div>
     <div style="font-size: 14px; line-height: 1.5;">
         <div style="font-family: monospace; width: 100%; font-size: 12px;">
-            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px;">
-                <tr><td style="width: 70px;">TGL/JAM</td><td style="width: 10px;">:</td><td>${tgl} ‖ ${jam}</td></tr>
+            
+            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px; table-layout: fixed;">
+                <tr><td style="width: 75px;">TGL/JAM</td><td style="width: 15px;">:</td><td>${tgl} ‖ ${jam}</td></tr>
                 <tr><td>PLAT NO</td><td>:</td><td>${data.plat}</td></tr>
                 <tr><td>SOPIR</td><td>:</td><td>${data.sopir || "-"}</td></tr>
                 <tr><td>BARANG</td><td>:</td><td>${data.barang || "-"}</td></tr>
-            </table>
-            
-            -----------------------------------------------<br>
-            panjang : ${data.p||0} ‖ lebar : ${data.l||0} ‖ tinggi : ${data.t||0} (m)<br>
-            
-            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px;">
-                <tr><td style="width: 70px;">TOTAL</td><td style="width: 10px;">:</td><td>${data.volM || 0} M3</td></tr>
+                
+                <tr>
+                    <td colspan="3" style="padding: 5px 0;">
+                        -----------------------------------------------<br>
+                        panjang : ${data.p||0} ‖ lebar : ${data.l||0} ‖ tinggi : ${data.t||0} (m)<br>
+                        -----------------------------------------------
+                    </td>
+                </tr>
+
+                <tr><td>TOTAL</td><td>:</td><td><b>${data.volM || 0} M3</b></td></tr>
             </table>
 
-            -----------------------------------------------<br>
-            <div style="text-align: center;">ID SURAT: ${data.id}</div>
+            <div style="text-align: center; margin-top: 5px;">ID SURAT: ${data.id}</div>
             <div id="qrcode-box" style="display: flex; justify-content: center; padding: 10px;"></div>
             -----------------------------------------------<br>
 
