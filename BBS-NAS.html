@@ -605,21 +605,14 @@
         });
     }); 
 
-function startClock() {
-    setInterval(() => {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('id-ID', { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit',
-            hour12: false 
-        }).replace(/\./g, ':');
-        document.getElementById('clock').innerText = timeString;
-    }, 1000);
+function jalankanJam() {
+    const skr = new Date();
+    document.getElementById('jam-digital').innerHTML = skr.toLocaleTimeString('en-GB');
+    const opsi = { day: '2-digit', month: 'short', year: 'numeric' };
+    document.getElementById('tgl-digital').innerHTML = skr.toLocaleDateString('id-ID', opsi).toUpperCase();
 }
-
-// Panggil fungsinya biar langsung jalan
-startClock();
+setInterval(jalankanJam, 1000);
+jalankanJam();
     
 </script>
 <style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
