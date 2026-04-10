@@ -557,7 +557,7 @@ const finalY = doc.lastAutoTable.finalY + 10;
             doc.setTextColor(0,0,0); doc.setFont("helvetica", "bold"); // Bold untuk harga beli
             
             // Baris baru: Total Harga Beli
-            doc.text(`TOTAL HARGA BELI MATERIAL (20 RIT)`, 14, finalY);
+            doc.text(`TOTAL HARGA BELI MATERIAL`, 14, finalY);
             doc.text(`: RP ${totalHargaBeli.toLocaleString()}`, xVal, finalY);
 
             doc.setFont("helvetica", "normal"); // Kembali ke normal untuk rincian volume
