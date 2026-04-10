@@ -210,16 +210,28 @@
     else document.getElementById('view-dashboard').style.display = 'flex';
 
     // --- FUNGSI DURASI ---
-    function hitungDurasi(jamM, jamB) {
-        if(!jamM || !jamB) return "-";
-        const [h1, m1] = jamM.split(':').map(Number);
-        const [h2, m2] = jamB.split(':').map(Number);
-        let totalMenit = (h2 * 60 + m2) - (h1 * 60 + m1);
-        if (totalMenit < 0) totalMenit += 1440; 
-        const jam = Math.floor(totalMenit / 60);
-        const mnt = totalMenit % 60;
-        return `${jam} jam ${mnt} menit`;
-    }
+   function hitungDurasi(jamM, jamB) {
+    if(!jamM || !jamB) return "-";
+    
+    // TAMBAHAN: Ganti titik ke titik dua supaya split(':') gak gagal
+    const jM = jamM.replace('.', ':');
+    const jB = jamB.replace('.', ':');
+    
+    // Sekarang split pakai variabel jM dan jB yang sudah bersih
+    const [h1, m1] = jM.split(':').map(Number);
+    const [h2, m2] = jB.split(':').map(Number);
+    
+    // Cek darurat: kalau hasil split tetep bukan angka, balikin tanda strip
+    if (isNaN(h1) || isNaN(m1) || isNaN(h2) || isNaN(m2)) return "-";
+
+    let totalMenit = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (totalMenit < 0) totalMenit += 1440; 
+    
+    const jam = Math.floor(totalMenit / 60);
+    const mnt = totalMenit % 60;
+    
+    return `${jam} jam ${mnt} menit`;
+}
 
     async function compressAndGetBase64(file) {
         return new Promise((resolve) => {
@@ -492,8 +504,8 @@
 
     // --- GENERATE PDF BATCH 20 ---
     window.generatePDF = async (tipe) => {
-        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 20);
-        if (dataSiap.length < 20) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
+        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 1);
+        if (dataSiap.length < 1) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -507,7 +519,7 @@
         doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
 
         if(tipe === 'NAS') {
-            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BB-NAS (BATCH 20)", 105, 22, { align: "center" });
+            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BBS - NAS (BATCH 20)", 105, 22, { align: "center" });
             const body = dataSiap.map((i, index) => {
                 const rowLoss = i.volB - i.volM;
                 return [index + 1, i.tgl, hitungDurasi(i.jamM, i.jamB), i.plat, i.volM.toFixed(2), i.volB.toFixed(2), (rowLoss > 0 ? "+" : "") + rowLoss.toFixed(2)];
