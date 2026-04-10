@@ -537,13 +537,27 @@
                 }
             });
 
+            // --- LOGIKA TAMBAHAN: HARGA BELI MATERIAL ---
+            const hargaBeliUnit = 117700; // SILAKAN EDIT HARGA DI SINI
+            const totalHargaBeli = totalM * hargaBeliUnit;
+            // --------------------------------------------
+
             const finalY = doc.lastAutoTable.finalY + 10;
-            doc.setTextColor(0,0,0); doc.setFont("helvetica", "normal");
-            doc.text(`TOTAL MUAT: ${totalM.toFixed(2)} M3`, 14, finalY);
-            doc.text(`TOTAL BONGKAR: ${totalB.toFixed(2)} M3`, 14, finalY + 7);
+            doc.setTextColor(0,0,0); doc.setFont("helvetica", "bold"); // Bold untuk harga beli
+            
+            // Baris baru: Total Harga Beli
+            doc.text(`TOTAL HARGA BELI MATERIAL (20 RIT): RP ${totalHargaBeli.toLocaleString()}`, 14, finalY);
+
+            doc.setFont("helvetica", "normal"); // Kembali ke normal untuk rincian volume
+            doc.text(`TOTAL MUAT: ${totalM.toFixed(2)} M3`, 14, finalY + 7);
+            doc.text(`TOTAL BONGKAR: ${totalB.toFixed(2)} M3`, 14, finalY + 14);
+            
             if(selisihTotal < 0) doc.setTextColor(255, 0, 0); else if(selisihTotal > 0) doc.setTextColor(0, 128, 0);
             doc.setFont("helvetica", "bold");
-            doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, 14, finalY + 14);
+            
+            // Posisinya turun ke +21 agar tidak menumpuk
+            doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, 14, finalY + 21);
+            
         } else {
             doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
             const bodyMargin = [
@@ -557,10 +571,20 @@
             doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
         }
 
-        doc.setTextColor(0,0,0);
+       doc.setTextColor(0,0,0);
         const signY = doc.internal.pageSize.height - 30;
         doc.setFont("helvetica", "bold"); doc.text("YEFRY ZA.", 160, signY, { align: "center" });
         doc.setFont("helvetica", "normal"); doc.text("MANAGER", 160, signY + 7, { align: "center" });
+
+        // --- TAMBAHAN BARIS OTOMATIS (Satu Baris Saja) ---
+        const sekarang = new Date();
+        const tglJam = sekarang.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).replace('.', ':');
+        doc.setFontSize(8); 
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(150, 150, 150); // Warna abu-abu biar elegan
+        doc.text(`Laporan ini dibuat secara otomatis melalui Sistem Manajemen BBS - Logistik pada ${tglJam}`, 105, doc.internal.pageSize.height - 10, { align: "center" });
+        // ------------------------------------------------
+
         doc.save(`BBS_${tipe}_BATCH.pdf`);
 
         if (tipe === 'BBS' && confirm("Laporan Margin Berhasil! Bersihkan 20 data ini dari dashboard?")) {
