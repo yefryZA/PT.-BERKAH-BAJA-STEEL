@@ -435,7 +435,7 @@
     if(!id || !v || !f) return alert("LENGKAPI DATA!");
 
     // SEKARANG ganti ${id} menjadi ${plat}
-    const u = await uploadFoto(f, `BONGKAR_${plat}.jpg`);
+    const u = await uploadFoto(f, `BONGKAR_${p}.jpg`);
     
     // Sisanya tetap pakai 'id' untuk update database
     await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
