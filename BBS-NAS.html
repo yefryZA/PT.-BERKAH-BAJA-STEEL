@@ -423,20 +423,29 @@
         document.getElementById('loader').style.display = 'none';
     }
 }
+    
     window.prosesBongkar = async () => {
-        const id = document.getElementById('b-id-mobil').value;
-        const v = document.getElementById('b-vol').value;
-        const f = document.getElementById('b-foto').files[0];
-        if(!id || !v || !f) return alert("LENGKAPI DATA!");
-        const u = await uploadFoto(f, `BONGKAR_${id}.jpg`);
-        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
-            volB: Number(v), 
-            status: 'DONE', 
-            fotoB: u,
-            jamB: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
-        });
-        location.reload();
-    }
+    const sel = document.getElementById('b-id-mobil'); // Ambil elemen dropdown-nya
+    const id = sel.value; // Ini ID unik (untuk Firebase)
+    const plat = sel.options[sel.selectedIndex].text; // Ini TEKS PLAT (untuk nama foto)
+    
+    const v = document.getElementById('b-vol').value;
+    const f = document.getElementById('b-foto').files[0];
+
+    if(!id || !v || !f) return alert("LENGKAPI DATA!");
+
+    // SEKARANG ganti ${id} menjadi ${plat}
+    const u = await uploadFoto(f, `BONGKAR_${plat}.jpg`);
+    
+    // Sisanya tetap pakai 'id' untuk update database
+    await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
+        volB: Number(v), 
+        status: 'DONE', 
+        fotoB: u,
+        jamB: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
+    });
+    location.reload();
+}
 
     let rawData = [];
     let totalOps = 0;
