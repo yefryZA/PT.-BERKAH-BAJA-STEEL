@@ -427,7 +427,7 @@
     window.prosesBongkar = async () => {
     const sel = document.getElementById('b-id-mobil'); // Ambil elemen dropdown-nya
     const id = sel.value; // Ini ID unik (untuk Firebase)
-    const plat = sel.options[sel.selectedIndex].text; // Ini TEKS PLAT (untuk nama foto)
+    const p = document.getElementById('m-plat').value.toUpperCase(); // Ini TEKS PLAT (untuk nama foto)
     
     const v = document.getElementById('b-vol').value;
     const f = document.getElementById('b-foto').files[0];
