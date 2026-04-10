@@ -504,8 +504,8 @@
 
     // --- GENERATE PDF BATCH 20 ---
     window.generatePDF = async (tipe) => {
-        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 1);
-        if (dataSiap.length < 1) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
+        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 20);
+        if (dataSiap.length < 20) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
