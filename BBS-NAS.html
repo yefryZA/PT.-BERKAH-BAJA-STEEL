@@ -551,21 +551,28 @@
             const totalHargaBeli = totalM * hargaBeliUnit;
             // --------------------------------------------
 
-            const finalY = doc.lastAutoTable.finalY + 10;
+const finalY = doc.lastAutoTable.finalY + 10;
+            const xVal = 80; // Koordinat lurus untuk tanda (:)
+            
             doc.setTextColor(0,0,0); doc.setFont("helvetica", "bold"); // Bold untuk harga beli
             
             // Baris baru: Total Harga Beli
-            doc.text(`TOTAL HARGA BELI MATERIAL (20 RIT): RP ${totalHargaBeli.toLocaleString()}`, 14, finalY);
+            doc.text(`TOTAL HARGA BELI MATERIAL (20 RIT)`, 14, finalY);
+            doc.text(`: RP ${totalHargaBeli.toLocaleString()}`, xVal, finalY);
 
             doc.setFont("helvetica", "normal"); // Kembali ke normal untuk rincian volume
-            doc.text(`TOTAL MUAT: ${totalM.toFixed(2)} M3`, 14, finalY + 7);
-            doc.text(`TOTAL BONGKAR: ${totalB.toFixed(2)} M3`, 14, finalY + 14);
+            doc.text(`TOTAL MUAT`, 14, finalY + 7);
+            doc.text(`: ${totalM.toFixed(2)} M3`, xVal, finalY + 7);
+            
+            doc.text(`TOTAL BONGKAR`, 14, finalY + 14);
+            doc.text(`: ${totalB.toFixed(2)} M3`, xVal, finalY + 14);
             
             if(selisihTotal < 0) doc.setTextColor(255, 0, 0); else if(selisihTotal > 0) doc.setTextColor(0, 128, 0);
             doc.setFont("helvetica", "bold");
             
             // Posisinya turun ke +21 agar tidak menumpuk
-            doc.text(`TOTAL SELISIH (LOSS/LEBIH): ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, 14, finalY + 21);
+            doc.text(`TOTAL SELISIH (LOSS/LEBIH)`, 14, finalY + 21);
+            doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 21);
             
         } else {
             doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
@@ -585,11 +592,11 @@
 
         // Hormat Kami diletakkan 10 unit di atas nama
         doc.setFont("helvetica", "normal"); 
-        doc.text("Hormat Kami,", 160, signY - 10, { align: "center" });
+        doc.text("Hormat Kami,", 160, signY - 20, { align: "center" });
 
         // Nama Manager
         doc.setFont("helvetica", "bold"); 
-        doc.text("YEFRY ZA.", 160, signY, { align: "center" });
+        doc.text("YEFRY ZA.", 160, signY, { align: "center", underline: true });
 
         // Jabatan (Ditempelkan ke nama, hanya selisih 5)
         doc.setFont("helvetica", "normal"); 
