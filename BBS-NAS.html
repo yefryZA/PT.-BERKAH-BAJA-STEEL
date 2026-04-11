@@ -599,7 +599,7 @@ const finalY = doc.lastAutoTable.finalY + 10;
             
             // Baris baru: Total Harga Beli
             doc.text(`TOTAL HARGA BELI MATERIAL`, 14, finalY);
-            doc.text(`: RP ${totalHargaBeli.toLocaleString()}`, xVal, finalY);
+            doc.text(`: Rp. ${totalHargaBeli.toLocaleString()}`, xVal, finalY);
 
             doc.setFont("helvetica", "normal"); // Kembali ke normal untuk rincian volume
             doc.text(`TOTAL MUAT`, 14, finalY + 7);
