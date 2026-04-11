@@ -424,54 +424,71 @@
     }
 }
     
-    window.prosesBongkar = async () => {
-    const sel = document.getElementById('b-id-mobil'); // Ambil elemen dropdown-nya
-    const id = sel.value; // Ini ID unik (untuk Firebase)
-    const p = document.getElementById('m-plat').value.toUpperCase(); // Ini TEKS PLAT (untuk nama foto)
-    
-    const v = document.getElementById('b-vol').value;
-    const f = document.getElementById('b-foto').files[0];
+ window.prosesBongkar = async () => {
+        const sel = document.getElementById('b-id-mobil');
+        const id = sel.value; 
+        // AMBIL DARI HASIL SCAN (BUKAN m-plat)
+        const p = document.getElementById('res-scan-plat').innerText; 
+        
+        const v = document.getElementById('b-vol').value;
+        const f = document.getElementById('b-foto').files[0];
 
-    if(!id || !v || !f) return alert("LENGKAPI DATA!");
+        if(!id || !v || !f) return alert("LENGKAPI DATA!");
 
-    // SEKARANG ganti ${id} menjadi ${plat}
-    const u = await uploadFoto(f, `BONGKAR_${p}.jpg`);
-    
-    // Sisanya tetap pakai 'id' untuk update database
-    await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
-        volB: Number(v), 
-        status: 'DONE', 
-        fotoB: u,
-        jamB: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
-    });
-    location.reload();
-}
+        const u = await uploadFoto(f, `BONGKAR_${p.replace(/\s/g, '')}.jpg`);
+        
+        await update(ref(db, `bbs_logs/${dbKey}/${id}`), { 
+            volB: Number(v), 
+            status: 'DONE', 
+            fotoB: u,
+            jamB: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit', hour12: false}) 
+        });
+        location.reload();
+    }
 
     let rawData = [];
     let totalOps = 0;
 
+    // --- FUNGSI HELPER SELISIH DASHBOARD ---
+    function getBadgeSelisih(i) {
+        if (i.status === 'DONE') {
+            const diff = (i.volB || 0) - (i.volM || 0);
+            const warna = diff < 0 ? '#ff4d4d' : '#2ecc71';
+            const tanda = diff > 0 ? '+' : '';
+            return `<span style="color: ${warna}; font-weight: bold; margin-left: 5px; font-size: 11px;">(${tanda}${diff.toFixed(2)})</span>`;
+        }
+        return "";
+    }
+
+    // --- RENDER DASHBOARD ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
         const data = snap.val();
-        let tm = 0, tb = 0, otw = 0; rawData = [];
+        let tm = 0, tb = 0, otw = 0; 
+        rawData = [];
         const list = document.getElementById('log-list');
         list.innerHTML = "";
+        
         if(data) {
             Object.keys(data).forEach(k => {
                 const i = data[k];
-                // --- DASHBOARD GLOWING: SEMBUNYIKAN ARCHIVED ---
                 if(i.status === 'ARCHIVED') return;
 
                 tm += i.volM; tb += i.volB; rawData.push(i);
                 if(i.status === 'OTW') otw++;
+                
                 list.innerHTML += `<div class="truck-item">
                     <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
-                    <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">${i.status}</span>
+                    <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">
+                        ${i.status} ${getBadgeSelisih(i)}
+                    </span>
                 </div>`;
             });
         }
+        
         document.getElementById('d-count-otw').innerText = otw;
         document.getElementById('d-total-muat').innerText = tm.toFixed(2);
         document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
+        
         const lossVal = tb - tm;
         const lossEl = document.getElementById('d-total-loss');
         lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
@@ -595,7 +612,7 @@ const finalY = doc.lastAutoTable.finalY + 10;
             doc.setFont("helvetica", "bold");
             
             // Posisinya turun ke +21 agar tidak menumpuk
-            doc.text(`TOTAL SELISIH (LOSS/LEBIH)`, 14, finalY + 21);
+            doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 21);
             doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 21);
             
         } else {
