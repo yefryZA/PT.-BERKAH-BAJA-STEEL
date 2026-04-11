@@ -528,23 +528,47 @@
         doc.setFontSize(16); doc.text("PT. BERKAH BAJA STEEL", 105, 15, { align: "center" });
 
         if(tipe === 'NAS') {
-            doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BBS - NAS (BATCH 20)", 105, 22, { align: "center" });
-            const body = dataSiap.map((i, index) => {
-                const rowLoss = i.volB - i.volM;
-                return [index + 1, i.tgl, hitungDurasi(i.jamM, i.jamB), i.plat, i.volM.toFixed(2), i.volB.toFixed(2), (rowLoss > 0 ? "+" : "") + rowLoss.toFixed(2)];
-            });
+    doc.setFontSize(10); doc.text("REKAP PENGIRIMAN BBS - NAS (BATCH 20)", 105, 22, { align: "center" });
+    
+    const body = dataSiap.map((i, index) => {
+        const rowLoss = i.volB - i.volM;
+        
+        // GABUNGKAN TANGGAL DAN JAM BONGKAR
+        // Format hasil: 10/4/2026 ‖ 21:30
+        const tglJamBongkar = `${i.tgl} ‖ ${i.jamB || '--:--'}`; 
 
-            doc.autoTable({ 
-                head: [['NO', 'TGL BONGKAR', 'DURASI', 'PLAT', 'MUAT', 'BONGKAR', '+/-']], 
-                body, startY: 30, theme: 'grid',
-                didDrawCell: (data) => {
-                    if (data.section === 'body' && data.column.index === 6) {
-                        const val = data.cell.raw;
-                        if (val.toString().includes('-')) { doc.setTextColor(255, 0, 0); doc.setFont("helvetica", "bold"); }
-                        else if (val.toString().includes('+')) { doc.setTextColor(0, 128, 0); }
-                    }
+        return [
+            index + 1, 
+            tglJamBongkar, // Kolom Tgl sekarang ada jamnya
+            hitungDurasi(i.jamM, i.jamB), 
+            i.plat, 
+            i.volM.toFixed(2), 
+            i.volB.toFixed(2), 
+            (rowLoss > 0 ? "+" : "") + rowLoss.toFixed(2)
+        ];
+    });
+
+    doc.autoTable({ 
+        head: [['NO', 'TGL ‖ JAM BONGKAR', 'DURASI', 'PLAT', 'MUAT', 'BONGKAR', '+/-']], 
+        body, 
+        startY: 30, 
+        theme: 'grid',
+        styles: { fontSize: 8 }, // Sedikit dikecilkan agar muat satu baris rapi
+        headStyles: { fillColor: [41, 128, 185] }, // Opsional: warna biru biar keren
+        didDrawCell: (data) => {
+            if (data.section === 'body' && data.column.index === 6) {
+                const val = data.cell.raw;
+                if (val.toString().includes('-')) { 
+                    doc.setTextColor(255, 0, 0); 
+                    doc.setFont("helvetica", "bold"); 
                 }
-            });
+                else if (val.toString().includes('+')) { 
+                    doc.setTextColor(0, 128, 0); 
+                    doc.setFont("helvetica", "bold");
+                }
+            }
+        }
+    });
 
             // --- LOGIKA TAMBAHAN: HARGA BELI MATERIAL ---
             const hargaBeliUnit = 117700; // SILAKAN EDIT HARGA DI SINI
