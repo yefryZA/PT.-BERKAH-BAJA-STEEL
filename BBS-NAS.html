@@ -449,52 +449,66 @@
     let rawData = [];
     let totalOps = 0;
 
-    // --- FUNGSI HELPER SELISIH DASHBOARD ---
     function getBadgeSelisih(i) {
         if (i.status === 'DONE') {
             const diff = (i.volB || 0) - (i.volM || 0);
-            const warna = diff < 0 ? '#ff4d4d' : '#2ecc71';
+            const warna = diff < 0 ? '#ff4d4d' : '#2ecc71'; // Merah vs Hijau Terang
             const tanda = diff > 0 ? '+' : '';
-            return `<span style="color: ${warna}; font-weight: bold; margin-left: 5px; font-size: 11px;">(${tanda}${diff.toFixed(2)})</span>`;
+            
+            // Kita pakai gaya teks tebal di luar container
+            return `<b style="color: ${warna}; margin-left: 8px; font-size: 13px; text-shadow: 1px 1px 1px rgba(0,0,0,0.1);">
+                        (${tanda}${diff.toFixed(2)})
+                    </b>`;
         }
         return "";
     }
 
     // --- RENDER DASHBOARD ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
-        const data = snap.val();
-        let tm = 0, tb = 0, otw = 0; 
-        rawData = [];
-        const list = document.getElementById('log-list');
-        list.innerHTML = "";
-        
-        if(data) {
-            Object.keys(data).forEach(k => {
-                const i = data[k];
-                if(i.status === 'ARCHIVED') return;
+    const data = snap.val();
+    let tm = 0, tb = 0, otw = 0; 
+    rawData = [];
+    const list = document.getElementById('log-list');
+    list.innerHTML = "";
+    
+    if(data) {
+        Object.keys(data).forEach(k => {
+            const i = data[k];
+            // --- DASHBOARD GLOWING: SEMBUNYIKAN ARCHIVED ---
+            if(i.status === 'ARCHIVED') return;
 
-                tm += i.volM; tb += i.volB; rawData.push(i);
-                if(i.status === 'OTW') otw++;
-                
-                list.innerHTML += `<div class="truck-item">
-                    <div><b>${i.plat}</b><br><small><a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a></small></div>
+            tm += i.volM; tb += i.volB; rawData.push(i);
+            if(i.status === 'OTW') otw++;
+            
+            // Render Baris Truck
+            list.innerHTML += `<div class="truck-item" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <b>${i.plat}</b><br>
+                    <small>
+                        <a href="${i.fotoM}" target="_blank" style="color:var(--green)">FOTO MUAT</a> | 
+                        <a href="${i.fotoB||'#'}" target="_blank" style="color:var(--gold)">FOTO BONGKAR</a>
+                    </small>
+                </div>
+                <div style="display: flex; align-items: center;">
                     <span class="badge" style="background:${i.status==='OTW'?'#FF9800':'#4CAF50'}; padding:3px 8px; border-radius:4px;">
-                        ${i.status} ${getBadgeSelisih(i)}
+                        ${i.status}
                     </span>
-                </div>`;
-            });
-        }
-        
-        document.getElementById('d-count-otw').innerText = otw;
-        document.getElementById('d-total-muat').innerText = tm.toFixed(2);
-        document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
-        
-        const lossVal = tb - tm;
-        const lossEl = document.getElementById('d-total-loss');
-        lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
-        lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
-        hitungUang(tb);
-    });
+                    ${getBadgeSelisih(i)}
+                </div>
+            </div>`;
+        });
+    }
+    
+    document.getElementById('d-count-otw').innerText = otw;
+    document.getElementById('d-total-muat').innerText = tm.toFixed(2);
+    document.getElementById('d-total-bongkar').innerText = tb.toFixed(2);
+    
+    const lossVal = tb - tm;
+    const lossEl = document.getElementById('d-total-loss');
+    lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
+    lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
+    hitungUang(tb);
+});
 
     async function hitungUang(tb) {
         const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
