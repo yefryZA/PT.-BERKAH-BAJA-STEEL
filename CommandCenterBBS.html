@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center PT. BBS</title>
+    <style>
+        :root {
+            --bg-dark: #050b14;
+            --neon-blue: #00d4ff;
+            --neon-green: #00ffcc;
+            --glass-bg: rgba(10, 25, 47, 0.6);
+            --glass-border: rgba(0, 212, 255, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a192f 0%, var(--bg-dark) 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden; 
+        }
+
+        /* --- WELCOME SCREEN --- */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #001f3f 0%, #050b14 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.8s ease;
+        }
+
+        #welcome-screen img {
+            height: 120px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0px 0px 15px rgba(0, 212, 255, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        #welcome-screen h1 {
+            font-size: 40px;
+            letter-spacing: 5px;
+            color: #fff;
+            text-shadow: 0 0 20px var(--neon-blue);
+            margin-bottom: 15px;
+        }
+
+        #welcome-screen p {
+            font-size: 18px;
+            color: var(--neon-green);
+            letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* --- WRAPPER UTAMA DASHBOARD --- */
+        #main-dashboard {
+            display: none;
+            padding: 20px;
+            height: 100vh;
+            display: flex; 
+            flex-direction: column;
+        }
+
+        /* --- HEADER COMMAND CENTER --- */
+        .header-cc {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 21, 40, 0.8);
+            border: 1px solid var(--glass-border);
+            border-top: 3px solid var(--neon-blue);
+            padding: 10px 30px;
+            border-radius: 12px;
+            margin-bottom: 15px; /* Jarak sedikit dirapatkan karena ada running text */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0; 
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-area img {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.3));
+        }
+
+        .header-cc h1 {
+            font-size: 24px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin: 0;
+        }
+
+        .clock-area {
+            text-align: right;
+        }
+
+        .jam-digital {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--neon-green);
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px var(--neon-green);
+        }
+
+        .tgl-digital {
+            font-size: 11px;
+            color: #aaa;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* --- RUNNING TEXT (MARQUEE CSS) --- */
+        .running-text-container {
+            background: rgba(0, 21, 40, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 8px 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .running-text {
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffaa00; /* Warna kuning oranye biar mencolok layaknya pengumuman */
+            letter-spacing: 2px;
+            animation: scroll-left 25s linear infinite; /* Kecepatan scroll, angka 25s bisa diperbesar kalau mau lebih lambat */
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* --- GRID LAYOUT --- */
+        .grid-cc {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(2, 1fr);    
+            gap: 20px;
+            flex-grow: 1; 
+            height: 0; 
+        }
+
+        /* --- CONTAINER WEB --- */
+        .monitor-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .monitor-header {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .monitor-title {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            color: #ddd;
+        }
+
+        .live-indicator {
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--neon-green);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot-blink {
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-green);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        /* --- IFRAME AREA --- */
+        .monitor-content {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen" onclick="masukCommandCenter()">
+        <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" alt="Logo PT BBS">
+        <h1>WELCOME TO COMMAND CENTER PT. BBS</h1>
+        <p>[ KLIK DI MANA SAJA UNTUK MASUK ]</p>
+    </div>
+
+    <div id="main-dashboard" style="display: none;">
+        
+        <header class="header-cc">
+            <div class="brand-area">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" alt="LOGO BBS">
+                <h1>COMMAND CENTER PT. BERKAH BAJA STEEL</h1>
+            </div>
+            <div class="clock-area">
+                <div id="jam" class="jam-digital">00:00:00</div>
+                <div id="tgl" class="tgl-digital">SENIN, 01 JAN 2026</div>
+            </div>
+        </header>
+
+        <div class="running-text-container">
+            <div class="running-text">
+                ⚠️ INFO UPDATE: SELAMAT DATANG DI COMMAND CENTER PT. BBS ‖ STATUS SEMUA JARINGAN: AMAN BEROPERASI ‖ TETAP PANTAU SEMUA PERGERAKAN OPERASIONAL & LOGISTIK HARI INI ‖ SYTEM BY_YEFRY ZA. ⚓
+            </div>
+        </div>
+
+        <div class="grid-cc">
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT PT. N A S - PT. VINFAST</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/BBS-NAS.html"></iframe>
+                </div>
+            </div>
+
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT RT SAHRIL</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
+                </div>
+            </div>
+
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT Bp. BURHAN</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
+                </div>
+            </div>
+
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT PT. N A S - PT. H K</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/bbs-project-2/"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateJam() {
+            const sekarang = new Date();
+            document.getElementById('jam').innerText = sekarang.toLocaleTimeString('en-GB');
+            const opsi = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' };
+            document.getElementById('tgl').innerText = sekarang.toLocaleDateString('id-ID', opsi).toUpperCase();
+        }
+        setInterval(updateJam, 1000);
+        updateJam();
+
+        function masukCommandCenter() {
+            let elem = document.documentElement; 
+
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { 
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { 
+                elem.msRequestFullscreen();
+            }
+
+            let welcomeScreen = document.getElementById('welcome-screen');
+            welcomeScreen.style.opacity = '0'; 
+            
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none'; 
+                
+                let mainDash = document.getElementById('main-dashboard');
+                mainDash.style.display = 'flex'; 
+            }, 800); 
+        }
+    </script>
+</body>
+</html>
