@@ -92,7 +92,7 @@
             border-top: 3px solid var(--neon-blue);
             padding: 10px 30px;
             border-radius: 12px;
-            margin-bottom: 15px; /* Jarak sedikit dirapatkan karena ada running text */
+            margin-bottom: 15px; 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             flex-shrink: 0; 
@@ -151,11 +151,11 @@
 
         .running-text {
             display: inline-block;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
-            color: #ffaa00; /* Warna kuning oranye biar mencolok layaknya pengumuman */
+            color: #ffaa00; 
             letter-spacing: 2px;
-            animation: scroll-left 25s linear infinite; /* Kecepatan scroll, angka 25s bisa diperbesar kalau mau lebih lambat */
+            animation: scroll-left 25s linear infinite; 
         }
 
         @keyframes scroll-left {
@@ -163,12 +163,12 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* --- GRID LAYOUT --- */
+        /* --- GRID LAYOUT (Diubah jadi 3 Kolom x 2 Baris untuk 6 Layar) --- */
         .grid-cc {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(2, 1fr);    
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
+            grid-template-rows: repeat(2, 1fr);    /* 2 Baris */
+            gap: 15px; /* Jarak sedikit dikecilkan biar 6 kotak muat rapi */
             flex-grow: 1; 
             height: 0; 
         }
@@ -194,7 +194,7 @@
         }
 
         .monitor-title {
-            font-size: 13px;
+            font-size: 12px; /* Ukuran font dikecilkan sedikit biar muat di kotak yang lebih kecil */
             font-weight: bold;
             letter-spacing: 1.5px;
             color: #ddd;
@@ -303,6 +303,26 @@
                 </div>
                 <div class="monitor-content">
                     <iframe src="https://yefryza.github.io/bbs-project-2/"></iframe>
+                </div>
+            </div>
+
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT 5: [ISI NAMA]</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
+                </div>
+            </div>
+
+            <div class="monitor-box">
+                <div class="monitor-header">
+                    <div class="monitor-title">PROJECT 6: [ISI NAMA]</div>
+                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                </div>
+                <div class="monitor-content">
+                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
                 </div>
             </div>
         </div>
