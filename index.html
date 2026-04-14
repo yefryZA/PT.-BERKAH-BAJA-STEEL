@@ -723,12 +723,11 @@
     }
 
   function masukApp() {
-    // 🎤 1. EFEK SUARA JARVIS
     const msg = new SpeechSynthesisUtterance();
-    msg.text = "Welcom to PT. Berkah Baja Steel";
-    msg.lang = 'id-ID'; 
-    msg.rate = 0.9;     
-    window.speechSynthesis.speak(msg);
+msg.text = "Welcome to PT Berkah Baja Steel Command Center";
+msg.lang = 'en-US'; // Pakai aksen Inggris Amerika
+msg.rate = 0.8;     // Kecepatan ngomongnya pas (nggak terlalu cepat)
+window.speechSynthesis.speak(msg);
 
     // 📺 2. EKSEKUSI FULLSCREEN
     let elem = document.documentElement;
