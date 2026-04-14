@@ -287,7 +287,7 @@
         printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
         printArea.innerHTML = `
     <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
-    <div style="text-align: center; font-size: 12px;">GENERAL CONTRACTOR & LOGISTIK</div>
+    <div style="text-align: center; font-size: 12px;">PENGIRIMAN PT. VINFAST</div>
     <div style="text-align: center;">--------------------------------</div>
     <div style="font-size: 14px; line-height: 1.5;">
         <div style="font-family: monospace; width: 100%; font-size: 12px;">
@@ -617,33 +617,49 @@
         }
     });
 
-            // --- LOGIKA TAMBAHAN: HARGA BELI MATERIAL ---
+            // --- LOGIKA HARGA BELI MATERIAL ---
             const hargaBeliUnit = 117700; // SILAKAN EDIT HARGA DI SINI
             const totalHargaBeli = totalM * hargaBeliUnit;
+            
+            // --- TAMBAHAN: LOGIKA ONGKOS TRUCK ---
+            const hargaOngkosPerRit = 5000000; // Harga per rit (Rp 5.000.000)
+            const jumlahRit = 20; // Jumlah rit (sementara diset 20, silakan diedit)
+            const totalHargaOngkosTruck = hargaOngkosPerRit * jumlahRit;
             // --------------------------------------------
 
-const finalY = doc.lastAutoTable.finalY + 10;
+            const finalY = doc.lastAutoTable.finalY + 10;
             const xVal = 80; // Koordinat lurus untuk tanda (:)
             
-            doc.setTextColor(0,0,0); doc.setFont("helvetica", "bold"); // Bold untuk harga beli
+            doc.setTextColor(0,0,0); 
+            doc.setFont("helvetica", "bold"); // Bold untuk harga-hargaan
             
-            // Baris baru: Total Harga Beli
+            // Baris 1: Total Harga Beli
             doc.text(`TOTAL HARGA BELI MATERIAL`, 14, finalY);
-            doc.text(`: Rp. ${totalHargaBeli.toLocaleString()}`, xVal, finalY);
+            doc.text(`: Rp. ${totalHargaBeli.toLocaleString('id-ID')}`, xVal, finalY);
+
+            // Baris 2: Total Harga Ongkos Truck (BARU)
+            doc.text(`TOTAL HARGA ONGKOS TRUCK`, 14, finalY + 7);
+            doc.text(`: Rp. ${totalHargaOngkosTruck.toLocaleString('id-ID')}`, xVal, finalY + 7);
 
             doc.setFont("helvetica", "normal"); // Kembali ke normal untuk rincian volume
-            doc.text(`TOTAL MUAT`, 14, finalY + 7);
-            doc.text(`: ${totalM.toFixed(2)} M3`, xVal, finalY + 7);
             
-            doc.text(`TOTAL BONGKAR`, 14, finalY + 14);
-            doc.text(`: ${totalB.toFixed(2)} M3`, xVal, finalY + 14);
+            // Baris 3: Total Muat (Posisinya turun jadi +14)
+            doc.text(`TOTAL MUAT`, 14, finalY + 14);
+            doc.text(`: ${totalM.toFixed(2)} M3`, xVal, finalY + 14);
             
-            if(selisihTotal < 0) doc.setTextColor(255, 0, 0); else if(selisihTotal > 0) doc.setTextColor(0, 128, 0);
+            // Baris 4: Total Bongkar (Posisinya turun jadi +21)
+            doc.text(`TOTAL BONGKAR`, 14, finalY + 21);
+            doc.text(`: ${totalB.toFixed(2)} M3`, xVal, finalY + 21);
+            
+            // Logika warna untuk selisih
+            if(selisihTotal < 0) doc.setTextColor(255, 0, 0); 
+            else if(selisihTotal > 0) doc.setTextColor(0, 128, 0);
+            
             doc.setFont("helvetica", "bold");
             
-            // Posisinya turun ke +21 agar tidak menumpuk
-            doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 21);
-            doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 21);
+            // Baris 5: Total Selisih (Posisinya turun jadi +28)
+            doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 28);
+            doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 28);
             
         } else {
             doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
