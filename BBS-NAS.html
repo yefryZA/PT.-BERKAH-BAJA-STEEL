@@ -661,38 +661,66 @@
             doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 28);
             doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 28);
             
-     } else {
+    } else {
     doc.setFontSize(10); 
-    doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
+    doc.text("RINCIAN INTERNAL MARGIN PT. BERKAH BAJA STEEL (BATCH 20)", 105, 22, { align: "center" });
 
-    // --- LOGIKA MARGIN UNIT MANUAL (HABI MODE) ---
+    // ==========================================
+    // SEKSI SETTING - HABI CUKUP EDIT DI SINI
+    // ==========================================
+    const nMarginA = 5000;  // Margin pertama
+    const nMarginB = 7000;  // Margin kedua (yang ada operasional)
+    const nMarginC = 1000;  // <-- GANTI JADI 5000 DI SINI KALAU MAU BERUBAH
+    
     const hargaSewaUnit = 5000000;
     const hargaDasarUnit = 4700000;
-    const totalMarginUnit = hargaSewaUnit - hargaDasarUnit; // Hasilnya 300,000
-    const hasilUnitPerOrang = totalMarginUnit / 4; // Hasilnya 75,000
-    // ---------------------------------------------
+    const potKas = 0.10; // 10%
+    // ==========================================
+
+    const totalMarginUnit = hargaSewaUnit - hargaDasarUnit;
+
+    // 1. Margin A (Bagi 3)
+    const brutoA = totalB * nMarginA;
+    const hasilA = Math.floor(brutoA / 3);
+
+    // 2. Margin B (Net Ops + Kas 10% + Bagi 4)
+    const brutoB = (totalB * nMarginB) - totalOps;
+    const hasilB = Math.floor((brutoB - (brutoB * potKas)) / 4);
+
+    // 3. Margin C (Kas 10% + Bagi 4)
+    const brutoC = totalB * nMarginC;
+    const hasilC = Math.floor((brutoC - (brutoC * potKas)) / 4);
+
+    // 4. Margin Unit (Kas 10% + Bagi 4)
+    const hasilUnit = Math.floor((totalMarginUnit - (totalMarginUnit * potKas)) / 4);
 
     const bodyMargin = [
-        ['MARGIN 5K', "RP " + (totalB * 5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((totalB * 5000) / 3).toLocaleString()],
-        ['MARGIN 7K', "RP " + (totalB * 7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((totalB * 7000) - totalOps) / 4).toLocaleString()],
-        ['MARGIN 1K', "RP " + (totalB * 1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((totalB * 1000) / 4).toLocaleString()],
-        // BARIS BARU: MARGIN UNIT
-        ['MARGIN UNIT', "RP " + totalMarginUnit.toLocaleString(), "BAGI 4", "RP " + hasilUnitPerOrang.toLocaleString()]
+        [`MARGIN ${nMarginA/1000}K`, "RP " + brutoA.toLocaleString(), "BAGI 3", "RP " + hasilA.toLocaleString()],
+        [`MARGIN ${nMarginB/1000}K`, "RP " + brutoB.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilB.toLocaleString()],
+        [`MARGIN ${nMarginC/1000}K`, "RP " + brutoC.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilC.toLocaleString()],
+        ['MARGIN UNIT', "RP " + totalMarginUnit.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilUnit.toLocaleString()]
     ];
 
-    doc.autoTable({ 
-        head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], 
+      doc.autoTable({ 
+        head: [['KATEGORI', 'TOTAL (NET OPS)', 'SISTEM PEMBAGIAN', 'TERIMA /ORANG']], 
         body: bodyMargin, 
         startY: 30,
         theme: 'grid',
-        headStyles: { fillColor: [0, 51, 102] } // Biru gelap biar senada dengan BBS
+        headStyles: { fillColor: [0, 51, 102] }
     });
 
     const finalYMargin = doc.lastAutoTable.finalY + 10;
-    doc.text(`TOTAL SELISIH BATCH INI: ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
-    doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
+    doc.setFontSize(10);
+    doc.text(`TOTAL SELISIH BATCH INI : ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
+    
+    // Biaya Operasional tetap muncul gagah di sini
+    doc.text("TOTAL OPERASIONAL LAPANGAN : RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.text("*Note: Margin 7K, 1K & Unit sudah dipotong Kas Perusahaan 10% sebelum dibagikan.", 15, finalYMargin + 14);
 }
-
+        
       doc.setTextColor(0,0,0);
         const signY = doc.internal.pageSize.height - 30;
 
