@@ -94,27 +94,27 @@
                 </div>
             </div>
 
-            <div id="margin-area">
-                <button class="ops-btn" onclick="openOps()">⚙️ TOTAL OPERASIONAL : <span id="d-ops-total">RP 0</span></button>
-                
-                <table class="m-table">
-                    <tr><td>MARGIN 5K (Team BBS)</td><td align="right"><b id="res-m5">RP 0</b><br><small id="res-m5-p">/ORG: RP 0</small></td></tr>
-                    <tr><td>MARGIN 7K (BBS & NAS - OPS)</td><td align="right"><b id="res-m7">RP 0</b><br><small id="res-m7-p">/ORG: RP 0</small></td></tr>
-                    <tr><td>MARGIN 1K (BBS & NAS)</td><td align="right"><b id="res-m1">RP 0</b><br><small id="res-m1-p">/ORG: RP 0</small></td></tr>
-                </table>
+           <div id="margin-area">
+    <button class="ops-btn" onclick="openOps()">⚙️ TOTAL OPERASIONAL : <span id="d-ops-total">RP 0</span></button>
+    
+    <table class="m-table">
+        <tr><td>MARGIN 5K (Team BBS)</td><td align="right"><b id="res-m5">RP 0</b><br><small id="res-m5-p">/ORG: RP 0</small></td></tr>
+        <tr><td>MARGIN 7K (BBS & NAS - OPS)</td><td align="right"><b id="res-m7">RP 0</b><br><small id="res-m7-p">/ORG: RP 0</small></td></tr>
+        <tr><td>MARGIN 1K (BBS & NAS)</td><td align="right"><b id="res-m1">RP 0</b><br><small id="res-m1-p">/ORG: RP 0</small></td></tr>
+        <tr><td>MARGIN UNIT (Selisih DT)</td><td align="right"><b id="res-unit">RP 0</b><br><small id="res-unit-p">/ORG: RP 0</small></td></tr>
+    </table>
 
-                <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--green); background: rgba(100, 255, 218, 0.05);">
-                    <span class="lbl" style="color:var(--green); font-size: 10px;">MARGIN BERSIH TEAM BBS</span>
-                    <div id="d-hak-total" class="val" style="color:var(--green); font-size:22px;">RP 0</div>
-                </div>
+    <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--green); background: rgba(100, 255, 218, 0.05);">
+        <span class="lbl" style="color:var(--green); font-size: 10px;">TOTAL HAK BERSIH / ORANG (TEAM BBS)</span>
+        <div id="d-hak-total" class="val" style="color:var(--green); font-size:22px;">RP 0</div>
+    </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-                    <button class="btn" style="background:var(--silver); font-size:10px; padding:10px;" onclick="generatePDF('NAS')">📄 REKAP NAS (PDF)</button>
-                    <button class="btn" style="background:var(--green); font-size:10px; padding:10px; color:#000;" onclick="generatePDF('BBS')">🔐 RINCIAN BBS (PDF)</button>
-                </div>
-                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ HARGA & RESET</button>
-            </div> 
-        </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+        <button class="btn" style="background:var(--silver); font-size:10px; padding:10px;" onclick="generatePDF('NAS')">📄 REKAP NAS (PDF)</button>
+        <button class="btn" style="background:var(--green); font-size:10px; padding:10px; color:#000;" onclick="generatePDF('BBS')">🔐 RINCIAN BBS (PDF)</button>
+    </div>
+    <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ HARGA & RESET</button>
+</div>
 
         <div class="card">
             <span class="lbl">DAFTAR AKTIVITAS KENDARAAN</span>
@@ -510,29 +510,56 @@
     hitungUang(tb);
 });
 
-    async function hitungUang(tb) {
-        const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
-        totalOps = 0;
-        const oList = document.getElementById('ops-list'); oList.innerHTML = "";
-        if(snapOps.val()) {
-            Object.keys(snapOps.val()).forEach(k => {
-                const o = snapOps.val()[k]; totalOps += Number(o.nom);
-                oList.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>- ${o.ket}</span><span>RP ${o.nom.toLocaleString()} <b onclick="delOps('${k}')" style="color:red; cursor:pointer">X</b></span></div>`;
-            });
-        }
-        document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
-        const h5 = (tb * 5000) / 3;
-        const h7 = ((tb * 7000) - totalOps) / 4;
-        const h1 = (tb * 1000) / 4;
-        document.getElementById('res-m5').innerText = "RP " + (tb*5000).toLocaleString();
-        document.getElementById('res-m5-p').innerText = "/ORG: RP " + Math.floor(h5).toLocaleString();
-        document.getElementById('res-m7').innerText = "RP " + (tb*7000).toLocaleString();
-        document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.floor(h7).toLocaleString();
-        document.getElementById('res-m1').innerText = "RP " + (tb*1000).toLocaleString();
-        document.getElementById('res-m1-p').innerText = "/ORG: RP " + Math.floor(h1).toLocaleString();
-        document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1).toLocaleString();
+   async function hitungUang(tb) {
+    const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
+    totalOps = 0; // Tetap pakai global variable biar kebaca di PDF
+    const oList = document.getElementById('ops-list'); oList.innerHTML = "";
+    if(snapOps.val()) {
+        Object.keys(snapOps.val()).forEach(k => {
+            const o = snapOps.val()[k]; totalOps += Number(o.nom);
+            oList.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>- ${o.ket}</span><span>RP ${o.nom.toLocaleString()} <b onclick="delOps('${k}')" style="color:red; cursor:pointer">X</b></span></div>`;
+        });
     }
+    document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
+    
+    // --- LOGIKA SETTING (Sama seperti di PDF) ---
+    const nMarginA = 5000;
+    const nMarginB = 7000;
+    const nMarginC = 1000;
+    const hargaSewaUnit = 5000000;
+    const hargaDasarUnit = 4700000;
+    const totalMarginUnit = hargaSewaUnit - hargaDasarUnit;
+    const potKas = 0.10; // KAS 10%
 
+    // --- HITUNGAN MATEMATIKA ---
+    const brutoA = tb * nMarginA;
+    const h5 = Math.floor(brutoA / 3); // Bagi 3 murni
+
+    const brutoB = (tb * nMarginB) - totalOps;
+    const h7 = Math.floor((brutoB - (brutoB * potKas)) / 4); // Net Ops, Potong Kas, Bagi 4
+
+    const brutoC = tb * nMarginC;
+    const h1 = Math.floor((brutoC - (brutoC * potKas)) / 4); // Potong Kas, Bagi 4
+
+    const hUnit = Math.floor((totalMarginUnit - (totalMarginUnit * potKas)) / 4); // Potong Kas, Bagi 4
+
+    // --- UPDATE TAMPILAN DASHBOARD ---
+    document.getElementById('res-m5').innerText = "RP " + brutoA.toLocaleString();
+    document.getElementById('res-m5-p').innerText = "/ORG: RP " + h5.toLocaleString();
+
+    // Habi perhatikan, Cimi tambahin "(KAS 10%)" di teks kecilnya biar Habi ingat
+    document.getElementById('res-m7').innerText = "RP " + Math.max(0, brutoB).toLocaleString(); 
+    document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.max(0, h7).toLocaleString() + " (-10%)";
+
+    document.getElementById('res-m1').innerText = "RP " + brutoC.toLocaleString();
+    document.getElementById('res-m1-p').innerText = "/ORG: RP " + h1.toLocaleString() + " (-10%)";
+
+    document.getElementById('res-unit').innerText = "RP " + totalMarginUnit.toLocaleString();
+    document.getElementById('res-unit-p').innerText = "/ORG: RP " + hUnit.toLocaleString() + " (-10%)";
+
+    // TOTAL TERIMA PER ORANG (Gabungan semua margin)
+    document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1 + hUnit).toLocaleString();
+}
     window.openOps = () => document.getElementById('modal-ops').style.display = 'block';
     window.closeOps = () => document.getElementById('modal-ops').style.display = 'none';
     window.addOps = async () => {
@@ -661,16 +688,16 @@
             doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 28);
             doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 28);
             
-    } else {
+ } else {
     doc.setFontSize(10); 
-    doc.text("RINCIAN INTERNAL MARGIN PT. BERKAH BAJA STEEL (BATCH 20)", 105, 22, { align: "center" });
+    doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
 
     // ==========================================
     // SEKSI SETTING - HABI CUKUP EDIT DI SINI
     // ==========================================
-    const nMarginA = 5000;  // Margin pertama
-    const nMarginB = 7000;  // Margin kedua (yang ada operasional)
-    const nMarginC = 1000;  // <-- GANTI JADI 5000 DI SINI KALAU MAU BERUBAH
+    const nMarginA = 5000;  
+    const nMarginB = 7000;  
+    const nMarginC = 1000;  
     
     const hargaSewaUnit = 5000000;
     const hargaDasarUnit = 4700000;
@@ -679,20 +706,27 @@
 
     const totalMarginUnit = hargaSewaUnit - hargaDasarUnit;
 
-    // 1. Margin A (Bagi 3)
+    // --- LOGIKA HITUNG KAS (DIKUMPULKAN JADI SATU) ---
+    // 1. Kas dari Margin B (Setelah potong Ops)
+    const brutoB = (totalB * nMarginB) - totalOps;
+    const nilaiKasB = brutoB > 0 ? brutoB * potKas : 0; 
+
+    // 2. Kas dari Margin C
+    const brutoC = totalB * nMarginC;
+    const nilaiKasC = brutoC * potKas;
+
+    // 3. Kas dari Margin Unit
+    const nilaiKasUnit = totalMarginUnit * potKas;
+
+    // TOTAL SEMUA KAS PERUSAHAAN
+    const totalKasSemua = nilaiKasB + nilaiKasC + nilaiKasUnit;
+
+    // --- HITUNGAN TERIMA PER ORANG ---
     const brutoA = totalB * nMarginA;
     const hasilA = Math.floor(brutoA / 3);
-
-    // 2. Margin B (Net Ops + Kas 10% + Bagi 4)
-    const brutoB = (totalB * nMarginB) - totalOps;
-    const hasilB = Math.floor((brutoB - (brutoB * potKas)) / 4);
-
-    // 3. Margin C (Kas 10% + Bagi 4)
-    const brutoC = totalB * nMarginC;
-    const hasilC = Math.floor((brutoC - (brutoC * potKas)) / 4);
-
-    // 4. Margin Unit (Kas 10% + Bagi 4)
-    const hasilUnit = Math.floor((totalMarginUnit - (totalMarginUnit * potKas)) / 4);
+    const hasilB = Math.floor((brutoB - nilaiKasB) / 4);
+    const hasilC = Math.floor((brutoC - nilaiKasC) / 4);
+    const hasilUnit = Math.floor((totalMarginUnit - nilaiKasUnit) / 4);
 
     const bodyMargin = [
         [`MARGIN ${nMarginA/1000}K`, "RP " + brutoA.toLocaleString(), "BAGI 3", "RP " + hasilA.toLocaleString()],
@@ -701,7 +735,7 @@
         ['MARGIN UNIT', "RP " + totalMarginUnit.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilUnit.toLocaleString()]
     ];
 
-      doc.autoTable({ 
+    doc.autoTable({ 
         head: [['KATEGORI', 'TOTAL (NET OPS)', 'SISTEM PEMBAGIAN', 'TERIMA /ORANG']], 
         body: bodyMargin, 
         startY: 30,
@@ -711,14 +745,20 @@
 
     const finalYMargin = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0); // Pastikan warna hitam dulu
     doc.text(`TOTAL SELISIH BATCH INI : ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
-    
-    // Biaya Operasional tetap muncul gagah di sini
     doc.text("TOTAL OPERASIONAL LAPANGAN : RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
     
-    doc.setFontSize(8);
+    // --- BAGIAN KAS PERUSAHAAN (WARNA HIJAU) ---
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 153, 0); // Warna Hijau (R:0, G:153, B:0)
+    doc.text("TOTAL KAS PERUSAHAAN (10%) : RP " + totalKasSemua.toLocaleString(), 15, finalYMargin + 14);
+    
+    // Reset kembali ke setingan awal agar note tidak ikutan hijau
+    doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "italic");
-    doc.text("*Note: Margin 7K, 1K & Unit sudah dipotong Kas Perusahaan 10% sebelum dibagikan.", 15, finalYMargin + 14);
+    doc.setFontSize(8);
+    doc.text("*Note: Margin 7K, 1K & Unit sudah dipotong Kas Perusahaan 10% sebelum dibagikan.", 15, finalYMargin + 21);
 }
         
       doc.setTextColor(0,0,0);
