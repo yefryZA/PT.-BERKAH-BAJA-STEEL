@@ -46,43 +46,25 @@
         }
 
         #welcome-screen img {
-            height: 120px;
+            height: 100px;
             margin-bottom: 20px;
-            filter: drop-shadow(0px 0px 15px rgba(0, 212, 255, 0.5));
-            animation: float 3s ease-in-out infinite;
-        }
-
-        #welcome-screen h1 {
-            font-size: 40px;
-            letter-spacing: 5px;
-            color: #fff;
-            text-shadow: 0 0 20px var(--neon-blue);
-            margin-bottom: 15px;
-        }
-
-        #welcome-screen p {
-            font-size: 18px;
-            color: var(--neon-green);
-            letter-spacing: 2px;
-            animation: blink 1.5s infinite;
+            filter: drop-shadow(0px 0px 15px var(--neon-blue));
+            animation: float 3s infinite ease-in-out;
         }
 
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
 
-        /* --- WRAPPER UTAMA DASHBOARD --- */
+        /* --- DASHBOARD AREA --- */
         #main-dashboard {
             display: none;
-            padding: 20px;
-            height: 100vh;
-            display: flex; 
             flex-direction: column;
+            height: 100vh;
+            padding: 15px;
         }
 
-        /* --- HEADER COMMAND CENTER --- */
         .header-cc {
             display: flex;
             justify-content: space-between;
@@ -90,72 +72,37 @@
             background: rgba(0, 21, 40, 0.8);
             border: 1px solid var(--glass-border);
             border-top: 3px solid var(--neon-blue);
-            padding: 10px 30px;
-            border-radius: 12px;
-            margin-bottom: 15px; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            flex-shrink: 0; 
+            padding: 10px 25px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
-        .brand-area {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .brand-area { display: flex; align-items: center; gap: 15px; }
+        .brand-area img { height: 40px; }
+        .header-cc h1 { font-size: 20px; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-blue); }
 
-        .brand-area img {
-            height: 45px;
-            width: auto;
-            filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.3));
-        }
+        .jam-digital { font-size: 24px; font-weight: bold; color: var(--neon-green); text-align: right; }
+        .tgl-digital { font-size: 11px; color: #888; text-align: right; }
 
-        .header-cc h1 {
-            font-size: 24px;
-            letter-spacing: 4px;
-            color: #fff;
-            text-shadow: 0 0 10px var(--neon-blue);
-            margin: 0;
-        }
-
-        .clock-area {
-            text-align: right;
-        }
-
-        .jam-digital {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--neon-green);
-            letter-spacing: 2px;
-            text-shadow: 0 0 8px var(--neon-green);
-        }
-
-        .tgl-digital {
-            font-size: 11px;
-            color: #aaa;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* --- RUNNING TEXT (MARQUEE CSS) --- */
+        /* --- RUNNING TEXT --- */
         .running-text-container {
-            background: rgba(0, 21, 40, 0.6);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 8px 15px;
-            margin-bottom: 20px;
+            border-radius: 5px;
+            padding: 5px;
+            margin-bottom: 10px;
             overflow: hidden;
-            white-space: nowrap;
             flex-shrink: 0;
         }
 
         .running-text {
             display: inline-block;
-            font-size: 16px;
+            white-space: nowrap;
+            color: #ffaa00;
             font-weight: bold;
-            color: #ffaa00; 
-            letter-spacing: 2px;
-            animation: scroll-left 25s linear infinite; 
+            font-size: 14px;
+            animation: scroll-left 30s linear infinite;
         }
 
         @keyframes scroll-left {
@@ -163,78 +110,56 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* --- GRID LAYOUT (Diubah jadi 3 Kolom x 2 Baris untuk 6 Layar) --- */
+        /* --- GRID 1 BARIS (4 MONITOR SEJAJAR) --- */
         .grid-cc {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 Kolom */
-            grid-template-rows: repeat(2, 1fr);    /* 2 Baris */
-            gap: 15px; /* Jarak sedikit dikecilkan biar 6 kotak muat rapi */
-            flex-grow: 1; 
-            height: 0; 
+            grid-template-columns: repeat(4, 1fr); /* 4 Kolom Berjejer */
+            gap: 12px;
+            flex-grow: 1; /* Ambil sisa ruang ke bawah */
+            height: 0;    /* Maksa isi buat stretch */
         }
 
-        /* --- CONTAINER WEB --- */
         .monitor-box {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
         .monitor-header {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--glass-border);
         }
 
-        .monitor-title {
-            font-size: 12px; /* Ukuran font dikecilkan sedikit biar muat di kotak yang lebih kecil */
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            color: #ddd;
-        }
+        .monitor-title { font-size: 11px; font-weight: bold; color: #00d4ff; letter-spacing: 1px; }
 
-        .live-indicator {
-            font-size: 10px;
-            font-weight: bold;
-            color: var(--neon-green);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .dot-blink {
-            width: 8px;
-            height: 8px;
-            background-color: var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-green);
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
-        /* --- IFRAME AREA --- */
         .monitor-content {
             flex-grow: 1;
-            position: relative;
+            background: #fff; /* Background putih agar dashboard proyek terlihat jelas */
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff;
+        iframe { width: 100%; height: 100%; border: none; }
+
+       .dot-blink {
+            width: 10px;           /* Ukuran digedein dikit biar jelas */
+            height: 10px;
+            background: #00ff00;   /* Hijau Murni (Lime) */
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00; /* Efek Sinar LED */
+            animation: blinker 1s infinite;
+        }
+
+        @keyframes blinker {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); } /* Jangan sampai nol biar gak hilang total */
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
@@ -242,34 +167,33 @@
 
     <div id="welcome-screen" onclick="masukCommandCenter()">
         <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" alt="Logo PT BBS">
-        <h1>WELCOME TO COMMAND CENTER PT. BBS</h1>
-        <p>[ KLIK DI MANA SAJA UNTUK MASUK ]</p>
+        <h1>COMMAND CENTER PT. BBS</h1>
+        <p>[ KLIK UNTUK AKTIFKAN 4 MONITORING ]</p>
     </div>
 
-    <div id="main-dashboard" style="display: none;">
-        
+    <div id="main-dashboard">
         <header class="header-cc">
             <div class="brand-area">
                 <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" alt="LOGO BBS">
-                <h1>COMMAND CENTER PT. BERKAH BAJA STEEL</h1>
+                <h1>PT. BERKAH BAJA STEEL <span style="font-size: 12px; opacity: 0.6;">| LIVE SYSTEM</span></h1>
             </div>
             <div class="clock-area">
                 <div id="jam" class="jam-digital">00:00:00</div>
-                <div id="tgl" class="tgl-digital">SENIN, 01 JAN 2026</div>
+                <div id="tgl" class="tgl-digital">...</div>
             </div>
         </header>
 
         <div class="running-text-container">
             <div class="running-text">
-                ⚠️ INFO UPDATE: SELAMAT DATANG DI COMMAND CENTER PT. BBS ‖ STATUS SEMUA JARINGAN: AMAN BEROPERASI ‖ TETAP PANTAU SEMUA PERGERAKAN OPERASIONAL & LOGISTIK HARI INI ‖ SYTEM BY_YEFRY ZA. ⚓
+                ⚠️ MONITORING SYSTEM ACTIVE ‖ PROJECT PT. NAS - PT. VINFAST: ONLINE ‖ PROJECT RT SAHRIL: ONLINE ‖ PROJECT BP. BURHAN: ONLINE ‖ PROJECT PT. NAS - PT. HK: ONLINE ‖ SYSTEM BY_YEFRY ZA.
             </div>
         </div>
 
         <div class="grid-cc">
             <div class="monitor-box">
                 <div class="monitor-header">
-                    <div class="monitor-title">PROJECT PT. N A S - PT. VINFAST</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                    <span class="monitor-title">NAS - VINFAST</span>
+                    <span class="dot-blink"></span>
                 </div>
                 <div class="monitor-content">
                     <iframe src="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/BBS-NAS.html"></iframe>
@@ -278,8 +202,8 @@
 
             <div class="monitor-box">
                 <div class="monitor-header">
-                    <div class="monitor-title">PROJECT RT SAHRIL</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                    <span class="monitor-title">RT SAHRIL</span>
+                    <span class="dot-blink"></span>
                 </div>
                 <div class="monitor-content">
                     <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
@@ -288,8 +212,8 @@
 
             <div class="monitor-box">
                 <div class="monitor-header">
-                    <div class="monitor-title">PROJECT Bp. BURHAN</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                    <span class="monitor-title">Bp. BURHAN</span>
+                    <span class="dot-blink"></span>
                 </div>
                 <div class="monitor-content">
                     <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
@@ -298,31 +222,11 @@
 
             <div class="monitor-box">
                 <div class="monitor-header">
-                    <div class="monitor-title">PROJECT PT. N A S - PT. H K</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
+                    <span class="monitor-title">NAS - H K</span>
+                    <span class="dot-blink"></span>
                 </div>
                 <div class="monitor-content">
                     <iframe src="https://yefryza.github.io/bbs-project-2/"></iframe>
-                </div>
-            </div>
-
-            <div class="monitor-box">
-                <div class="monitor-header">
-                    <div class="monitor-title">PROJECT 5: [ISI NAMA]</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
-                </div>
-                <div class="monitor-content">
-                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
-                </div>
-            </div>
-
-            <div class="monitor-box">
-                <div class="monitor-header">
-                    <div class="monitor-title">PROJECT 6: [ISI NAMA]</div>
-                    <div class="live-indicator"><div class="dot-blink"></div> LIVE</div>
-                </div>
-                <div class="monitor-content">
-                    <iframe src="https://yefryza.github.io/PT.BBS/dashboard.html"></iframe>
                 </div>
             </div>
         </div>
@@ -340,23 +244,13 @@
 
         function masukCommandCenter() {
             let elem = document.documentElement; 
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
 
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { 
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { 
-                elem.msRequestFullscreen();
-            }
-
-            let welcomeScreen = document.getElementById('welcome-screen');
-            welcomeScreen.style.opacity = '0'; 
-            
+            document.getElementById('welcome-screen').style.opacity = '0'; 
             setTimeout(() => {
-                welcomeScreen.style.display = 'none'; 
-                
-                let mainDash = document.getElementById('main-dashboard');
-                mainDash.style.display = 'flex'; 
+                document.getElementById('welcome-screen').style.display = 'none'; 
+                document.getElementById('main-dashboard').style.display = 'flex'; 
             }, 800); 
         }
     </script>
