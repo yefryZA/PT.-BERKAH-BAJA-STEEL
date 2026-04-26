@@ -10,23 +10,24 @@
    <style>
     /* 🎨 VARIABEL DASAR */
     :root {
-        --bg-dark: #1a1a1c; 
-        --bg-light: #2c2c2e;
+        --bg-dark: #07dff7; 
+        --bg-light: #3e6947;
         --accent: #ffcc00;  
         --text-light: #ffffff;
         --text-muted: #bcbcbc;
         --gold-glow: 0 0 15px rgba(255, 204, 0, 0.4);
     }
 
-    /* 🧱 RESET DASAR */
-    body {
-        font-family: 'Roboto', sans-serif;
-        margin: 0; 
-        background: var(--bg-dark);
-        color: var(--text-light); 
-        padding-bottom: 90px;
-        overflow-x: hidden;
-    }
+  /* 🧱 RESET DASAR */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0; 
+    background: transparent; /* Buat transparan biar video kelihatan */
+    color: var(--text-light); 
+    padding-bottom: 90px;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
 
     /* 🔒 SISTEM SECTION (DISIPLIN TOTAL) */
     .section { 
@@ -139,8 +140,8 @@
 }
 
 .dash-card {
-    background: linear-gradient(145deg, #2c2c2e, #1c1c1e);
-    border: 1px solid rgba(255, 204, 0, 0.2);
+    background: linear-gradient(145deg, #1e6425, #196024);
+    border: 1px solid rgb(255, 204, 0);
     border-radius: 20px;
     padding: 30px 10px;
     text-align: center;
@@ -277,13 +278,20 @@
 </style>
 </head>
 <body>
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; overflow: hidden;">
+    <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+        <source src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/videobelakang.mp4" type="video/mp4">
+    </video>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: -1;"></div>
+</div>
+
 <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
     <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; flex: 1; margin: 5px; border: 1px solid #444;">
-        <span style="display: block; font-size: 9px; color: #888;">LOGISTIC STATUS</span>
+        <span style="display: block; font-size: 9px; color: #00ff00;">COMPANY PROFIL</span>
         <span style="color: #00ff00; font-size: 11px; font-weight: bold;">● ACTIVE</span>
     </div>
     <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; flex: 1; margin: 5px; border: 1px solid #444;">
-        <span style="display: block; font-size: 9px; color: #888;">PROJECT MONITORING</span>
+        <span style="display: block; font-size: 9px; color: #f80000;">PROJECT MONITORING</span>
         <span style="color: var(--accent); font-size: 11px; font-weight: bold;">ON-GOING</span>
     </div>
 </div>
@@ -381,7 +389,7 @@
         <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/logo.png" style="width: 85%; border-radius: 50%;">
     </div>
     <h1 style="font-family: 'Montserrat'; font-size: 20px; color: var(--accent); margin: 0;">PT. BERKAH BAJA STEEL</h1>
-    <p style="font-size: 10px; letter-spacing: 1px; color: white; opacity: 0.8;">INFRASTRUKTUR • PERDAGANGAN • DIGITALISASI</p>
+    <p style="font-size: 10px; letter-spacing: 1px; color: rgb(0, 0, 0); opacity: 0.8;">INFRASTRUKTUR • PERDAGANGAN • DIGITALISASI</p>
 </div>
 
 <div id="home" class="section">
@@ -487,37 +495,72 @@
                 </div>
             </div>
         </div>
+<div id="struktur-data" style="padding-bottom: 80px;"> <div style="text-align: center; margin-bottom: 20px;">
+        <b style="color: var(--accent); font-size: 16px;">MANAGEMENT TEAM</b>
+    </div>
 
-        <div id="struktur-data">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <b style="color: var(--accent); font-size: 16px;">MANAGEMENT TEAM</b>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="background: linear-gradient(to right, #444, #222); padding: 10px; border-radius: 8px; border-right: 4px solid var(--accent); display: flex; align-items: center; gap: 12px;">
+            <div style="width: 45px; height: 45px; border-radius: 6px; overflow: hidden; border: 1px solid var(--accent); background: #555; flex-shrink: 0;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/FotoDirut.jpeg" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="background: linear-gradient(to right, #444, #222); padding: 10px; border-radius: 8px; border-right: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: bold; font-size: 13px;">H. HENDAR WAHBAGIONO</span>
-                    <span style="font-size: 9px; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 800;">Direktur Utama</span>
-                </div>
-                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px;">YEFRY ZA.</span>
-                    <span style="color: var(--accent); font-size: 11px;">● Manajer</span>
-                </div>
-                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px;">SOFYAN</span>
-                    <span style="color: var(--accent); font-size: 11px;">● Supervisor</span>
-                </div>
-                  <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px;">ALIF</span>
-                    <span style="color: var(--accent); font-size: 11px;">● Staff Admin</span>
-                </div>
-                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px;">OPANG</span>
-                    <span style="color: var(--accent); font-size: 11px;">● Korlap</span>
-                </div>
-                <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px;">NOVY</span>
-                    <span style="color: var(--accent); font-size: 11px;">● Marketing</span>
-                </div> </div> </div> </div>
-      
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: bold; font-size: 13px; color: #fff;">H. HENDAR WAHBAGIONO</span>
+                <span style="font-size: 8px; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 800;">DIRUT</span>
+            </div>
+        </div>
+
+        <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #555; background: #444; flex-shrink: 0;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/FotoManager.jpeg" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #eee;">YEFRY ZA.</span>
+                <span style="color: var(--accent); font-size: 11px;">● Manajer</span>
+            </div>
+        </div>
+
+        <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #555; background: #444; flex-shrink: 0;">
+                <img src="https://raw.githubusercontent.com/yefryZA/PT.BBS/main/FotoGuru.jpeg" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #eee;">SOFYAN</span>
+                <span style="color: var(--accent); font-size: 11px;">● Supervisor</span>
+            </div>
+        </div>
+
+        <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #555; background: #444; flex-shrink: 0;">
+                <img src="https://via.placeholder.com/100" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #eee;">ALIF</span>
+                <span style="color: var(--accent); font-size: 11px;">● Staff Admin</span>
+            </div>
+        </div>
+
+        <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #555; background: #444; flex-shrink: 0;">
+                <img src="https://via.placeholder.com/100" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #eee;">OPANG</span>
+                <span style="color: var(--accent); font-size: 11px;">● Korlap</span>
+            </div>
+        </div>
+
+        <div style="background: #333; padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1px solid #555; background: #444; flex-shrink: 0;">
+                <img src="https://via.placeholder.com/100" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: #eee;">NOVY</span>
+                <span style="color: var(--accent); font-size: 11px;">● Marketing</span>
+            </div>
+        </div>
+    </div></div></div> 
+
     </div> <p style="margin-top: 15px; font-size: 12px; color: var(--text-muted); text-align: center;">
 <div id="project" class="section">
     <div style="text-align: center; margin-bottom: 25px;">
@@ -726,7 +769,7 @@
     const msg = new SpeechSynthesisUtterance();
 msg.text = "selamat datang di Berkah Baja Steel";
 msg.lang = 'id-ID'; // Bahasa indonesia
-msg.rate = 0.9;     // Kecepatan ngomongnya pas (nggak terlalu cepat)
+msg.rate = 1.0;     // Kecepatan ngomongnya pas (nggak terlalu cepat)
 window.speechSynthesis.speak(msg);
 
     // 📺 2. EKSEKUSI FULLSCREEN
