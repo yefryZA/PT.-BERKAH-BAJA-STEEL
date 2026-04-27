@@ -140,8 +140,17 @@ body {
 }
 
 .dash-card {
-    background: linear-gradient(145deg, #1e6425, #196024);
-    border: 1px solid rgb(255, 204, 0);
+    /* Ubah background menjadi RGBA. 
+       0.7 artinya 70% terlihat, 30% transparan. 
+       Semakin kecil angkanya, semakin tembus pandang. 
+    */
+    background: linear-gradient(145deg, rgba(30, 100, 37, 0.8), rgba(25, 96, 36, 0.8));
+    
+    /* Tambahkan backdrop-filter agar background di belakangnya terlihat nge-blur (mewah) */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* Untuk support Safari */
+
+    border: 1px solid rgb(255, 251, 0);
     border-radius: 20px;
     padding: 30px 10px;
     text-align: center;
