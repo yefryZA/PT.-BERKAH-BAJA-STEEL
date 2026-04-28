@@ -463,7 +463,7 @@
         return "";
     }
 
-  // --- RENDER DASHBOARD ---
+    // --- RENDER DASHBOARD ---
     onValue(ref(db, `bbs_logs/${dbKey}`), (snap) => {
     const data = snap.val();
     let tm = 0, tb = 0, otw = 0; 
@@ -507,65 +507,32 @@
     const lossEl = document.getElementById('d-total-loss');
     lossEl.innerText = (lossVal > 0 ? "+" : "") + lossVal.toFixed(2);
     lossEl.style.color = lossVal < 0 ? "var(--red)" : (lossVal > 0 ? "var(--green)" : "#fff");
-    
-    // PERBAIKAN: Kirim rawData.length (jumlah mobil) ke dalam fungsi
-    hitungUang(tb, rawData.length);
+    hitungUang(tb);
 });
 
-   // PERBAIKAN: Tangkap parameter jumlahMobil
-   async function hitungUang(tb, jumlahMobil = 0) {
-    const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
-    totalOps = 0; // Tetap pakai global variable biar kebaca di PDF
-    const oList = document.getElementById('ops-list'); oList.innerHTML = "";
-    if(snapOps.val()) {
-        Object.keys(snapOps.val()).forEach(k => {
-            const o = snapOps.val()[k]; totalOps += Number(o.nom);
-            oList.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>- ${o.ket}</span><span>RP ${o.nom.toLocaleString()} <b onclick="delOps('${k}')" style="color:red; cursor:pointer">X</b></span></div>`;
-        });
+    async function hitungUang(tb) {
+        const snapOps = await get(ref(db, `bbs_operasional/${dbKey}`));
+        totalOps = 0;
+        const oList = document.getElementById('ops-list'); oList.innerHTML = "";
+        if(snapOps.val()) {
+            Object.keys(snapOps.val()).forEach(k => {
+                const o = snapOps.val()[k]; totalOps += Number(o.nom);
+                oList.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;"><span>- ${o.ket}</span><span>RP ${o.nom.toLocaleString()} <b onclick="delOps('${k}')" style="color:red; cursor:pointer">X</b></span></div>`;
+            });
+        }
+        document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
+        const h5 = (tb * 5000) / 3;
+        const h7 = ((tb * 7000) - totalOps) / 4;
+        const h1 = (tb * 1000) / 4;
+        document.getElementById('res-m5').innerText = "RP " + (tb*5000).toLocaleString();
+        document.getElementById('res-m5-p').innerText = "/ORG: RP " + Math.floor(h5).toLocaleString();
+        document.getElementById('res-m7').innerText = "RP " + (tb*7000).toLocaleString();
+        document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.floor(h7).toLocaleString();
+        document.getElementById('res-m1').innerText = "RP " + (tb*1000).toLocaleString();
+        document.getElementById('res-m1-p').innerText = "/ORG: RP " + Math.floor(h1).toLocaleString();
+        document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1).toLocaleString();
     }
-    document.getElementById('d-ops-total').innerText = "RP " + totalOps.toLocaleString();
-    
-    // --- LOGIKA SETTING (Sama seperti di PDF) ---
-    const nMarginA = 5000;
-    const nMarginB = 7000;
-    const nMarginC = 1000;
-    const hargaSewaUnit = 5000000;
-    const hargaDasarUnit = 4700000;
-    const potKas = 0.10; // KAS 10%
 
-    // PERBAIKAN: Margin Unit dikali jumlah mobil
-    const marginPerMobil = hargaSewaUnit - hargaDasarUnit;
-    const totalMarginUnit = marginPerMobil * jumlahMobil;
-
-    // --- HITUNGAN MATEMATIKA ---
-    const brutoA = tb * nMarginA;
-    const h5 = Math.floor(brutoA / 3); // Bagi 3 murni
-
-    const brutoB = (tb * nMarginB) - totalOps;
-    const h7 = Math.floor((brutoB - (brutoB * potKas)) / 4); // Net Ops, Potong Kas, Bagi 4
-
-    const brutoC = tb * nMarginC;
-    const h1 = Math.floor((brutoC - (brutoC * potKas)) / 4); // Potong Kas, Bagi 4
-
-    const hUnit = Math.floor((totalMarginUnit - (totalMarginUnit * potKas)) / 4); // Potong Kas, Bagi 4
-
-    // --- UPDATE TAMPILAN DASHBOARD ---
-    document.getElementById('res-m5').innerText = "RP " + brutoA.toLocaleString();
-    document.getElementById('res-m5-p').innerText = "/ORG: RP " + h5.toLocaleString();
-
-    document.getElementById('res-m7').innerText = "RP " + Math.max(0, brutoB).toLocaleString(); 
-    document.getElementById('res-m7-p').innerText = "/ORG: RP " + Math.max(0, h7).toLocaleString() + " (-10%)";
-
-    document.getElementById('res-m1').innerText = "RP " + brutoC.toLocaleString();
-    document.getElementById('res-m1-p').innerText = "/ORG: RP " + h1.toLocaleString() + " (-10%)";
-
-    document.getElementById('res-unit').innerText = "RP " + totalMarginUnit.toLocaleString();
-    document.getElementById('res-unit-p').innerText = "/ORG: RP " + hUnit.toLocaleString() + " (-10%)";
-
-    // TOTAL TERIMA PER ORANG (Gabungan semua margin)
-    document.getElementById('d-hak-total').innerText = "RP " + Math.floor(h5 + h7 + h1 + hUnit).toLocaleString();
-}
-    
     window.openOps = () => document.getElementById('modal-ops').style.display = 'block';
     window.closeOps = () => document.getElementById('modal-ops').style.display = 'none';
     window.addOps = async () => {
@@ -577,8 +544,8 @@
 
     // --- GENERATE PDF BATCH 20 ---
     window.generatePDF = async (tipe) => {
-        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 20);
-        if (dataSiap.length < 20) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
+        const dataSiap = rawData.filter(i => i.status === 'DONE').slice(0, 1);
+        if (dataSiap.length < 1) return alert(`DATA BELUM CUKUP! Baru ada ${dataSiap.length} data DONE.`);
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
@@ -649,7 +616,9 @@
             }
         }
     });
-
+            
+            //==========================================================================
+            //==========================================================================
             // --- LOGIKA HARGA BELI MATERIAL ---
             const hargaBeliUnit = 117700; // SILAKAN EDIT HARGA DI SINI
             const totalHargaBeli = totalM * hargaBeliUnit;
@@ -658,7 +627,8 @@
             const hargaOngkosPerRit = 5000000; // Harga per rit (Rp 5.000.000)
             const jumlahRit = 20; // Jumlah rit (sementara diset 20, silakan diedit)
             const totalHargaOngkosTruck = hargaOngkosPerRit * jumlahRit;
-            // --------------------------------------------
+            //==========================================================================
+            //==========================================================================
 
             const finalY = doc.lastAutoTable.finalY + 10;
             const xVal = 80; // Koordinat lurus untuk tanda (:)
@@ -694,81 +664,19 @@
             doc.text(`TOTAL SELISIH ( LOSS / LEBIH )`, 14, finalY + 28);
             doc.text(`: ${(selisihTotal > 0 ? "+" : "") + selisihTotal.toFixed(2)} M3`, xVal, finalY + 28);
             
-} else {
-    doc.setFontSize(10); 
-    doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
+        } else {
+            doc.setFontSize(10); doc.text("RINCIAN INTERNAL MARGIN (BATCH 20)", 105, 22, { align: "center" });
+            const bodyMargin = [
+                ['MARGIN 5K', "RP " + (totalB * 5000).toLocaleString(), "BAGI 3", "RP " + Math.floor((totalB * 5000) / 3).toLocaleString()],
+                ['MARGIN 7K', "RP " + (totalB * 7000).toLocaleString(), "BAGI 4 (-OPS)", "RP " + Math.floor(((totalB * 7000) - totalOps) / 4).toLocaleString()],
+                ['MARGIN 1K', "RP " + (totalB * 1000).toLocaleString(), "BAGI 4", "RP " + Math.floor((totalB * 1000) / 4).toLocaleString()]
+            ];
+            doc.autoTable({ head: [['KATEGORI', 'TOTAL', 'SISTEM', 'HASIL/ORANG']], body: bodyMargin, startY: 30 });
+            const finalYMargin = doc.lastAutoTable.finalY + 10;
+            doc.text(`TOTAL SELISIH BATCH INI: ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
+            doc.text("TOTAL OPERASIONAL: RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
+        }
 
-    // ==========================================
-    // SEKSI SETTING - HABI CUKUP EDIT DI SINI
-    // ==========================================
-    const nMarginA = 5000;  
-    const nMarginB = 7000;  
-    const nMarginC = 1000;  
-    
-    const hargaSewaUnit = 5000000;
-    const hargaDasarUnit = 4700000;
-    const potKas = 0.10; // 10%
-    // ==========================================
-
-    // PERBAIKAN: Ambil jumlah mobil dari rawData yang sudah di-load di Dashboard
-    const jumlahMobilPDF = typeof rawData !== 'undefined' ? rawData.length : 0;
-    const marginPerMobil = hargaSewaUnit - hargaDasarUnit;
-    const totalMarginUnit = marginPerMobil * jumlahMobilPDF;
-
-    // --- LOGIKA HITUNG KAS (DIKUMPULKAN JADI SATU) ---
-    // 1. Kas dari Margin B (Setelah potong Ops)
-    const brutoB = (totalB * nMarginB) - totalOps;
-    const nilaiKasB = brutoB > 0 ? brutoB * potKas : 0; 
-
-    // 2. Kas dari Margin C
-    const brutoC = totalB * nMarginC;
-    const nilaiKasC = brutoC * potKas;
-
-    // 3. Kas dari Margin Unit
-    const nilaiKasUnit = totalMarginUnit * potKas;
-
-    // TOTAL SEMUA KAS PERUSAHAAN
-    const totalKasSemua = nilaiKasB + nilaiKasC + nilaiKasUnit;
-
-    // --- HITUNGAN TERIMA PER ORANG ---
-    const brutoA = totalB * nMarginA;
-    const hasilA = Math.floor(brutoA / 3);
-    const hasilB = Math.floor((brutoB - nilaiKasB) / 4);
-    const hasilC = Math.floor((brutoC - nilaiKasC) / 4);
-    const hasilUnit = Math.floor((totalMarginUnit - nilaiKasUnit) / 4);
-
-    const bodyMargin = [
-        [`MARGIN ${nMarginA/1000}K`, "RP " + brutoA.toLocaleString(), "BAGI 3", "RP " + hasilA.toLocaleString()],
-        [`MARGIN ${nMarginB/1000}K`, "RP " + brutoB.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilB.toLocaleString()],
-        [`MARGIN ${nMarginC/1000}K`, "RP " + brutoC.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilC.toLocaleString()],
-        ['MARGIN UNIT', "RP " + totalMarginUnit.toLocaleString(), "KAS 10% & BAGI 4", "RP " + hasilUnit.toLocaleString()]
-    ];
-
-    doc.autoTable({ 
-        head: [['KATEGORI', 'TOTAL (NET OPS)', 'SISTEM PEMBAGIAN', 'TERIMA /ORANG']], 
-        body: bodyMargin, 
-        startY: 30,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 51, 102] }
-    });
-
-    const finalYMargin = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0); // Pastikan warna hitam dulu
-    doc.text(`TOTAL SELISIH BATCH INI : ${selisihTotal.toFixed(2)} M3`, 15, finalYMargin);
-    doc.text("TOTAL OPERASIONAL LAPANGAN : RP " + totalOps.toLocaleString(), 15, finalYMargin + 7);
-    
-    // --- BAGIAN KAS PERUSAHAAN (WARNA HIJAU) ---
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 153, 0); // Warna Hijau (R:0, G:153, B:0)
-    doc.text("TOTAL KAS PERUSAHAAN (10%) : RP " + totalKasSemua.toLocaleString(), 15, finalYMargin + 14);
-    
-    // Reset kembali ke setingan awal agar note tidak ikutan hijau
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
-    doc.text("*Note: Margin 7K, 1K & Unit sudah dipotong Kas Perusahaan 10% sebelum dibagikan.", 15, finalYMargin + 21);
-}        
       doc.setTextColor(0,0,0);
         const signY = doc.internal.pageSize.height - 30;
 
