@@ -67,7 +67,7 @@
 
     <div style="flex: 2; text-align: center;">
        <h1 style="font-family: 'Cinzel', serif; font-size: 13px; color: #FFFF00; margin: 0; letter-spacing: 1px; font-weight: bold; text-shadow: 0 0 5px #FFFF00, 0 0 10px #FFD700, 0 0 15px #FFD700;">PT. BERKAH BAJA STEEL</h1>
-        <p style="font-family: 'Poppins'; font-size: 8px; color: var(--aksen-emas); margin: 3px 0 0 0;">Suport By_PT. NAS - VINFAST</p>
+        <p style="font-family: 'Poppins'; font-size: 8px; color: var(--aksen-emas); margin: 3px 0 0 0;">PROJECT NAS_CBA_BBS</p>
     </div>
 
     <div style="flex: 1; text-align: right; font-family: 'Orbitron', sans-serif;">
@@ -94,27 +94,27 @@
                 </div>
             </div>
 
-           <div id="margin-area">
-    <button class="ops-btn" onclick="openOps()">⚙️ TOTAL OPERASIONAL : <span id="d-ops-total">RP 0</span></button>
-    
-    <table class="m-table">
-        <tr><td>MARGIN 5K (Team BBS)</td><td align="right"><b id="res-m5">RP 0</b><br><small id="res-m5-p">/ORG: RP 0</small></td></tr>
-        <tr><td>MARGIN 7K (BBS & NAS - OPS)</td><td align="right"><b id="res-m7">RP 0</b><br><small id="res-m7-p">/ORG: RP 0</small></td></tr>
-        <tr><td>MARGIN 1K (BBS & NAS)</td><td align="right"><b id="res-m1">RP 0</b><br><small id="res-m1-p">/ORG: RP 0</small></td></tr>
-        <tr><td>MARGIN UNIT (Selisih DT)</td><td align="right"><b id="res-unit">RP 0</b><br><small id="res-unit-p">/ORG: RP 0</small></td></tr>
-    </table>
+            <div id="margin-area">
+                <button class="ops-btn" onclick="openOps()">⚙️ TOTAL OPERASIONAL : <span id="d-ops-total">RP 0</span></button>
+                
+                <table class="m-table">
+                    <tr><td>MARGIN 5K (Team BBS)</td><td align="right"><b id="res-m5">RP 0</b><br><small id="res-m5-p">/ORG: RP 0</small></td></tr>
+                    <tr><td>MARGIN 7K (BBS & NAS - OPS)</td><td align="right"><b id="res-m7">RP 0</b><br><small id="res-m7-p">/ORG: RP 0</small></td></tr>
+                    <tr><td>MARGIN 1K (BBS & NAS)</td><td align="right"><b id="res-m1">RP 0</b><br><small id="res-m1-p">/ORG: RP 0</small></td></tr>
+                </table>
 
-    <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--green); background: rgba(100, 255, 218, 0.05);">
-        <span class="lbl" style="color:var(--green); font-size: 10px;">TOTAL HAK BERSIH / ORANG (TEAM BBS)</span>
-        <div id="d-hak-total" class="val" style="color:var(--green); font-size:22px;">RP 0</div>
-    </div>
+                <div class="stat-box" style="grid-column: span 2; border: 1.5px dashed var(--green); background: rgba(100, 255, 218, 0.05);">
+                    <span class="lbl" style="color:var(--green); font-size: 10px;">MARGIN BERSIH TEAM BBS</span>
+                    <div id="d-hak-total" class="val" style="color:var(--green); font-size:22px;">RP 0</div>
+                </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-        <button class="btn" style="background:var(--silver); font-size:10px; padding:10px;" onclick="generatePDF('NAS')">📄 REKAP NAS (PDF)</button>
-        <button class="btn" style="background:var(--green); font-size:10px; padding:10px; color:#000;" onclick="generatePDF('BBS')">🔐 RINCIAN BBS (PDF)</button>
-    </div>
-    <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ HARGA & RESET</button>
-</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                    <button class="btn" style="background:var(--silver); font-size:10px; padding:10px;" onclick="generatePDF('NAS')">📄 REKAP NAS (PDF)</button>
+                    <button class="btn" style="background:var(--green); font-size:10px; padding:10px; color:#000;" onclick="generatePDF('BBS')">🔐 RINCIAN BBS (PDF)</button>
+                </div>
+                <button class="btn" style="margin-top:10px; font-size:10px; height:auto; padding:8px;" onclick="openAdmin()">⚙️ HARGA & RESET</button>
+            </div> 
+        </div>
 
         <div class="card">
             <span class="lbl">DAFTAR AKTIVITAS KENDARAAN</span>
@@ -287,7 +287,7 @@
         printArea.style = "width: 380px; padding: 20px; background: white; color: black; font-family: monospace; position: absolute; left: -9999px; top: 0;";
         printArea.innerHTML = `
     <div style="text-align: center; font-weight: bold; font-size: 18px;">PT. BERKAH BAJA STEEL</div>
-    <div style="text-align: center; font-size: 12px;">PENGIRIMAN PT. VINFAST</div>
+    <div style="text-align: center; font-size: 12px;">PROJECT TOLL JAPEK II</div>
     <div style="text-align: center;">--------------------------------</div>
     <div style="font-size: 14px; line-height: 1.5;">
         <div style="font-family: monospace; width: 100%; font-size: 12px;">
@@ -321,7 +321,7 @@
             -----------------------------------------------<br>
 
             <div style="text-align: center; font-size: 11px; margin-top: 15px;">⚓ NIAT BAIK ‖ KERJA BAIK ‖ REZEKI BAIK ⚓</div>
-            <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati pak sopir, KELUARGA menunggu ANDA dirumah.</div>
+            <div style="text-align: center; font-size: 10px; margin-top:10px;">Hati-hati Pak Sopir, KELUARGA menunggu ANDA dirumah.</div>
         </div>
     </div>
 `;
@@ -616,7 +616,6 @@
             }
         }
     });
-            
             //==========================================================================
             //==========================================================================
             // --- LOGIKA HARGA BELI MATERIAL ---
