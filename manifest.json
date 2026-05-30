@@ -2,7 +2,7 @@
   "name": "Buku Kas Pempek Lestari",
   "short_name": "Kas Lestari",
   "description": "Sistem Manajemen Buku Kas Harian UMKM Pempek Palembang Lestari",
-  "start_url": "index.html",
+  "start_url": "/PT.-BERKAH-BAJA-STEEL/kas.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1b263b",
