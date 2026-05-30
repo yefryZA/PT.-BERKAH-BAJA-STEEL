@@ -1,7 +1,7 @@
 const CACHE_NAME = 'kas-lestari-v1';
 // Daftarkan aset lokal yang mau di-cache agar instan saat dibuka
 const assetsToCache = [
-  'index.html',
+  '/PT.-BERKAH-BAJA-STEEL/kas.html',
   'manifest.json'
 ];
 
