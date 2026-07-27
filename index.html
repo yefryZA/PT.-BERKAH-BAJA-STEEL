@@ -150,7 +150,7 @@ table.invoice-table th {
             <input type="text" id="inputNamaBarang" placeholder="Nama Barang">
             <input type="text" id="inputPlat" placeholder="Plat Nomor">
             <input type="number" id="inputVolume" placeholder="Vol" min="1">
-           <input type="text" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)">
+           <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)">
         </div>
         <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
         <button class="btn btn-pdf" onclick="generatePDF()">📄 Download PDF Invoice</button>
@@ -164,7 +164,7 @@ table.invoice-table th {
         </div>
 
        <div class="invoice-title">
-    <h2>INVOICE KIRIMAN MATERIAL ALAM<br>PT. CAHAYA HARTA MAKMUR</h2>
+    <h2>INVOICE KIRIMAN MATERIAL ALAM TUJUAN<br>PT. CAHAYA HARTA MAKMUR</h2>
 </div>
 
      <!-- TABEL BARANG -->
@@ -249,7 +249,7 @@ function tambahBarang() {
     document.getElementById('inputHarga').value = '';
 }
 
-   function renderTable() {
+function renderTable() {
     const tbody = document.getElementById('invoiceItems');
     tbody.innerHTML = '';
     
@@ -261,10 +261,18 @@ function tambahBarang() {
         totalVol += item.vol;
         totalHarga += item.jumlah;
 
+        // --- Tambahkan pemformatan tanggal di sini ---
+        let tglFormatted = item.tgl;
+        if (item.tgl) {
+            const d = new Date(item.tgl);
+            // Format ke d/m/yyyy tanpa leading zero (misal: 2/7/2026)
+            tglFormatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        }
+
         const row = `
             <tr>
                 <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
-                <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${item.tgl}</td>
+                <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
                 <td style="vertical-align: middle;">${item.nama}</td>
                 <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
                 <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
