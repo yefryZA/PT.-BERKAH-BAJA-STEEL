@@ -174,29 +174,31 @@
     <h2>INVOICE KIRIMAN MATERIAL ALAM<br>PT. CAHAYA HARTA MAKMUR</h2>
 </div>
 
-        <!-- TABEL BARANG -->
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">NO</th>
-                    <th style="width: 12%;">TGL</th>
-                    <th style="width: 22%;">NAMA BARANG</th>
-                    <th style="width: 18%;">PLAT NOMOR</th>
-                    <th style="width: 10%;">VOL (M³)</th>
-                    <th style="width: 15%;">HARGA / (M³)</th>
-                    <th style="width: 18%;">JUMLAH</th>
-                </tr>
-            </thead>
-            <tbody id="invoiceItems">
-                <!-- Data barang akan muncul di sini via JavaScript -->
-            </tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="6" class="text-right">TOTAL KESELURUHAN</td>
-                    <td id="totalKeseluruhan" class="text-right">Rp 0</td>
-                </tr>
-            </tfoot>
-        </table>
+     <!-- TABEL BARANG -->
+<table class="invoice-table">
+    <thead>
+        <tr>
+            <th style="width: 5%;">NO</th>
+            <th style="width: 12%;">TGL</th>
+            <th style="width: 22%;">NAMA BARANG</th>
+            <th style="width: 18%;">PLAT NOMOR</th>
+            <th style="width: 13%;">VOL (M³)</th>
+            <th style="width: 15%;">HARGA / (M³)</th>
+            <th style="width: 15%;">JUMLAH</th>
+        </tr>
+    </thead>
+    <tbody id="invoiceItems">
+        <!-- Data barang akan muncul di sini via JavaScript -->
+    </tbody>
+    <tfoot>
+        <tr class="total-row">
+            <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
+            <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
+            <td></td>
+            <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+        </tr>
+    </tfoot>
+</table>
 
         <!-- TANDA TANGAN DIRUT -->
        <div class="signature-section">
@@ -254,15 +256,18 @@ function tambahBarang() {
     document.getElementById('inputHarga').value = '';
 }
 
-    function renderTable() {
+   function renderTable() {
     const tbody = document.getElementById('invoiceItems');
     tbody.innerHTML = '';
-    let total = 0;
+    
+    let totalVol = 0;
+    let totalHarga = 0;
 
     dataBarang.forEach((item, index) => {
-        total += item.jumlah;
+        // Hitung akumulasi volume dan harga
+        totalVol += item.vol;
+        totalHarga += item.jumlah;
 
-        // Opsi: Format tanggal agar lebih rapi (misal: YYYY-MM-DD disesuaikan)
         const row = `
             <tr>
                 <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
@@ -277,7 +282,9 @@ function tambahBarang() {
         tbody.innerHTML += row;
     });
 
-    document.getElementById('totalKeseluruhan').innerText = formatRupiah(total);
+    // Update elemen total volume dan total nominal harga di footer tabel
+    document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
+    document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
 }
 
 function generatePDF() {
@@ -303,7 +310,7 @@ function generatePDF() {
     
     const opt = {
         margin:       [4, 10, 10, 10], 
-        filename:     `Invoice_Barang_${tanggalFormatted.replace(/\s+/g, '_')}.pdf`, // Nama file otomatis berisi tanggal
+        filename:     `Invoice_PT. CHM_${tanggalFormatted.replace(/\s+/g, '_')}.pdf`, // Nama file otomatis berisi tanggal
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
