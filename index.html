@@ -58,16 +58,16 @@
       /* Invoice Preview Area (Target PDF) */
 #invoice-preview {
     background: #ffffff;
-    padding: 30px;
+    padding: 20px;               /* Dikecilkan sedikit agar area tabel lebih luas */
     border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     color: #333;
     
-    /* --- TAMBAHAN PENTING UNTUK HASIL HP & LAPTOP SAMA --- */
-    width: 210mm !important;       /* Mengunci lebar standar A4 */
-    min-width: 210mm !important;   /* Mencegah menyusut saat dibuka di HP */
+    /* Lebar A4 (210mm) dikurangi margin kiri-kanan (20mm) = 190mm */
+    width: 190mm !important;
+    min-width: 190mm !important;
     box-sizing: border-box;
-    margin: 0 auto !important;     /* Posisi di tengah layar */
+    margin: 0 auto !important;
 }
 
 /* KOP Surat Header */
@@ -176,7 +176,7 @@ table.invoice-table th {
             <th style="width: 22%;">NAMA BARANG</th>
             <th style="width: 18%;">PLAT NOMOR</th>
             <th style="width: 13%;">VOL (M³)</th>
-            <th style="width: 15%;">HARGA / (M³)</th>
+            <th style="width: 15%;">HARGA /M³</th>
             <th style="width: 15%;">JUMLAH</th>
         </tr>
     </thead>
@@ -291,12 +291,10 @@ function generatePDF() {
     const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
     const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
     
-    // Masukkan tanggal ke elemen HTML
     const elDate = document.getElementById('currentDate');
     if (elDate) {
         elDate.innerText = tanggalFormatted;
     }
-    // ----------------------------------
 
     const element = document.getElementById('invoice-preview');
     
@@ -309,7 +307,7 @@ function generatePDF() {
             useCORS: true, 
             allowTaint: true, 
             scrollY: 0,
-            windowWidth: 1024 // KUNCI UTAMA: Memaksa rendering menggunakan lebar viewport desktop (1024px)
+            windowWidth: 750 // Disesuaikan agar proporsional dengan lebar 190mm
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
