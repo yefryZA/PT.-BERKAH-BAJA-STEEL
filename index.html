@@ -55,94 +55,87 @@
         .btn-add { background-color: #28a745; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
 
-        /* Invoice Preview Area (Target PDF) */
-        #invoice-preview {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            color: #333;
-        }
-
-        /* KOP Surat Header */
-        .kop-surat {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .kop-img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .invoice-title {
-            text-align: center;
-            margin: 17px 0;
-        }
-        .invoice-title h2 {
-            margin: 0;
-            font-size: 17px;
-            
-        }
-
-        /* Table Design */
-        table.invoice-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 13px;
-        }
-        table.invoice-table th, table.invoice-table td {
-            border: 1px solid #333;
-            padding: 8px 10px;
-            text-align: left;
-        }
-        table.invoice-table th {
-            background-color: #f0f0f0;
-            text-align: center;
-            font-weight: bold;
-        }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
-        /* Total & Signature Section */
-        .total-row {
-            font-weight: bold;
-            background-color: #f9f9f9;
-        }
-        .signature-section {
-            margin-top: 40px;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .signature-box {
-            text-align: center;
-            width: 220px;
-        }
-        .signature-img {
-            height: 70px;
-            margin: 10px 0;
-        }
-
-        /* Menjaga alignment vertikal & horizontal tabel tetap konsisten */
-#invoiceItems td, table th {
-    vertical-align: middle !important;
-    text-align: center; /* Sesuaikan jika ada class .text-left atau .text-right */
-}
-
-/* Memastikan teks tanggal tidak terpotong atau turun ke baris baru */
-.text-center {
-    text-align: center !important;
-}
-
-.text-right {
-    text-align: right !important;
-}
-
-/* Menghilangkan padding / margin ekstra bawaan element preview jika ada */
+      /* Invoice Preview Area (Target PDF) */
 #invoice-preview {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    color: #333;
+    
+    /* --- TAMBAHAN PENTING UNTUK HASIL HP & LAPTOP SAMA --- */
+    width: 210mm !important;       /* Mengunci lebar standar A4 */
+    min-width: 210mm !important;   /* Mencegah menyusut saat dibuka di HP */
+    box-sizing: border-box;
+    margin: 0 auto !important;     /* Posisi di tengah layar */
+}
+
+/* KOP Surat Header */
+.kop-surat {
+    width: 100%;
+    margin-bottom: 20px;
+}
+.kop-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.invoice-title {
+    text-align: center;
+    margin: 17px 0;
+}
+.invoice-title h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+/* Table Design */
+table.invoice-table {
+    width: 100% !important;        /* Memenuhi area A4 */
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 13px;
+    table-layout: fixed;           /* Mencegah ukuran kolom berubah-ubah */
+}
+table.invoice-table th, table.invoice-table td {
+    border: 1px solid #333;
+    padding: 8px 10px;
+    text-align: left;
+    word-wrap: break-word;        /* Mencegah teks meluap keluar kolom */
+}
+table.invoice-table th {
+    background-color: #f0f0f0;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Alignment Helper Classes */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+/* Total & Signature Section */
+.total-row {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+.signature-section {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+}
+.signature-box {
+    text-align: center;
+    width: 220px;
+}
+.signature-img {
+    height: 70px;
+    margin: 10px 0;
+}
+
+/* Menjaga alignment vertikal tabel tetap konsisten */
+#invoiceItems td, table.invoice-table th {
+    vertical-align: middle !important;
 }
     </style>
 </head>
@@ -295,7 +288,6 @@ function generatePDF() {
 
     // --- Set Tanggal Cetak Otomatis ---
     const hariIni = new Date();
-    // Menghasilkan format tanggal Indonesia, contoh: "26 Juli 2026"
     const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
     const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
     
@@ -310,9 +302,15 @@ function generatePDF() {
     
     const opt = {
         margin:       [4, 10, 10, 10], 
-        filename:     `Invoice_PT. CHM_${tanggalFormatted.replace(/\s+/g, '_')}.pdf`, // Nama file otomatis berisi tanggal
+        filename:     `Invoice_PT_CHM_${tanggalFormatted.replace(/\s+/g, '_')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            allowTaint: true, 
+            scrollY: 0,
+            windowWidth: 1024 // KUNCI UTAMA: Memaksa rendering menggunakan lebar viewport desktop (1024px)
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
