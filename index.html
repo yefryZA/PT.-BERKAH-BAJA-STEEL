@@ -156,10 +156,10 @@ table.invoice-table th {
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
     <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('BBS')">
-        📄 Download 1. Invoice BBS (Tanpa KOP)
+        📄 Download Invoice CHM
     </button>
     <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('CHM')">
-        📄 Download 2. Invoice CHM (Dengan KOP)
+        📄 Download Invoice BBS
     </button>
 </div>
 
@@ -201,18 +201,20 @@ table.invoice-table th {
 </table>
 
         <!-- TANDA TANGAN DIRUT -->
-       <div class="signature-section">
-    <div class="signature-box">
+<div class="signature-section">
+    <div class="signature-box" style="text-align: center;">
         <!-- Tanggal dirapatkan ke tulisan Direktur Utama -->
         <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
         
         <!-- Jabatan dirapatkan -->
         <p style="font-weight: bold; margin: 0;">Direktur Utama</p>
         
-        <!-- Ukuran cap/TTD dibatasi agar tidak memakan ruang terlalu tinggi -->
-        <img src="cap.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 4px auto; max-height: 65px;">
+        <!-- Pembungkus gambar dibuat fleksibel agar TTD besar tidak terpotong -->
+        <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+            <img src="cap.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 65px; height: auto; width: auto;">
+        </div>
         
-        <!-- Nama direktur dirapatkan ke atas (ke arah gambar cap) -->
+        <!-- Nama direktur -->
         <p style="font-weight: bold; margin: 2px 0 0 0;">H. HENDAR WAHBAGIONO</p>
     </div>
 </div>
@@ -229,73 +231,69 @@ table.invoice-table th {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     }
 
-function tambahBarang() {
-    const tgl = document.getElementById('inputTgl').value;
-    const nama = document.getElementById('inputNamaBarang').value;
-    const plat = document.getElementById('inputPlat').value;
-    const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
-    
-    // PERBAIKAN: Hapus tanda koma (,) sebelum diubah menjadi angka
-    const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
-    const harga = parseFloat(rawHarga) || 0;
+    function tambahBarang() {
+        const tgl = document.getElementById('inputTgl').value;
+        const nama = document.getElementById('inputNamaBarang').value;
+        const plat = document.getElementById('inputPlat').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        // Hapus tanda koma (,) sebelum diubah menjadi angka
+        const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
+        const harga = parseFloat(rawHarga) || 0;
 
-    if (!tgl || !nama || vol <= 0 || harga <= 0) {
-        alert("Harap isi semua bidang input dengan benar!");
-        return;
-    }
-
-    const jumlah = vol * harga;
-
-    dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
-    renderTable();
-
-    // Reset input form
-    document.getElementById('inputNamaBarang').value = '';
-    document.getElementById('inputPlat').value = '';
-    document.getElementById('inputVolume').value = '';
-    document.getElementById('inputHarga').value = '';
-}
-
-function renderTable() {
-    const tbody = document.getElementById('invoiceItems');
-    tbody.innerHTML = '';
-    
-    let totalVol = 0;
-    let totalHarga = 0;
-
-    dataBarang.forEach((item, index) => {
-        // Hitung akumulasi volume dan harga
-        totalVol += item.vol;
-        totalHarga += item.jumlah;
-
-        // --- Tambahkan pemformatan tanggal di sini ---
-        let tglFormatted = item.tgl;
-        if (item.tgl) {
-            const d = new Date(item.tgl);
-            // Format ke d/m/yyyy tanpa leading zero (misal: 2/7/2026)
-            tglFormatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        if (!tgl || !nama || vol <= 0 || harga <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
         }
 
-        const row = `
-            <tr>
-                <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
-                <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
-                <td style="vertical-align: middle;">${item.nama}</td>
-                <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
-                <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
-                <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
-                <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
-    });
+        const jumlah = vol * harga;
 
-    // Update elemen total volume dan total nominal harga di footer tabel
-    document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
-    document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
-}
+        dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
+        renderTable();
 
-function generatePDF(model) {
+        // Reset input form
+        document.getElementById('inputNamaBarang').value = '';
+        document.getElementById('inputPlat').value = '';
+        document.getElementById('inputVolume').value = '';
+        document.getElementById('inputHarga').value = '';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('invoiceItems');
+        tbody.innerHTML = '';
+        
+        let totalVol = 0;
+        let totalHarga = 0;
+
+        dataBarang.forEach((item, index) => {
+            totalVol += item.vol;
+            totalHarga += item.jumlah;
+
+            let tglFormatted = item.tgl;
+            if (item.tgl) {
+                const d = new Date(item.tgl);
+                tglFormatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+            }
+
+            const row = `
+                <tr>
+                    <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
+                    <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
+                    <td style="vertical-align: middle;">${item.nama}</td>
+                    <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
+                    <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
+                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
+                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
+        document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
+    }
+
+    function generatePDF(model) {
     if (dataBarang.length === 0) {
         alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
         return;
@@ -317,61 +315,75 @@ function generatePDF(model) {
 
     let namaFile = '';
 
-    // Logika pergantian KOP Surat dan Gambar TTD berdasarkan pilihan model
-  if (model === 'BBS') {
-        kopElement.style.display = 'none';              // Sembunyikan KOP Surat
+    // Logika pergantian KOP Surat dan Gambar TTD berdasarkan model
+   if (model === 'BBS') {
+        if (kopElement) kopElement.style.display = 'none';
         if (signatureImg) {
-            signatureImg.src = 'ttd.png';              // Gunakan file ttd.png
-            signatureImg.style.maxHeight = '250px';      // Diperbesar (sebelumnya default 65px)
+            signatureImg.src = 'ttd.png';
+            signatureImg.style.maxHeight = '90px';     // Diperbesar tingginya
+            signatureImg.style.maxWidth = '220px';      // Diperbesar lebarnya
+            signatureImg.style.height = 'auto';
             signatureImg.style.width = 'auto';
-            signatureImg.style.transform = 'scale(1.25)'; // Perbesar skala gambar 125%
+            signatureImg.style.objectFit = 'contain';
+            signatureImg.style.transform = 'none';
         }
         namaFile = '1. Invoice BBS.pdf';
     } else {
-        kopElement.style.display = 'block';             // Tampilkan KOP Surat
+        if (kopElement) kopElement.style.display = 'block';
         if (signatureImg) {
-            signatureImg.src = 'cap.png';              // Gunakan file cap.png
-            signatureImg.style.maxHeight = '65px';      // Ukuran standar untuk CAP
+            signatureImg.src = 'cap.png';
+            signatureImg.style.maxHeight = '65px';
+            signatureImg.style.height = 'auto';
             signatureImg.style.width = 'auto';
-            signatureImg.style.transform = 'scale(1)'; // Skala normal
+            signatureImg.style.transform = 'none';
         }
         namaFile = '2. Invoice CHM.pdf';
     }
 
+    // --- PERBAIKAN 1: Simpan style asli & pastikan container terukur penuh dari kiri ---
+    const originalWidth = invoicePreview.style.width;
+    invoicePreview.style.width = '794px'; // Paksa lebar standar A4 dalam piksel agar tidak tergeser/terpotong
+
     const opt = {
-        margin:       [4, 10, 10, 10],
+        margin:       [5, 5, 5, 5], // Margin [atas, kiri, bawah, kanan] dalam mm
         filename:     namaFile,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
-            scale: 2, 
+            scale: 2,             // Kualitas tinggi
             useCORS: true, 
             allowTaint: true, 
-            scrollY: 0,
-            windowWidth: 750 
+            scrollX: 0,           // Mencegah pergeseran horizontal
+            scrollY: 0,           // Mencegah pergeseran vertikal
+            width: 794            // Paksa html2canvas membaca lebar penuh (794px)
         },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     // Render ke PDF
     html2pdf().set(opt).from(invoicePreview).save().then(() => {
-        // Kembalikan tampilan ke kondisi semula setelah download selesai
-        kopElement.style.display = 'block';
-        if (signatureImg) signatureImg.src = 'cap.png';
+        // --- PERBAIKAN 2: Kembalikan ukuran asli container ---
+        invoicePreview.style.width = originalWidth;
+
+        // Kembalikan tampilan UI ke kondisi semula
+        if (kopElement) kopElement.style.display = 'block';
+        if (signatureImg) {
+            signatureImg.src = 'cap.png';
+            signatureImg.style.maxHeight = '65px';
+            signatureImg.style.transform = 'none';
+        }
     });
 }
 
-// Fungsi untuk memformat angka dengan koma saat diketik
-function formatInputRupiah(element) {
-    // 1. Ambil nilai dan hapus semua karakter selain angka
-    let value = element.value.replace(/\D/g, '');
-    
-    // 2. Format angka menjadi pemisah ribuan dengan koma (,)
-    if (value !== '') {
-        element.value = parseInt(value, 10).toLocaleString('en-US');
-    } else {
-        element.value = '';
+    // Format angka input harga dengan koma ribuan
+    function formatInputRupiah(element) {
+        let value = element.value.replace(/\D/g, '');
+        if (value !== '') {
+            element.value = parseInt(value, 10).toLocaleString('en-US');
+        } else {
+            element.value = '';
+        }
     }
-}
 </script>
 
 </body>
