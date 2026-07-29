@@ -152,9 +152,16 @@ table.invoice-table th {
             <input type="number" id="inputVolume" placeholder="Vol" min="1">
            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)">
         </div>
-        <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
-        <button class="btn btn-pdf" onclick="generatePDF()">📄 Download PDF Invoice</button>
-    </div>
+     <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+    <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('BBS')">
+        📄 Download 1. Invoice BBS (Tanpa KOP)
+    </button>
+    <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('CHM')">
+        📄 Download 2. Invoice CHM (Dengan KOP)
+    </button>
+</div>
 
     <!-- PREVIEW INVOICE / AREA PDF -->
     <div id="invoice-preview">
@@ -288,39 +295,69 @@ function renderTable() {
     document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
 }
 
-function generatePDF() {
+function generatePDF(model) {
     if (dataBarang.length === 0) {
         alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
         return;
     }
 
-    // --- Set Tanggal Cetak Otomatis ---
+    // Set Tanggal Cetak Otomatis
     const hariIni = new Date();
     const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
     const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
-    
+
     const elDate = document.getElementById('currentDate');
     if (elDate) {
         elDate.innerText = tanggalFormatted;
     }
 
-    const element = document.getElementById('invoice-preview');
-    
+    const kopElement = document.querySelector('.kop-surat');
+    const invoicePreview = document.getElementById('invoice-preview');
+    const signatureImg = document.querySelector('.signature-img');
+
+    let namaFile = '';
+
+    // Logika pergantian KOP Surat dan Gambar TTD berdasarkan pilihan model
+  if (model === 'BBS') {
+        kopElement.style.display = 'none';              // Sembunyikan KOP Surat
+        if (signatureImg) {
+            signatureImg.src = 'ttd.png';              // Gunakan file ttd.png
+            signatureImg.style.maxHeight = '250px';      // Diperbesar (sebelumnya default 65px)
+            signatureImg.style.width = 'auto';
+            signatureImg.style.transform = 'scale(1.25)'; // Perbesar skala gambar 125%
+        }
+        namaFile = '1. Invoice BBS.pdf';
+    } else {
+        kopElement.style.display = 'block';             // Tampilkan KOP Surat
+        if (signatureImg) {
+            signatureImg.src = 'cap.png';              // Gunakan file cap.png
+            signatureImg.style.maxHeight = '65px';      // Ukuran standar untuk CAP
+            signatureImg.style.width = 'auto';
+            signatureImg.style.transform = 'scale(1)'; // Skala normal
+        }
+        namaFile = '2. Invoice CHM.pdf';
+    }
+
     const opt = {
-        margin:       [4, 10, 10, 10], 
-        filename:     `Invoice_PT_CHM_${tanggalFormatted.replace(/\s+/g, '_')}.pdf`,
+        margin:       [4, 10, 10, 10],
+        filename:     namaFile,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
             scale: 2, 
             useCORS: true, 
             allowTaint: true, 
             scrollY: 0,
-            windowWidth: 750 // Disesuaikan agar proporsional dengan lebar 190mm
+            windowWidth: 750 
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    // Render ke PDF
+    html2pdf().set(opt).from(invoicePreview).save().then(() => {
+        // Kembalikan tampilan ke kondisi semula setelah download selesai
+        kopElement.style.display = 'block';
+        if (signatureImg) signatureImg.src = 'cap.png';
+    });
 }
 
 // Fungsi untuk memformat angka dengan koma saat diketik
