@@ -156,10 +156,10 @@ table.invoice-table th {
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
     <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('CHM')">
-        📄 Download Invoice BBS
+        📄 Download Invoice CHM
     </button>
     <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('BBS')">
-        📄 Download Invoice CHM
+        📄 Download Invoice FATIH
     </button>
 </div>
 
@@ -327,7 +327,7 @@ table.invoice-table th {
             signatureImg.style.objectFit = 'contain';
             signatureImg.style.transform = 'none';
         }
-        namaFile = '1. Invoice CHM.pdf';
+        namaFile = '1. Invoice FATIH.pdf';
     } else {
         if (kopElement) kopElement.style.display = 'block';
         if (signatureImg) {
@@ -337,7 +337,7 @@ table.invoice-table th {
             signatureImg.style.width = 'auto';
             signatureImg.style.transform = 'none';
         }
-        namaFile = '2. Invoice BBS.pdf';
+        namaFile = '2. Invoice CHM.pdf';
     }
 
     // --- PERBAIKAN 1: Simpan style asli & pastikan container terukur penuh dari kiri ---
