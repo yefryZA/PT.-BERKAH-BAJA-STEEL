@@ -315,30 +315,40 @@ table.invoice-table th {
 
     let namaFile = '';
 
-    // Logika pergantian KOP Surat dan Gambar TTD berdasarkan model
-   if (model === 'BBS') {
-        if (kopElement) kopElement.style.display = 'none';
-        if (signatureImg) {
-            signatureImg.src = 'ttd.png';
-            signatureImg.style.maxHeight = '90px';     // Diperbesar tingginya
-            signatureImg.style.maxWidth = '220px';      // Diperbesar lebarnya
-            signatureImg.style.height = 'auto';
-            signatureImg.style.width = 'auto';
-            signatureImg.style.objectFit = 'contain';
-            signatureImg.style.transform = 'none';
-        }
-        namaFile = '1. Invoice FATIH.pdf';
-    } else {
-        if (kopElement) kopElement.style.display = 'block';
-        if (signatureImg) {
-            signatureImg.src = 'cap.png';
-            signatureImg.style.maxHeight = '65px';
-            signatureImg.style.height = 'auto';
-            signatureImg.style.width = 'auto';
-            signatureImg.style.transform = 'none';
-        }
-        namaFile = '2. Invoice CHM.pdf';
+   
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+const dd = String(today.getDate()).padStart(2, '0');
+
+// Format tanggal yang ingin dipakai di nama file (misal: 30-07-2026)
+const tglFormat = `${dd}-${mm}-${yyyy}`;
+
+if (model === 'BBS') {
+    if (kopElement) kopElement.style.display = 'none';
+    if (signatureImg) {
+        signatureImg.src = 'ttd.png';
+        signatureImg.style.maxHeight = '90px';     // Diperbesar tingginya
+        signatureImg.style.maxWidth = '220px';      // Diperbesar lebarnya
+        signatureImg.style.height = 'auto';
+        signatureImg.style.width = 'auto';
+        signatureImg.style.objectFit = 'contain';
+        signatureImg.style.transform = 'none';
     }
+    // Nama file gabung dengan tanggal otomatis
+    namaFile = `1. Invoice FATIH - ${tglFormat}.pdf`;
+} else {
+    if (kopElement) kopElement.style.display = 'block';
+    if (signatureImg) {
+        signatureImg.src = 'cap.png';
+        signatureImg.style.maxHeight = '65px';
+        signatureImg.style.height = 'auto';
+        signatureImg.style.width = 'auto';
+        signatureImg.style.transform = 'none';
+    }
+    // Nama file gabung dengan tanggal otomatis
+    namaFile = `2. Invoice CHM - ${tglFormat}.pdf`;
+}
 
     // --- PERBAIKAN 1: Simpan style asli & pastikan container terukur penuh dari kiri ---
     const originalWidth = invoicePreview.style.width;
