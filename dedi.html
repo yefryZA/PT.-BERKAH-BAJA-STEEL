@@ -55,88 +55,74 @@
         .btn-add { background-color: #28a745; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
 
-      /* Invoice Preview Area (Target PDF) */
-#invoice-preview {
-    background: #ffffff;
-    padding: 20px;               /* Dikecilkan sedikit agar area tabel lebih luas */
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    color: #333;
-    
-    /* Lebar A4 (210mm) dikurangi margin kiri-kanan (20mm) = 190mm */
-    width: 190mm !important;
-    min-width: 190mm !important;
-    box-sizing: border-box;
-    margin: 0 auto !important;
-}
+        /* Invoice Preview Area (Target PDF) */
+        #invoice-preview {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            width: 190mm !important;
+            min-width: 190mm !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+        }
 
-/* KOP Surat Header */
-.kop-surat {
-    width: 100%;
-    margin-bottom: 20px;
-}
-.kop-img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
+        .invoice-title {
+            text-align: center;
+            margin: 17px 0;
+        }
+        .invoice-title h2 {
+            margin: 0;
+            font-size: 17px;
+        }
 
-.invoice-title {
-    text-align: center;
-    margin: 17px 0;
-}
-.invoice-title h2 {
-    margin: 0;
-    font-size: 17px;
-}
+        /* Table Design */
+        table.invoice-table {
+            width: 100% !important;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        table.invoice-table th, table.invoice-table td {
+            border: 1px solid #333;
+            padding: 8px 10px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        table.invoice-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
 
-/* Table Design */
-table.invoice-table {
-    width: 100% !important;        /* Memenuhi area A4 */
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 13px;
-    table-layout: fixed;           /* Mencegah ukuran kolom berubah-ubah */
-}
-table.invoice-table th, table.invoice-table td {
-    border: 1px solid #333;
-    padding: 8px 10px;
-    text-align: left;
-    word-wrap: break-word;        /* Mencegah teks meluap keluar kolom */
-}
-table.invoice-table th {
-    background-color: #f0f0f0;
-    text-align: center;
-    font-weight: bold;
-}
+        /* Alignment Helper Classes */
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
 
-/* Alignment Helper Classes */
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
+        /* Total & Signature Section */
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .signature-box {
+            text-align: center;
+            width: 220px;
+        }
+        .signature-img {
+            height: 70px;
+            margin: 10px 0;
+        }
 
-/* Total & Signature Section */
-.total-row {
-    font-weight: bold;
-    background-color: #f9f9f9;
-}
-.signature-section {
-    margin-top: 40px;
-    display: flex;
-    justify-content: flex-end;
-}
-.signature-box {
-    text-align: center;
-    width: 220px;
-}
-.signature-img {
-    height: 70px;
-    margin: 10px 0;
-}
-
-/* Menjaga alignment vertikal tabel tetap konsisten */
-#invoiceItems td, table.invoice-table th {
-    vertical-align: middle !important;
-}
+        #invoiceItems td, table.invoice-table th {
+            vertical-align: middle !important;
+        }
     </style>
 </head>
 <body>
@@ -144,15 +130,21 @@ table.invoice-table th {
 <div class="container">
     <!-- FORM INPUT DATA -->
     <div class="form-card">
-        <h2>Input Data Barang</h2>
-          <div class="form-group">
-    <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" id="inputNamaBarang" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-</div>
+        <h2>Input Data Barang & Pembayaran</h2>
+        <div class="form-group">
+            <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="number" id="inputVolume" placeholder="Vol M³" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga /M³" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+        </div>
         <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+
+        <!-- INPUT DP (UANG MUKA) -->
+        <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">DP / Uang Muka (Rp):</label>
+            <input type="text" inputmode="numeric" id="inputDP" placeholder="Masukkan nominal DP" oninput="formatInputRupiah(this); updateTotals();" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+        </div>
 
         <!-- TOMBOL DOWNLOAD SINGLE -->
         <div style="margin-top: 15px;">
@@ -192,24 +184,25 @@ table.invoice-table th {
                     <td></td>
                     <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
                 </tr>
+                <tr class="total-row">
+                    <td colspan="6" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
+                    <td id="displayDP" class="text-right"><strong>Rp 0</strong></td>
+                </tr>
+                <tr class="total-row" style="background-color: #e9ecef;">
+                    <td colspan="6" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
+                    <td id="displaySisa" class="text-right" style="color: #d9534f;"><strong>Rp 0</strong></td>
+                </tr>
             </tfoot>
         </table>
 
         <!-- TANDA TANGAN DIRUT -->
         <div class="signature-section">
             <div class="signature-box" style="text-align: center;">
-                <!-- Tanggal dirapatkan ke tulisan Direktur Utama -->
                 <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
-                
-                <!-- Jabatan dirapatkan -->
                 <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
-                
-                <!-- Pembungkus gambar dibuat fleksibel -->
                 <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
                     <img src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
                 </div>
-                
-                <!-- Nama direktur -->
                 <p style="font-weight: bold; margin: 2px 0 0 0;">DEDI ISWADI</p>
             </div>
         </div>
@@ -228,15 +221,21 @@ table.invoice-table th {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     }
 
+    // Mengambil angka murni dari string berformat (menghapus koma atau titik)
+    function parseAngka(str) {
+        if (!str) return 0;
+        return parseFloat(str.replace(/[^0-9]/g, '')) || 0;
+    }
+
     function tambahBarang() {
         const tgl = document.getElementById('inputTgl').value;
         const nama = document.getElementById('inputNamaBarang').value;
         const plat = document.getElementById('inputPlat').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
-        // Hapus tanda koma (,) sebelum diubah menjadi angka
-        const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
-        const harga = parseFloat(rawHarga) || 0;
+        // Ambil harga murni
+        const rawHarga = document.getElementById('inputHarga').value;
+        const harga = parseAngka(rawHarga);
 
         if (!tgl || !nama || vol <= 0 || harga <= 0) {
             alert("Harap isi semua bidang input dengan benar!");
@@ -248,7 +247,7 @@ table.invoice-table th {
         dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
         renderTable();
 
-        // Reset input form
+        // Reset input form barang
         document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputPlat').value = '';
         document.getElementById('inputVolume').value = '';
@@ -268,8 +267,10 @@ table.invoice-table th {
 
             let tglFormatted = item.tgl;
             if (item.tgl) {
-                const d = new Date(item.tgl);
-                tglFormatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                const parts = item.tgl.split('-');
+                if (parts.length === 3) {
+                    tglFormatted = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+                }
             }
 
             const row = `
@@ -286,8 +287,21 @@ table.invoice-table th {
             tbody.innerHTML += row;
         });
 
+        // Hitung DP dan Sisa
+        const dpInput = document.getElementById('inputDP') ? document.getElementById('inputDP').value : '0';
+        const dpVal = parseAngka(dpInput);
+        const sisaVal = totalHarga - dpVal;
+
+        // Render nilai ke elemen HTML
         document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
         document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
+        
+        if (document.getElementById('displayDP')) {
+            document.getElementById('displayDP').innerText = formatRupiah(dpVal);
+        }
+        if (document.getElementById('displaySisa')) {
+            document.getElementById('displaySisa').innerText = formatRupiah(sisaVal);
+        }
     }
 
     function generatePDF() {
@@ -343,7 +357,7 @@ table.invoice-table th {
         });
     }
 
-    // Format angka input harga dengan koma ribuan
+    // Format angka input dengan ribuan
     function formatInputRupiah(element) {
         let value = element.value.replace(/\D/g, '');
         if (value !== '') {
