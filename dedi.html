@@ -145,13 +145,13 @@ table.invoice-table th {
     <!-- FORM INPUT DATA -->
     <div class="form-card">
         <h2>Input Data Barang</h2>
-        <div class="form-group">
-            <input type="date" id="inputTgl">
-            <input type="text" id="inputNamaBarang" placeholder="Nama Barang">
-            <input type="text" id="inputPlat" placeholder="Plat Nomor">
-            <input type="number" id="inputVolume" placeholder="Vol" min="1">
-            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)">
-        </div>
+          <div class="form-group">
+    <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+    <input type="text" id="inputNamaBarang" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+    <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+    <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+    <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+</div>
         <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
 
         <!-- TOMBOL DOWNLOAD SINGLE -->
@@ -175,7 +175,7 @@ table.invoice-table th {
                 <tr>
                     <th style="width: 5%;">NO</th>
                     <th style="width: 12%;">TGL</th>
-                    <th style="width: 21%;">NAMA BARANG</th>
+                    <th style="width: 21%;">NAMA SOPIR/th>
                     <th style="width: 17%;">PLAT NOMOR</th>
                     <th style="width: 12%;">VOL (M³)</th>
                     <th style="width: 14%;">HARGA /M³</th>
