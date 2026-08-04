@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         /* Form Styling */
@@ -55,15 +55,15 @@
         .btn-add { background-color: #28a745; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
 
-        /* Invoice Preview Area (Target PDF) */
+        /* Invoice Preview Area (Target PDF Landscape) */
         #invoice-preview {
             background: #ffffff;
             padding: 20px;
             border-radius: 4px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             color: #333;
-            width: 190mm !important;
-            min-width: 190mm !important;
+            width: 275mm !important;
+            min-width: 275mm !important;
             box-sizing: border-box;
             margin: 0 auto !important;
         }
@@ -133,7 +133,8 @@
         <h2>Input Data Barang & Pembayaran</h2>
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-            <input type="text" id="inputNamaBarang" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaSopir" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="number" id="inputVolume" placeholder="Vol M³" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga /M³" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
@@ -166,12 +167,13 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 12%;">TGL</th>
-                    <th style="width: 21%;">NAMA SOPIR</th>
-                    <th style="width: 17%;">PLAT NOMOR</th>
-                    <th style="width: 12%;">VOL (M³)</th>
-                    <th style="width: 14%;">HARGA /M³</th>
-                    <th style="width: 18%;">JUMLAH</th>
+                    <th style="width: 10%;">TGL</th>
+                    <th style="width: 18%;">NAMA SOPIR</th>
+                    <th style="width: 18%;">NAMA BARANG</th>
+                    <th style="width: 13%;">PLAT NOMOR</th>
+                    <th style="width: 10%;">VOL (M³)</th>
+                    <th style="width: 12%;">HARGA /M³</th>
+                    <th style="width: 14%;">JUMLAH</th>
                 </tr>
             </thead>
             <tbody id="invoiceItems">
@@ -179,17 +181,17 @@
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
+                    <td colspan="5" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
                     <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
                     <td></td>
                     <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="6" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
+                    <td colspan="7" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
                     <td id="displayDP" class="text-right"><strong>Rp 0</strong></td>
                 </tr>
                 <tr class="total-row" style="background-color: #e9ecef;">
-                    <td colspan="6" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
+                    <td colspan="7" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
                     <td id="displaySisa" class="text-right" style="color: #d9534f;"><strong>Rp 0</strong></td>
                 </tr>
             </tfoot>
@@ -216,6 +218,20 @@
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('currentDate').innerText = today;
 
+    // Logika Otomatisasi Harga berdasarkan Nama Barang
+    function cekHargaOtomatis(namaBarang) {
+        const inputHarga = document.getElementById('inputHarga');
+        const text = namaBarang.trim().toLowerCase();
+
+        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+            inputHarga.value = '130,000';
+        } else if (text === 'screning' || text === 'screening') {
+            inputHarga.value = '127,500';
+        } else if (text === 'abu batu') {
+            inputHarga.value = '127,500';
+        }
+    }
+
     // Format Rupiah
     function formatRupiah(angka) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
@@ -229,7 +245,8 @@
 
     function tambahBarang() {
         const tgl = document.getElementById('inputTgl').value;
-        const nama = document.getElementById('inputNamaBarang').value;
+        const sopir = document.getElementById('inputNamaSopir').value;
+        const barang = document.getElementById('inputNamaBarang').value;
         const plat = document.getElementById('inputPlat').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
@@ -237,21 +254,36 @@
         const rawHarga = document.getElementById('inputHarga').value;
         const harga = parseAngka(rawHarga);
 
-        if (!tgl || !nama || vol <= 0 || harga <= 0) {
+        if (!tgl || !sopir || !barang || vol <= 0 || harga <= 0) {
             alert("Harap isi semua bidang input dengan benar!");
             return;
         }
 
         const jumlah = vol * harga;
 
-        dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
+        dataBarang.push({ tgl, sopir, barang, plat, vol, harga, jumlah });
         renderTable();
 
         // Reset input form barang
+        document.getElementById('inputNamaSopir').value = '';
         document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputPlat').value = '';
         document.getElementById('inputVolume').value = '';
         document.getElementById('inputHarga').value = '';
+    }
+
+    function updateTotals() {
+        let totalHarga = dataBarang.reduce((sum, item) => sum + item.jumlah, 0);
+        const dpInput = document.getElementById('inputDP') ? document.getElementById('inputDP').value : '0';
+        const dpVal = parseAngka(dpInput);
+        const sisaVal = totalHarga - dpVal;
+
+        if (document.getElementById('displayDP')) {
+            document.getElementById('displayDP').innerText = formatRupiah(dpVal);
+        }
+        if (document.getElementById('displaySisa')) {
+            document.getElementById('displaySisa').innerText = formatRupiah(sisaVal);
+        }
     }
 
     function renderTable() {
@@ -277,7 +309,8 @@
                 <tr>
                     <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
                     <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
-                    <td style="vertical-align: middle;">${item.nama}</td>
+                    <td style="vertical-align: middle;">${item.sopir}</td>
+                    <td style="vertical-align: middle;">${item.barang}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
                     <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
@@ -287,21 +320,11 @@
             tbody.innerHTML += row;
         });
 
-        // Hitung DP dan Sisa
-        const dpInput = document.getElementById('inputDP') ? document.getElementById('inputDP').value : '0';
-        const dpVal = parseAngka(dpInput);
-        const sisaVal = totalHarga - dpVal;
-
         // Render nilai ke elemen HTML
-        document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
+        document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} M³`;
         document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
         
-        if (document.getElementById('displayDP')) {
-            document.getElementById('displayDP').innerText = formatRupiah(dpVal);
-        }
-        if (document.getElementById('displaySisa')) {
-            document.getElementById('displaySisa').innerText = formatRupiah(sisaVal);
-        }
+        updateTotals();
     }
 
     function generatePDF() {
@@ -330,9 +353,9 @@
 
         const namaFile = `Invoice SewaTruck - ${tglFormat}.pdf`;
 
-        // Simpan style asli & pastikan container terukur penuh
+        // Simpan style asli & pastikan container terukur penuh untuk A4 Landscape
         const originalWidth = invoicePreview.style.width;
-        invoicePreview.style.width = '794px';
+        invoicePreview.style.width = '1122px';
 
         const opt = {
             margin:       [5, 5, 5, 5],
@@ -344,9 +367,9 @@
                 allowTaint: true, 
                 scrollX: 0, 
                 scrollY: 0, 
-                width: 794 
+                width: 1122 
             },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
             pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
