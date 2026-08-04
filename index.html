@@ -55,88 +55,85 @@
         .btn-add { background-color: #28a745; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
 
-      /* Invoice Preview Area (Target PDF) */
-#invoice-preview {
-    background: #ffffff;
-    padding: 20px;               /* Dikecilkan sedikit agar area tabel lebih luas */
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    color: #333;
-    
-    /* Lebar A4 (210mm) dikurangi margin kiri-kanan (20mm) = 190mm */
-    width: 190mm !important;
-    min-width: 190mm !important;
-    box-sizing: border-box;
-    margin: 0 auto !important;
-}
+        /* Invoice Preview Area (Target PDF) */
+        #invoice-preview {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            width: 190mm !important;
+            min-width: 190mm !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+        }
 
-/* KOP Surat Header */
-.kop-surat {
-    width: 100%;
-    margin-bottom: 20px;
-}
-.kop-img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
+        /* KOP Surat Header */
+        .kop-surat {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .kop-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
 
-.invoice-title {
-    text-align: center;
-    margin: 17px 0;
-}
-.invoice-title h2 {
-    margin: 0;
-    font-size: 17px;
-}
+        .invoice-title {
+            text-align: center;
+            margin: 17px 0;
+        }
+        .invoice-title h2 {
+            margin: 0;
+            font-size: 17px;
+        }
 
-/* Table Design */
-table.invoice-table {
-    width: 100% !important;        /* Memenuhi area A4 */
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 13px;
-    table-layout: fixed;           /* Mencegah ukuran kolom berubah-ubah */
-}
-table.invoice-table th, table.invoice-table td {
-    border: 1px solid #333;
-    padding: 8px 10px;
-    text-align: left;
-    word-wrap: break-word;        /* Mencegah teks meluap keluar kolom */
-}
-table.invoice-table th {
-    background-color: #f0f0f0;
-    text-align: center;
-    font-weight: bold;
-}
+        /* Table Design */
+        table.invoice-table {
+            width: 100% !important;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        table.invoice-table th, table.invoice-table td {
+            border: 1px solid #333;
+            padding: 8px 10px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        table.invoice-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
 
-/* Alignment Helper Classes */
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
+        /* Alignment Helper Classes */
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
 
-/* Total & Signature Section */
-.total-row {
-    font-weight: bold;
-    background-color: #f9f9f9;
-}
-.signature-section {
-    margin-top: 40px;
-    display: flex;
-    justify-content: flex-end;
-}
-.signature-box {
-    text-align: center;
-    width: 220px;
-}
-.signature-img {
-    height: 70px;
-    margin: 10px 0;
-}
+        /* Total & Signature Section */
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .signature-box {
+            text-align: center;
+            width: 220px;
+        }
+        .signature-img {
+            height: 70px;
+            margin: 10px 0;
+        }
 
-/* Menjaga alignment vertikal tabel tetap konsisten */
-#invoiceItems td, table.invoice-table th {
-    vertical-align: middle !important;
-}
+        #invoiceItems td, table.invoice-table th {
+            vertical-align: middle !important;
+        }
     </style>
 </head>
 <body>
@@ -146,22 +143,23 @@ table.invoice-table th {
     <div class="form-card">
         <h2>Input Data Barang</h2>
         <div class="form-group">
-    <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" id="inputNamaBarang" placeholder="Nama Barang" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-    <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-</div>
-     <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+            <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+        </div>
+        <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-    <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('CHM')">
-        📄 Download Invoice CHM
-    </button>
-    <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('BBS')">
-        📄 Download Invoice FATIH
-    </button>
-</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('CHM')">
+                📄 Download Invoice CHM
+            </button>
+            <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('BBS')">
+                📄 Download Invoice FATIH
+            </button>
+        </div>
+    </div>
 
     <!-- PREVIEW INVOICE / AREA PDF -->
     <div id="invoice-preview">
@@ -170,52 +168,47 @@ table.invoice-table th {
             <img src="kop.jpeg" alt="KOP Surat" class="kop-img">
         </div>
 
-       <div class="invoice-title">
-    <h2>INVOICE KIRIMAN MATERIAL ALAM TUJUAN<br>PT. CAHAYA HARTA MAKMUR</h2>
-</div>
+        <div class="invoice-title">
+            <h2>INVOICE KIRIMAN MATERIAL ALAM TUJUAN<br>PT. CAHAYA HARTA MAKMUR</h2>
+        </div>
 
-     <!-- TABEL BARANG -->
-<table class="invoice-table">
-    <thead>
-        <tr>
-            <th style="width: 5%;">NO</th>
-            <th style="width: 12%;">TGL</th>
-            <th style="width: 21%;">NAMA BARANG</th>
-            <th style="width: 17%;">PLAT NOMOR</th>
-            <th style="width: 12%;">VOL (M³)</th>
-            <th style="width: 14%;">HARGA /M³</th>
-            <th style="width: 18%;">JUMLAH</th>
-        </tr>
-    </thead>
-    <tbody id="invoiceItems">
-        <!-- Data barang akan muncul di sini via JavaScript -->
-    </tbody>
-    <tfoot>
-        <tr class="total-row">
-            <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
-            <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
-            <td></td>
-            <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
-        </tr>
-    </tfoot>
-</table>
+        <!-- TABEL BARANG -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 12%;">TGL</th>
+                    <th style="width: 21%;">NAMA BARANG</th>
+                    <th style="width: 17%;">PLAT NOMOR</th>
+                    <th style="width: 12%;">VOL (M³)</th>
+                    <th style="width: 14%;">HARGA /M³</th>
+                    <th style="width: 18%;">JUMLAH</th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItems">
+                <!-- Data barang akan muncul di sini via JavaScript -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
+                    <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
+                    <td></td>
+                    <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+                </tr>
+            </tfoot>
+        </table>
 
         <!-- TANDA TANGAN DIRUT -->
-<div class="signature-section">
-    <div class="signature-box" style="text-align: center;">
-        <!-- Tanggal dirapatkan ke tulisan Direktur Utama -->
-        <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
-        
-        <!-- Jabatan dirapatkan -->
-        <p style="font-weight: bold; margin: 0;">Direktur Utama</p>
-        
-        <!-- Pembungkus gambar dibuat fleksibel agar TTD besar tidak terpotong -->
-        <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-            <img src="cap.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 65px; height: auto; width: auto;">
+        <div class="signature-section">
+            <div class="signature-box" style="text-align: center;">
+                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+                <p style="font-weight: bold; margin: 0;">Direktur Utama</p>
+                <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    <img src="cap.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 65px; height: auto; width: auto;">
+                </div>
+                <p style="font-weight: bold; margin: 2px 0 0 0;">H. HENDAR WAHBAGIONO</p>
+            </div>
         </div>
-        
-        <!-- Nama direktur -->
-        <p style="font-weight: bold; margin: 2px 0 0 0;">H. HENDAR WAHBAGIONO</p>
     </div>
 </div>
 
@@ -225,6 +218,20 @@ table.invoice-table th {
     // Set tanggal saat ini di bagian TTD
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('currentDate').innerText = today;
+
+    // Logika Otomatisasi Harga berdasarkan Nama Barang
+    function cekHargaOtomatis(namaBarang) {
+        const inputHarga = document.getElementById('inputHarga');
+        const text = namaBarang.trim().toLowerCase();
+
+        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+            inputHarga.value = '362,500';
+        } else if (text === 'screning' || text === 'screening') {
+            inputHarga.value = '297,500';
+        } else if (text === 'abu batu') {
+            inputHarga.value = '262,500';
+        }
+    }
 
     // Format Rupiah
     function formatRupiah(angka) {
@@ -271,8 +278,10 @@ table.invoice-table th {
 
             let tglFormatted = item.tgl;
             if (item.tgl) {
-                const d = new Date(item.tgl);
-                tglFormatted = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                const parts = item.tgl.split('-');
+                if (parts.length === 3) {
+                    tglFormatted = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+                }
             }
 
             const row = `
@@ -294,96 +303,86 @@ table.invoice-table th {
     }
 
     function generatePDF(model) {
-    if (dataBarang.length === 0) {
-        alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
-        return;
-    }
-
-    // Set Tanggal Cetak Otomatis
-    const hariIni = new Date();
-    const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
-    const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
-
-    const elDate = document.getElementById('currentDate');
-    if (elDate) {
-        elDate.innerText = tanggalFormatted;
-    }
-
-    const kopElement = document.querySelector('.kop-surat');
-    const invoicePreview = document.getElementById('invoice-preview');
-    const signatureImg = document.querySelector('.signature-img');
-
-    let namaFile = '';
-
-   
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
-const dd = String(today.getDate()).padStart(2, '0');
-
-// Format tanggal yang ingin dipakai di nama file (misal: 30-07-2026)
-const tglFormat = `${dd}-${mm}-${yyyy}`;
-
-if (model === 'BBS') {
-    if (kopElement) kopElement.style.display = 'none';
-    if (signatureImg) {
-        signatureImg.src = 'ttd.png';
-        signatureImg.style.maxHeight = '90px';     // Diperbesar tingginya
-        signatureImg.style.maxWidth = '220px';      // Diperbesar lebarnya
-        signatureImg.style.height = 'auto';
-        signatureImg.style.width = 'auto';
-        signatureImg.style.objectFit = 'contain';
-        signatureImg.style.transform = 'none';
-    }
-    // Nama file gabung dengan tanggal otomatis
-    namaFile = `1. Invoice FATIH - ${tglFormat}.pdf`;
-} else {
-    if (kopElement) kopElement.style.display = 'block';
-    if (signatureImg) {
-        signatureImg.src = 'cap.png';
-        signatureImg.style.maxHeight = '65px';
-        signatureImg.style.height = 'auto';
-        signatureImg.style.width = 'auto';
-        signatureImg.style.transform = 'none';
-    }
-    // Nama file gabung dengan tanggal otomatis
-    namaFile = `2. Invoice CHM - ${tglFormat}.pdf`;
-}
-
-    // --- PERBAIKAN 1: Simpan style asli & pastikan container terukur penuh dari kiri ---
-    const originalWidth = invoicePreview.style.width;
-    invoicePreview.style.width = '794px'; // Paksa lebar standar A4 dalam piksel agar tidak tergeser/terpotong
-
-    const opt = {
-        margin:       [5, 5, 5, 5], // Margin [atas, kiri, bawah, kanan] dalam mm
-        filename:     namaFile,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2,             // Kualitas tinggi
-            useCORS: true, 
-            allowTaint: true, 
-            scrollX: 0,           // Mencegah pergeseran horizontal
-            scrollY: 0,           // Mencegah pergeseran vertikal
-            width: 794            // Paksa html2canvas membaca lebar penuh (794px)
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    // Render ke PDF
-    html2pdf().set(opt).from(invoicePreview).save().then(() => {
-        // --- PERBAIKAN 2: Kembalikan ukuran asli container ---
-        invoicePreview.style.width = originalWidth;
-
-        // Kembalikan tampilan UI ke kondisi semula
-        if (kopElement) kopElement.style.display = 'block';
-        if (signatureImg) {
-            signatureImg.src = 'cap.png';
-            signatureImg.style.maxHeight = '65px';
-            signatureImg.style.transform = 'none';
+        if (dataBarang.length === 0) {
+            alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
+            return;
         }
-    });
-}
+
+        // Set Tanggal Cetak Otomatis
+        const hariIni = new Date();
+        const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
+        const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
+
+        const elDate = document.getElementById('currentDate');
+        if (elDate) {
+            elDate.innerText = tanggalFormatted;
+        }
+
+        const kopElement = document.querySelector('.kop-surat');
+        const invoicePreview = document.getElementById('invoice-preview');
+        const signatureImg = document.querySelector('.signature-img');
+
+        let namaFile = '';
+
+        const yyyy = hariIni.getFullYear();
+        const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+        const dd = String(hariIni.getDate()).padStart(2, '0');
+        const tglFormat = `${dd}-${mm}-${yyyy}`;
+
+        if (model === 'BBS') {
+            if (kopElement) kopElement.style.display = 'none';
+            if (signatureImg) {
+                signatureImg.src = 'ttd.png';
+                signatureImg.style.maxHeight = '90px';
+                signatureImg.style.maxWidth = '220px';
+                signatureImg.style.height = 'auto';
+                signatureImg.style.width = 'auto';
+                signatureImg.style.objectFit = 'contain';
+                signatureImg.style.transform = 'none';
+            }
+            namaFile = `1. Invoice FATIH - ${tglFormat}.pdf`;
+        } else {
+            if (kopElement) kopElement.style.display = 'block';
+            if (signatureImg) {
+                signatureImg.src = 'cap.png';
+                signatureImg.style.maxHeight = '65px';
+                signatureImg.style.height = 'auto';
+                signatureImg.style.width = 'auto';
+                signatureImg.style.transform = 'none';
+            }
+            namaFile = `2. Invoice CHM - ${tglFormat}.pdf`;
+        }
+
+        const originalWidth = invoicePreview.style.width;
+        invoicePreview.style.width = '794px';
+
+        const opt = {
+            margin:       [5, 5, 5, 5],
+            filename:     namaFile,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                allowTaint: true, 
+                scrollX: 0, 
+                scrollY: 0, 
+                width: 794 
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(invoicePreview).save().then(() => {
+            invoicePreview.style.width = originalWidth;
+
+            if (kopElement) kopElement.style.display = 'block';
+            if (signatureImg) {
+                signatureImg.src = 'cap.png';
+                signatureImg.style.maxHeight = '65px';
+                signatureImg.style.transform = 'none';
+            }
+        });
+    }
 
     // Format angka input harga dengan koma ribuan
     function formatInputRupiah(element) {
