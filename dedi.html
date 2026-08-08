@@ -134,10 +134,9 @@
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputNamaSopir" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="number" id="inputVolume" placeholder="Vol M³" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga /M³" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
         <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
 
@@ -159,7 +158,7 @@
     <div id="invoice-preview">
 
         <div class="invoice-title">
-            <h2>INVOICE<br>TRUCK CHARTER KIRIMAN KE PT. BERKAH BAJA STEEL</h2>
+            <h2>INVOICE<br>TRUCK CHARTER KIRIMAN MATERIAL PT. BBS</h2>
         </div>
 
         <!-- TABEL BARANG -->
@@ -167,13 +166,12 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 10%;">TGL</th>
-                    <th style="width: 18%;">NAMA SOPIR</th>
-                    <th style="width: 18%;">NAMA BARANG</th>
-                    <th style="width: 13%;">PLAT NOMOR</th>
+                    <th style="width: 12%;">TGL</th>
+                    <th style="width: 23%;">NAMA SOPIR</th>
+                    <th style="width: 25%;">NAMA BARANG</th>
+                    <th style="width: 15%;">PLAT NOMOR</th>
                     <th style="width: 10%;">VOL (M³)</th>
-                    <th style="width: 12%;">HARGA /M³</th>
-                    <th style="width: 14%;">JUMLAH</th>
+                    <th style="width: 10%;">JUMLAH</th>
                 </tr>
             </thead>
             <tbody id="invoiceItems">
@@ -183,15 +181,14 @@
                 <tr class="total-row">
                     <td colspan="5" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
                     <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
-                    <td></td>
                     <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="7" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
+                    <td colspan="6" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
                     <td id="displayDP" class="text-right"><strong>Rp 0</strong></td>
                 </tr>
                 <tr class="total-row" style="background-color: #e9ecef;">
-                    <td colspan="7" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
+                    <td colspan="6" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
                     <td id="displaySisa" class="text-right" style="color: #d9534f;"><strong>Rp 0</strong></td>
                 </tr>
             </tfoot>
@@ -205,7 +202,7 @@
                 <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
                     <img src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
                 </div>
-                <p style="font-weight: bold; margin: 2px 0 0 0;">DEDI ISWADI</p>
+                <p style="font-weight: bold; margin: 2px 0 0 0;">H E R M A N</p>
             </div>
         </div>
     </div>
@@ -218,26 +215,12 @@
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('currentDate').innerText = today;
 
-    // Logika Otomatisasi Harga berdasarkan Nama Barang
-    function cekHargaOtomatis(namaBarang) {
-        const inputHarga = document.getElementById('inputHarga');
-        const text = namaBarang.trim().toLowerCase();
-
-        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
-            inputHarga.value = '130,000';
-        } else if (text === 'screning' || text === 'screening') {
-            inputHarga.value = '127,500';
-        } else if (text === 'abu batu') {
-            inputHarga.value = '127,500';
-        }
-    }
-
     // Format Rupiah
     function formatRupiah(angka) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     }
 
-    // Mengambil angka murni dari string berformat (menghapus koma atau titik)
+    // Mengambil angka murni dari string berformat
     function parseAngka(str) {
         if (!str) return 0;
         return parseFloat(str.replace(/[^0-9]/g, '')) || 0;
@@ -250,18 +233,15 @@
         const plat = document.getElementById('inputPlat').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
-        // Ambil harga murni
-        const rawHarga = document.getElementById('inputHarga').value;
-        const harga = parseAngka(rawHarga);
+        // Logika Baru: Jumlah otomatis diset ke Rp 4.000.000
+        const jumlah = 4000000;
 
-        if (!tgl || !sopir || !barang || vol <= 0 || harga <= 0) {
+        if (!tgl || !sopir || !barang || vol <= 0) {
             alert("Harap isi semua bidang input dengan benar!");
             return;
         }
 
-        const jumlah = vol * harga;
-
-        dataBarang.push({ tgl, sopir, barang, plat, vol, harga, jumlah });
+        dataBarang.push({ tgl, sopir, barang, plat, vol, jumlah });
         renderTable();
 
         // Reset input form barang
@@ -269,7 +249,6 @@
         document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputPlat').value = '';
         document.getElementById('inputVolume').value = '';
-        document.getElementById('inputHarga').value = '';
     }
 
     function updateTotals() {
@@ -313,7 +292,6 @@
                     <td style="vertical-align: middle;">${item.barang}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
-                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
                     <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
                 </tr>
             `;
