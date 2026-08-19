@@ -136,7 +136,7 @@
         }
         .summary-box {
             border: 1px solid #333;
-            padding: 8px;
+            padding: 10px 12px;
             background-color: #f8f9fa;
         }
         .summary-box span {
@@ -144,10 +144,25 @@
             font-weight: normal;
             font-size: 11px;
             color: #555;
+            margin-bottom: 4px;
         }
         .summary-box strong {
             font-size: 13px;
             color: #000;
+        }
+
+        /* SPASI KHUSUS DUA DENGAN JARAK PADA MATERIAL TERKIRIM */
+        .material-list {
+            margin: 6px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .material-list li {
+            margin-bottom: 10px; /* Memberikan spasi/jarak antar baris material */
+            line-height: 1.4;
+        }
+        .material-list li:last-child {
+            margin-bottom: 0;
         }
 
         table.report-table {
@@ -257,30 +272,34 @@
                 <img src="kop.jpeg" alt="KOP Surat" class="kop-img">
             </div>
             <div class="title-right">
-                <h2>LAPORAN REKAPITULASI 100RIT KIRIMAN MATERIAL</h2>
+                <h2>LAPORAN GLOBAL 100RIT KIRIMAN MATERIAL ALAM</h2>
                 <p>PT. CAHAYA HARTA MAKMUR</p>
             </div>
         </div>
 
-        <!-- 5 POIN RINGKASAN FINANSIAL & VOLUME -->
+        <!-- RINGKASAN FINANSIAL & VOLUME -->
         <div class="summary-grid">
             <div class="summary-box">
                 <span>1. TOTAL MATERIAL TERKIRIM:</span>
-                • Split 1.2: <strong id="volSplit">0 M³</strong><br>
-                • Screning: <strong id="volScrening">0 M³</strong><br>
-                • Abu Batu: <strong id="volAbu">0 M³</strong>
+                <ul class="material-list">
+                    <li>• Split 1.2: <strong id="volSplit">0 M³</strong></li>
+                    <li>• Screning: <strong id="volScrening">0 M³</strong></li>
+                    <li>• Abu Batu: <strong id="volAbu">0 M³</strong></li>
+                </ul>
             </div>
             <div class="summary-box">
                 <span>2. TOTAL BELANJA (MODAL):</span>
                 <strong id="summaryBelanja">Rp 0</strong>
-                <span style="margin-top: 5px;">3. TOTAL HARGA JUAL:</span>
+                <span style="margin-top: 10px;">3. TOTAL HARGA JUAL:</span>
                 <strong id="summaryJual">Rp 0</strong>
             </div>
             <div class="summary-box">
                 <span>4. TOTAL PENGELUARAN (OPS):</span>
                 <strong id="summaryPengeluaran">Rp 0</strong>
-                <hr style="margin: 4px 0; border: 0; border-top: 1px dashed #ccc;">
-                <span>5. TOTAL PROFIT BERSIH:</span>
+                <span style="margin-top: 6px;">5. ROYALTI PERUSAHAAN (10%):</span>
+                <strong id="summaryRoyalti" style="color: #dc3545;">Rp 0</strong>
+                <hr style="margin: 6px 0; border: 0; border-top: 1px dashed #ccc;">
+                <span>6. TOTAL PROFIT BERSIH:</span>
                 <strong id="summaryProfit" style="color: #28a745; font-size: 14px;">Rp 0</strong>
             </div>
         </div>
@@ -295,7 +314,7 @@
                     <th style="width: 8%;">VOL</th>
                     <th style="width: 15%;">BELANJA</th>
                     <th style="width: 15%;">PENJUALAN</th>
-                    <th style="width: 15%;">PENGELUARAN</th>
+                    <th style="width: 15%;">OPS</th>
                     <th style="width: 15%;">PROFIT</th>
                 </tr>
             </thead>
@@ -396,7 +415,7 @@
 
         let count = 0;
         let volSplit = 0, volScrening = 0, volAbu = 0;
-        let totalVol = 0, totalBelanja = 0, totalJual = 0, totalPengeluaran = 0, totalProfit = 0;
+        let totalVol = 0, totalBelanja = 0, totalJual = 0, totalPengeluaran = 0, totalProfitKotor = 0;
 
         if (rawData) {
             const keys = Object.keys(rawData);
@@ -419,7 +438,7 @@
                 totalBelanja += totalBeliRow;
                 totalJual += totalJualRow;
                 totalPengeluaran += (item.pengeluaran || 0);
-                totalProfit += profitRow;
+                totalProfitKotor += profitRow;
 
                 // Format Tanggal
                 let tglFormatted = item.tgl;
@@ -445,6 +464,10 @@
             });
         }
 
+        // Hitung Royalti 10% dan Profit Bersih
+        const royaltiPerusahaan = totalProfitKotor > 0 ? totalProfitKotor * 0.10 : 0;
+        const totalProfitBersih = totalProfitKotor - royaltiPerusahaan;
+
         // Update UI Summary & Footer
         document.getElementById('ritaseCount').innerText = count;
 
@@ -455,13 +478,14 @@
         document.getElementById('summaryBelanja').innerText = formatRupiah(totalBelanja);
         document.getElementById('summaryJual').innerText = formatRupiah(totalJual);
         document.getElementById('summaryPengeluaran').innerText = formatRupiah(totalPengeluaran);
-        document.getElementById('summaryProfit').innerText = formatRupiah(totalProfit);
+        document.getElementById('summaryRoyalti').innerText = formatRupiah(royaltiPerusahaan);
+        document.getElementById('summaryProfit').innerText = formatRupiah(totalProfitBersih);
 
         document.getElementById('totalVolAll').innerText = totalVol.toLocaleString('id-ID');
         document.getElementById('totalBeliAll').innerText = formatRupiah(totalBelanja);
         document.getElementById('totalJualAll').innerText = formatRupiah(totalJual);
         document.getElementById('totalOpsAll').innerText = formatRupiah(totalPengeluaran);
-        document.getElementById('totalProfitAll').innerText = formatRupiah(totalProfit);
+        document.getElementById('totalProfitAll').innerText = formatRupiah(totalProfitKotor);
     });
 
     // RESET BATCH DATA
