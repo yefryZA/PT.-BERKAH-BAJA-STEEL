@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Rekapitulasi 100 Ritase</title>
+    
+    <!-- HTML2PDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px; /* Diperlebar agar pas di layar saat preview landscape */
+            margin: 0 auto;
+        }
+        .form-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        .form-card h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        input, select {
+            padding: 9px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: bold;
+        }
+        label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: 0.2s;
+        }
+        .btn-add { background-color: #28a745; width: 100%; font-size: 15px; }
+        .btn-add:hover { background-color: #218838; }
+        .btn-pdf { background-color: #007bff; font-size: 15px; width: 100%; margin-top: 15px; }
+        .btn-danger { background-color: #dc3545; padding: 6px 12px; font-size: 12px; }
+
+        .status-bar {
+            background: #e9ecef;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        /* Area PDF Preview - LANDSCAPE (277mm) */
+        #invoice-preview {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            width: 277mm !important;
+            min-width: 277mm !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+        }
+
+        /* LAYOUT HEADER: KOP POJOK KIRI & JUDUL KANAN */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .kop-left {
+            flex: 0 0 35%;
+            text-align: left;
+        }
+        .kop-img {
+            max-height: 65px;
+            width: auto;
+            display: block;
+        }
+        .title-right {
+            flex: 0 0 60%;
+            text-align: right;
+        }
+        .title-right h2 {
+            margin: 0;
+            font-size: 15px;
+            text-transform: uppercase;
+            color: #333;
+        }
+        .title-right p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        .summary-box {
+            border: 1px solid #333;
+            padding: 8px;
+            background-color: #f8f9fa;
+        }
+        .summary-box span {
+            display: block;
+            font-weight: normal;
+            font-size: 11px;
+            color: #555;
+        }
+        .summary-box strong {
+            font-size: 13px;
+            color: #000;
+        }
+
+        table.report-table {
+            width: 100% !important;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+            table-layout: fixed;
+        }
+        table.report-table th, table.report-table td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: left;
+            word-wrap: break-word;
+            vertical-align: middle;
+        }
+        table.report-table th {
+            background-color: #e9ecef;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .no-print { display: block; }
+
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .signature-box {
+            text-align: center;
+            width: 220px;
+            font-size: 12px;
+        }
+        .signature-img {
+            max-height: 65px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- FORM INPUT DATA -->
+    <div class="form-card no-print">
+        <h2>Input Data Ritase Kiriman</h2>
+        
+        <div class="status-bar">
+            <span>Progress Ritase: <span id="ritaseCount" style="color: #007bff; font-size: 18px;">0</span> / 100 Rit</span>
+            <button class="btn btn-danger" id="btnReset">🔄 Reset / Batch Baru</button>
+        </div>
+
+        <form id="ritaseForm">
+            <div class="form-grid">
+                <div>
+                    <label>Tanggal</label>
+                    <input type="date" id="inputTgl" required>
+                </div>
+                <div>
+                    <label>Jenis Material</label>
+                    <select id="inputNamaBarang" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="Split 1.2">Split 1.2</option>
+                        <option value="Screning">Screning</option>
+                        <option value="Abu Batu">Abu Batu</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Volume (M³)</label>
+                    <input type="number" id="inputVolume" step="0.01" placeholder="Vol" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <label>Total Belanja (Modal)</label>
+                    <input type="text" id="inputHargaBeli" placeholder="Rp 0" required>
+                </div>
+                <div>
+                    <label>Total Harga Jual</label>
+                    <input type="text" id="inputHargaJual" placeholder="Rp 0" required>
+                </div>
+                <div>
+                    <label>Pengeluaran/Ops (Rp)</label>
+                    <input type="text" id="inputPengeluaran" placeholder="Bensin/Sopir/dll">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-add">+ Simpan Transaksi Ritase</button>
+        </form>
+
+        <button class="btn btn-pdf" id="btnDownloadPDF">📄 Download Laporan Rekapitulasi (PDF - Landscape)</button>
+    </div>
+
+    <!-- PREVIEW AREA PDF LANDSCAPE -->
+    <div id="invoice-preview">
+        
+        <!-- HEADER KOP POJOK KIRI & JUDUL POJOK KANAN -->
+        <div class="header-container">
+            <div class="kop-left">
+                <img src="kop.jpeg" alt="KOP Surat" class="kop-img">
+            </div>
+            <div class="title-right">
+                <h2>LAPORAN REKAPITULASI 100RIT KIRIMAN MATERIAL</h2>
+                <p>PT. CAHAYA HARTA MAKMUR</p>
+            </div>
+        </div>
+
+        <!-- 5 POIN RINGKASAN FINANSIAL & VOLUME -->
+        <div class="summary-grid">
+            <div class="summary-box">
+                <span>1. TOTAL MATERIAL TERKIRIM:</span>
+                • Split 1.2: <strong id="volSplit">0 M³</strong><br>
+                • Screning: <strong id="volScrening">0 M³</strong><br>
+                • Abu Batu: <strong id="volAbu">0 M³</strong>
+            </div>
+            <div class="summary-box">
+                <span>2. TOTAL BELANJA (MODAL):</span>
+                <strong id="summaryBelanja">Rp 0</strong>
+                <span style="margin-top: 5px;">3. TOTAL HARGA JUAL:</span>
+                <strong id="summaryJual">Rp 0</strong>
+            </div>
+            <div class="summary-box">
+                <span>4. TOTAL PENGELUARAN (OPS):</span>
+                <strong id="summaryPengeluaran">Rp 0</strong>
+                <hr style="margin: 4px 0; border: 0; border-top: 1px dashed #ccc;">
+                <span>5. TOTAL PROFIT BERSIH:</span>
+                <strong id="summaryProfit" style="color: #28a745; font-size: 14px;">Rp 0</strong>
+            </div>
+        </div>
+
+        <!-- TABEL RINCIAN 100 RITASE -->
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 11%;">TGL</th>
+                    <th style="width: 16%;">MATERIAL</th>
+                    <th style="width: 8%;">VOL</th>
+                    <th style="width: 15%;">BELANJA</th>
+                    <th style="width: 15%;">PENJUALAN</th>
+                    <th style="width: 15%;">PENGELUARAN</th>
+                    <th style="width: 15%;">PROFIT</th>
+                </tr>
+            </thead>
+            <tbody id="reportItems">
+                <!-- Data Realtime dari Firebase dipasang di sini -->
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background-color: #f0f0f0;">
+                    <td colspan="3" class="text-center">TOTAL KESELURUHAN</td>
+                    <td id="totalVolAll" class="text-center">0</td>
+                    <td id="totalBeliAll" class="text-right">Rp 0</td>
+                    <td id="totalJualAll" class="text-right">Rp 0</td>
+                    <td id="totalOpsAll" class="text-right">Rp 0</td>
+                    <td id="totalProfitAll" class="text-right">Rp 0</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- TANDA TANGAN -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+                <p style="font-weight: bold; margin: 0;">MANAGER</p>
+                <div style="min-height: 65px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    <img src="ttdM.png" alt="Tanda Tangan Direktur" class="signature-img">
+                </div>
+                <p style="font-weight: bold; margin: 0;">YEFRY DESFIRMANZA</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SCRIPT FIREBASE MODULAR (v10) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAfeLTKRQ66tjZjAt7tg6KcrWhtmv0y3fo", 
+        databaseURL: "https://berkah-baja-steel-default-rtdb.asia-southeast1.firebasedatabase.app", 
+        projectId: "berkah-baja-steel" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbKey = "100rit"; 
+    const ritaseRef = ref(db, dbKey);
+
+    // Set Tanggal TTD
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Helper Format Currency & Number
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+    }
+    function parseFormattedNumber(val) {
+        return parseFloat(String(val).replace(/,/g, '')) || 0;
+    }
+
+    // Auto Masking Ribuan pada Input Text
+    ['inputHargaBeli', 'inputHargaJual', 'inputPengeluaran'].forEach(id => {
+        document.getElementById(id).addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = value ? parseInt(value, 10).toLocaleString('en-US') : '';
+        });
+    });
+
+    // SIMPAN DATA KE FIREBASE
+    document.getElementById('ritaseForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const data = {
+            tgl: document.getElementById('inputTgl').value,
+            namaBarang: document.getElementById('inputNamaBarang').value,
+            vol: parseFloat(document.getElementById('inputVolume').value) || 0,
+            hargaBeli: parseFormattedNumber(document.getElementById('inputHargaBeli').value),
+            hargaJual: parseFormattedNumber(document.getElementById('inputHargaJual').value),
+            pengeluaran: parseFormattedNumber(document.getElementById('inputPengeluaran').value),
+            timestamp: Date.now()
+        };
+
+        push(ritaseRef, data)
+            .then(() => {
+                document.getElementById('ritaseForm').reset();
+            })
+            .catch((err) => {
+                alert("Gagal menyimpan data: " + err.message);
+            });
+    });
+
+    // LISTEN DATA REALTIME (onValue)
+    onValue(ritaseRef, (snapshot) => {
+        const rawData = snapshot.val();
+        const tbody = document.getElementById('reportItems');
+        tbody.innerHTML = '';
+
+        let count = 0;
+        let volSplit = 0, volScrening = 0, volAbu = 0;
+        let totalVol = 0, totalBelanja = 0, totalJual = 0, totalPengeluaran = 0, totalProfit = 0;
+
+        if (rawData) {
+            const keys = Object.keys(rawData);
+            count = keys.length;
+
+            keys.forEach((key, index) => {
+                const item = rawData[key];
+                
+                const totalBeliRow = item.hargaBeli || 0;
+                const totalJualRow = item.hargaJual || 0;
+                const profitRow = totalJualRow - totalBeliRow - (item.pengeluaran || 0);
+
+                // Akumulasi volume per jenis material
+                if (item.namaBarang === 'Split 1.2') volSplit += item.vol;
+                else if (item.namaBarang === 'Screning') volScrening += item.vol;
+                else if (item.namaBarang === 'Abu Batu') volAbu += item.vol;
+
+                // Akumulasi Finansial & Volume
+                totalVol += item.vol;
+                totalBelanja += totalBeliRow;
+                totalJual += totalJualRow;
+                totalPengeluaran += (item.pengeluaran || 0);
+                totalProfit += profitRow;
+
+                // Format Tanggal
+                let tglFormatted = item.tgl;
+                if (item.tgl) {
+                    const p = item.tgl.split('-');
+                    if (p.length === 3) tglFormatted = `${p[2]}/${p[1]}/${p[0]}`;
+                }
+
+                // Render Baris Tabel
+                const row = `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td class="text-center">${tglFormatted}</td>
+                        <td>${item.namaBarang}</td>
+                        <td class="text-center">${item.vol}</td>
+                        <td class="text-right">${formatRupiah(totalBeliRow)}</td>
+                        <td class="text-right">${formatRupiah(totalJualRow)}</td>
+                        <td class="text-right">${formatRupiah(item.pengeluaran || 0)}</td>
+                        <td class="text-right" style="font-weight:bold; color: ${profitRow < 0 ? 'red' : 'black'}">${formatRupiah(profitRow)}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Update UI Summary & Footer
+        document.getElementById('ritaseCount').innerText = count;
+
+        document.getElementById('volSplit').innerText = `${volSplit.toLocaleString('id-ID')} M³`;
+        document.getElementById('volScrening').innerText = `${volScrening.toLocaleString('id-ID')} M³`;
+        document.getElementById('volAbu').innerText = `${volAbu.toLocaleString('id-ID')} M³`;
+
+        document.getElementById('summaryBelanja').innerText = formatRupiah(totalBelanja);
+        document.getElementById('summaryJual').innerText = formatRupiah(totalJual);
+        document.getElementById('summaryPengeluaran').innerText = formatRupiah(totalPengeluaran);
+        document.getElementById('summaryProfit').innerText = formatRupiah(totalProfit);
+
+        document.getElementById('totalVolAll').innerText = totalVol.toLocaleString('id-ID');
+        document.getElementById('totalBeliAll').innerText = formatRupiah(totalBelanja);
+        document.getElementById('totalJualAll').innerText = formatRupiah(totalJual);
+        document.getElementById('totalOpsAll').innerText = formatRupiah(totalPengeluaran);
+        document.getElementById('totalProfitAll').innerText = formatRupiah(totalProfit);
+    });
+
+    // RESET BATCH DATA
+    document.getElementById('btnReset').addEventListener('click', () => {
+        if (confirm("Apakah Anda yakin ingin MENGHAPUS SELURUH DATA '100rit' dan memulai batch baru?")) {
+            remove(ritaseRef)
+                .then(() => alert("Data batch berhasil di-reset!"))
+                .catch((err) => alert("Gagal mereset data: " + err.message));
+        }
+    });
+
+    // GENERATE PDF LANDSCAPE
+    document.getElementById('btnDownloadPDF').addEventListener('click', () => {
+        const previewNode = document.getElementById('invoice-preview');
+
+        const hariIni = new Date();
+        const yyyy = hariIni.getFullYear();
+        const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+        const dd = String(hariIni.getDate()).padStart(2, '0');
+        const fileName = `Laporan Rekapitulasi 100 Ritase - ${dd}-${mm}-${yyyy}.pdf`;
+
+        const originalWidth = previewNode.style.width;
+        previewNode.style.width = '1122px'; // Lebar kanvas Landscape A4 (96 DPI)
+
+        const opt = {
+            margin:       [5, 5, 5, 5],
+            filename:     fileName,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollX: 0, scrollY: 0, width: 1122 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(previewNode).save().then(() => {
+            previewNode.style.width = originalWidth;
+        });
+    });
+</script>
+
+</body>
+</html>
