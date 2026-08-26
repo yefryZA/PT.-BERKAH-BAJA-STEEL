@@ -41,7 +41,22 @@
             border: 2px solid #d4af37;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden; /* Mencegah teks meluap saat bergerak */
         }
+        
+        /* Animasi Logo Melayang / Pulse */
+        @keyframes logoFloat {
+            0% {
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.05);
+            }
+            100% {
+                transform: translateY(0px) scale(1);
+            }
+        }
+
         .logo-wrapper {
             background-color: white;
             width: 70px;
@@ -54,6 +69,8 @@
             margin-right: 15px;
             flex-shrink: 0;
             box-shadow: 0 0 10px rgba(255,255,255,0.2);
+            /* Penerapan Animasi Logo */
+            animation: logoFloat 3s ease-in-out infinite;
         }
         .logo-wrapper img {
             width: 100%;
@@ -61,12 +78,36 @@
             object-fit: contain;
             border-radius: 50%;
         }
-      .title-text {
-    color: #d4af37;          /* Warna Emas Solid Klasik (Gold) */
-    font-weight: bold;       /* Biar teksnya tebal dan tegas */
-    text-shadow: none;       /* Mematikan dan menghapus semua efek bayangan */
-    letter-spacing: 0.5px;   /* Jarak antar huruf sedikit renggang biar rapi */
-}
+
+        /* Animasi Teks Bergerak Kiri-Kanan */
+        @keyframes textMove {
+            0% {
+                transform: translateX(-10px);
+            }
+            50% {
+                transform: translateX(10px);
+            }
+            100% {
+                transform: translateX(-10px);
+            }
+        }
+
+        .title-container-animated {
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .title-text {
+            color: #d4af37;          /* Warna Emas Solid Klasik (Gold) */
+            font-weight: bold;       /* Biar teksnya tebal dan tegas */
+            text-shadow: none;       /* Mematikan dan menghapus semua efek bayangan */
+            letter-spacing: 0.5px;   /* Jarak antar huruf sedikit renggang biar rapi */
+            display: inline-block;
+            white-space: nowrap;
+            /* Penerapan Animasi Teks */
+            animation: textMove 4s ease-in-out infinite;
+        }
+
         /* Grid Mutasi (Kiri Kanan) yang bisa diklik */
         .summary-grid {
             display: grid;
@@ -290,16 +331,17 @@
         .bg-red { background-color: #e74c3c; color: white; }
         .bg-red:hover { background-color: #c0392b; }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
     <div class="header-container">
         <div class="logo-wrapper">
-            <img src="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png" alt="Logo PT BBS">
+            <img src="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logobbs.jpeg" alt="Logo PT BBS">
         </div>
-        <div class="title-text">
-            PENGELUARAN/KASBON PT. BBS
+        <div class="title-container-animated">
+            <div class="title-text">
+                PENGELUARAN/KASBON PT. BBS
+            </div>
         </div>
     </div>
 
@@ -385,7 +427,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const dbRefKas = ref(db, "KAS_WARUNG");
+    const dbRefKas = ref(db, "KAS_BBS");
 
     let transaksiData = [];
 
