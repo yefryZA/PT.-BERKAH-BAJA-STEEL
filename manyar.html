@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Invoice</title>
+    <!-- HTML2PDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        /* Form Styling */
+        .form-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .form-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            margin-top: 10px;
+        }
+        .btn-add { background-color: #28a745; }
+        .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
+
+        /* Invoice Preview Area (Target PDF) */
+        #invoice-preview {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            width: 190mm !important;
+            min-width: 190mm !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+        }
+
+        /* KOP Surat Header */
+        .kop-surat {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .kop-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .invoice-title {
+            text-align: center;
+            margin: 17px 0;
+        }
+        .invoice-title h2 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        /* Table Design */
+        table.invoice-table {
+            width: 100% !important;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        table.invoice-table th, table.invoice-table td {
+            border: 1px solid #333;
+            padding: 8px 10px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        table.invoice-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Alignment Helper Classes */
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+
+        /* Total & Signature Section */
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .signature-box {
+            text-align: center;
+            width: 220px;
+        }
+        .signature-img {
+            height: 70px;
+            margin: 10px 0;
+        }
+
+        #invoiceItems td, table.invoice-table th {
+            vertical-align: middle !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- FORM INPUT DATA -->
+    <div class="form-card">
+        <h2>Input Data Barang</h2>
+        <div class="form-group">
+            <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+        </div>
+        <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+
+        <!-- TOMBOL SINGLE GENERATE PDF -->
+        <button class="btn btn-pdf" onclick="generatePDF()">
+            📄 Download Invoice PDF
+        </button>
+    </div>
+
+    <!-- PREVIEW INVOICE / AREA PDF -->
+    <div id="invoice-preview">
+        <!-- KOP SURAT FULL GAMBAR JPG/JPEG -->
+        <div class="kop-surat">
+            <img src="kop.jpeg" alt="KOP Surat" class="kop-img">
+        </div>
+
+        <div class="invoice-title">
+            <h2>INVOICE KIRIMAN MATERIAL ALAM TUJUAN<br>H. MANYAR - PAKU AJI</h2>
+        </div>
+
+        <!-- TABEL BARANG -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 12%;">TGL</th>
+                    <th style="width: 21%;">NAMA BARANG</th>
+                    <th style="width: 17%;">PLAT NOMOR</th>
+                    <th style="width: 12%;">VOL (M³)</th>
+                    <th style="width: 14%;">HARGA /M³</th>
+                    <th style="width: 18%;">JUMLAH</th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItems">
+                <!-- Data barang akan muncul di sini via JavaScript -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
+                    <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
+                    <td></td>
+                    <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+   <!-- TANDA TANGAN & CAP -->
+        <div class="signature-section">
+            <div class="signature-box" style="text-align: center;">
+                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+                <p style="margin: 0;">Hormat Kami,</p>
+                <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    <img src="cap.png" alt="Tanda Tangan & Cap" class="signature-img" style="display: block; margin: 0 auto; max-height: 65px; height: auto; width: auto;">
+                </div>
+                <p style="font-weight: bold; margin: 2px 0 0 0; text-decoration: underline;">H. HENDAR WAHBAGIONO</p>
+                <p style="font-weight: bold; margin: 2px 0 0 0;">DIREKTUR UTAMA</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let dataBarang = [];
+
+    // Set tanggal saat ini di bagian TTD
+    const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('currentDate').innerText = today;
+
+    // Logika Otomatisasi Harga berdasarkan Nama Barang
+    function cekHargaOtomatis(namaBarang) {
+        const inputHarga = document.getElementById('inputHarga');
+        const text = namaBarang.trim().toLowerCase();
+
+        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+            inputHarga.value = '330,000';
+        } else if (text === 'screning' || text === 'screening') {
+            inputHarga.value = '297,500';
+        } else if (text === 'abu batu') {
+            inputHarga.value = '262,500';
+        }
+    }
+
+    // Format Rupiah
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+    }
+
+    function tambahBarang() {
+        const tgl = document.getElementById('inputTgl').value;
+        const nama = document.getElementById('inputNamaBarang').value;
+        const plat = document.getElementById('inputPlat').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        // Hapus tanda koma (,) sebelum diubah menjadi angka
+        const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
+        const harga = parseFloat(rawHarga) || 0;
+
+        if (!tgl || !nama || vol <= 0 || harga <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
+        }
+
+        const jumlah = vol * harga;
+
+        dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
+        renderTable();
+
+        // Reset input form
+        document.getElementById('inputNamaBarang').value = '';
+        document.getElementById('inputPlat').value = '';
+        document.getElementById('inputVolume').value = '';
+        document.getElementById('inputHarga').value = '';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('invoiceItems');
+        tbody.innerHTML = '';
+        
+        let totalVol = 0;
+        let totalHarga = 0;
+
+        dataBarang.forEach((item, index) => {
+            totalVol += item.vol;
+            totalHarga += item.jumlah;
+
+            let tglFormatted = item.tgl;
+            if (item.tgl) {
+                const parts = item.tgl.split('-');
+                if (parts.length === 3) {
+                    tglFormatted = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+                }
+            }
+
+            const row = `
+                <tr>
+                    <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
+                    <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
+                    <td style="vertical-align: middle;">${item.nama}</td>
+                    <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
+                    <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
+                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
+                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
+        document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
+    }
+
+    // Fungsi tunggal untuk generate PDF dengan KOP Surat dan CAP TTD
+    function generatePDF() {
+        if (dataBarang.length === 0) {
+            alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
+            return;
+        }
+
+        // Set Tanggal Cetak Otomatis
+        const hariIni = new Date();
+        const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
+        const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
+
+        const elDate = document.getElementById('currentDate');
+        if (elDate) {
+            elDate.innerText = tanggalFormatted;
+        }
+
+        const invoicePreview = document.getElementById('invoice-preview');
+
+        const yyyy = hariIni.getFullYear();
+        const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+        const dd = String(hariIni.getDate()).padStart(2, '0');
+        const tglFormat = `${dd}-${mm}-${yyyy}`;
+
+        const namaFile = `Invoice H. Manyar- ${tglFormat}.pdf`;
+
+        const originalWidth = invoicePreview.style.width;
+        invoicePreview.style.width = '794px';
+
+        const opt = {
+            margin:       [5, 5, 5, 5],
+            filename:     namaFile,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                allowTaint: true, 
+                scrollX: 0, 
+                scrollY: 0, 
+                width: 794 
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(invoicePreview).save().then(() => {
+            invoicePreview.style.width = originalWidth;
+        });
+    }
+
+    // Format angka input harga dengan koma ribuan
+    function formatInputRupiah(element) {
+        let value = element.value.replace(/\D/g, '');
+        if (value !== '') {
+            element.value = parseInt(value, 10).toLocaleString('en-US');
+        } else {
+            element.value = '';
+        }
+    }
+</script>
+
+</body>
+</html>
