@@ -1,0 +1,693 @@
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAS BBS</title>
+
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="theme-color" content="#1b263b">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kas Lestari">
+    <link rel="apple-touch-icon" href="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0d1b2a;
+            color: #e0e1dd;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        /* Header Section */
+        .header-container {
+            display: flex;
+            align-items: center;
+            background-color: #1b263b;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden; /* Mencegah teks meluap saat bergerak */
+        }
+        
+        /* Animasi Logo Melayang / Pulse */
+        @keyframes logoFloat {
+            0% {
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.05);
+            }
+            100% {
+                transform: translateY(0px) scale(1);
+            }
+        }
+
+        .logo-wrapper {
+            background-color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+            /* Penerapan Animasi Logo */
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        /* Animasi Teks Bergerak Kiri-Kanan */
+        @keyframes textMove {
+            0% {
+                transform: translateX(-10px);
+            }
+            50% {
+                transform: translateX(10px);
+            }
+            100% {
+                transform: translateX(-10px);
+            }
+        }
+
+        .title-container-animated {
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .title-text {
+            color: #d4af37;          /* Warna Emas Solid Klasik (Gold) */
+            font-weight: bold;       /* Biar teksnya tebal dan tegas */
+            text-shadow: none;       /* Mematikan dan menghapus semua efek bayangan */
+            letter-spacing: 0.5px;   /* Jarak antar huruf sedikit renggang biar rapi */
+            display: inline-block;
+            white-space: nowrap;
+            /* Penerapan Animasi Teks */
+            animation: textMove 4s ease-in-out infinite;
+        }
+
+        /* Grid Mutasi (Kiri Kanan) yang bisa diklik */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #1b263b;
+            padding: 18px 15px;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: scale(1.03);
+            background-color: #223049;
+        }
+        .card:active {
+            transform: scale(0.98);
+        }
+        .card-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            color: #a2a8b8;
+        }
+        .card-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .text-green { color: #2ecc71; }
+        .text-red { color: #e74c3c; }
+        
+        .click-hint {
+            position: absolute;
+            right: 8px;
+            bottom: 4px;
+            font-size: 9px;
+            color: #d4af37;
+            opacity: 0.7;
+        }
+        
+        /* Saldo Utama */
+        .saldo-card {
+            background-color: #415a77;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .saldo-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #e0e1dd;
+            margin-bottom: 5px;
+        }
+        .saldo-value {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Rincian Transaksi */
+        .rincian-container {
+            background-color: #1b263b;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #d4af37;
+            margin-bottom: 25px;
+        }
+        .rincian-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #415a77;
+            color: #ffffff;
+            padding: 8px;
+            border-bottom: 2px solid #d4af37;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #415a77;
+        }
+        tr:hover {
+            background-color: #2b3a52;
+        }
+
+        /* Tombol Cetak PDF */
+        .btn-pdf {
+            width: 100%;
+            padding: 12px;
+            background-color: #e74c3c;
+            color: white;
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+        .btn-pdf:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+        }
+
+        /* STRUKTUR STYLE UNTUK POP-UP MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-box {
+            background-color: #1b263b;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transform: scale(0.8);
+            transition: transform 0.2s ease-in-out;
+        }
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+        .modal-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #415a77;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            cursor: pointer;
+            color: #a2a8b8;
+            font-size: 20px;
+        }
+        .modal-close:hover {
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #a2a8b8;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            background-color: #0d1b2a;
+            border: 1px solid #415a77;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        .btn-modal-submit {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 5px;
+            color: #0d1b2a;
+        }
+        .bg-green { background-color: #2ecc71; }
+        .bg-green:hover { background-color: #27ae60; }
+        .bg-red { background-color: #e74c3c; color: white; }
+        .bg-red:hover { background-color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="logo-wrapper">
+            <img src="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logobbs.jpeg" alt="Logo PT BBS">
+        </div>
+        <div class="title-container-animated">
+            <div class="title-text">
+                PENGELUARAN/KASBON PT. BBS
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="card" onclick="bukaModal('masuk')">
+            <div class="card-title">Uang Masuk</div>
+            <div class="card-value text-green" id="total-masuk">Rp 0</div>
+            <span class="click-hint">+ Tambah</span>
+        </div>
+        <div class="card" onclick="bukaModal('keluar')">
+            <div class="card-title">Pengeluaran</div>
+            <div class="card-value text-red" id="total-keluar">Rp 0</div>
+            <span class="click-hint">- Catat</span>
+        </div>
+    </div>
+
+    <div class="saldo-card">
+        <div class="saldo-title">Saldo Utama</div>
+        <div class="saldo-value" id="saldo-utama">Rp 0</div>
+    </div>
+
+    <div class="rincian-container">
+        <div class="rincian-title">📋 Rincian Mutasi Kas Harian</div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Tanggal</th>
+                        <th style="width: 45%;">Keterangan</th>
+                        <th style="width: 30%; text-align: right;">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody id="data-transaksi">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="btn-pdf" onclick="generatePDFApp()">
+        📊 GENERATE REPORT PDF
+    </button>
+
+
+    <div class="modal-overlay" id="modalTransaksi" onclick="tutupModalLuar(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span id="modalTitle">Tambah Transaksi</span>
+                <span class="modal-close" onclick="tutupModal()">&times;</span>
+            </div>
+            <form id="modal-form" onsubmit="simpanTransaksiPopUp(event)">
+                <input type="hidden" id="modal-jenis">
+                
+                <div class="form-group">
+                    <label>Keterangan / Nama Item</label>
+                    <input type="text" class="form-control" id="modal-ket" placeholder="Contoh: Jual 20 porsi pempek kapal selam" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Nominal Rupiah (Rp)</label>
+                    <input type="number" class="form-control" id="modal-nominal" placeholder="Contoh: 50000" required>
+                </div>
+                
+                <button type="submit" class="btn-modal-submit" id="modalBtnSubmit">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+        authDomain: "barcode-warung-81e97.firebaseapp.com",
+        databaseURL: "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "barcode-warung-81e97",
+        storageBucket: "barcode-warung-81e97.firebasestorage.app",
+        messagingSenderId: "1089837830503",
+        appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+        measurementId: "G-92V3E8BM6J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRefKas = ref(db, "KAS_BBS");
+
+    let transaksiData = [];
+
+    // --- UTILITY FUNCTIONS ---
+    function formatRupiah(angka) {
+        return "Rp " + angka.toLocaleString('id-ID');
+    }
+
+    // Fungsi global agar bisa dipanggil dari HTML (karena type="module" membatasi scope fungsi)
+    window.formatInputRibuan = function(elemen) {
+        let value = elemen.value.replace(/\D/g, "");
+        if (value === "") {
+            elemen.value = "";
+            return;
+        }
+        elemen.value = parseInt(value).toLocaleString('id-ID');
+    }
+
+    function hitungKeuangan() {
+        let masuk = 0;
+        let keluar = 0;
+        
+        transaksiData.forEach(item => {
+            if(item.jenis === 'masuk') masuk += item.nominal;
+            if(item.jenis === 'keluar') keluar += item.nominal;
+        });
+        
+        let saldo = masuk - keluar;
+        
+        document.getElementById('total-masuk').innerText = formatRupiah(masuk);
+        document.getElementById('total-keluar').innerText = formatRupiah(keluar);
+        document.getElementById('saldo-utama').innerText = formatRupiah(saldo);
+    }
+
+    function renderTabel() {
+        const tbody = document.getElementById('data-transaksi');
+        tbody.innerHTML = "";
+        
+        if (transaksiData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #a2a8b8; padding: 20px;">
+                        Belum ada transaksi hari ini. Silakan ketuk opsi di atas untuk mencatatkan kas.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        const dataTerbalik = [...transaksiData].reverse();
+        
+        dataTerbalik.forEach(item => {
+            const tr = document.createElement('tr');
+            const classWarna = item.jenis === 'masuk' ? 'text-green' : 'text-red';
+            const tanda = item.jenis === 'masuk' ? '+' : '-';
+            
+            tr.innerHTML = `
+                <td>${item.tgl}</td>
+                <td>${item.ket}</td>
+                <td class="${classWarna}" style="text-align: right; font-weight: bold;">${tanda} ${formatRupiah(item.nominal)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // --- REALTIME DATABASE SYNC ---
+    // Fungsi mendengarkan data dari Firebase secara Realtime
+    onValue(dbRefKas, (snapshot) => {
+        const data = snapshot.val();
+        // Jika data di Firebase ada, masukkan ke array lokal. Jika kosong, set array kosong.
+        transaksiData = data ? data : [];
+        
+        // Setiap ada perubahan data di Firebase, layar otomatis di-update
+        renderTabel();
+        hitungKeuangan();
+    });
+
+    // Fungsi kirim data ke Firebase
+    function simpanKeFirebase() {
+        set(dbRefKas, transaksiData)
+            .catch((error) => {
+                alert("Gagal sinkronisasi data ke Cloud: " + error.message);
+            });
+    }
+
+    // --- MODAL & FORM FUNCTIONS (Dibuat Global via window) ---
+    window.bukaModal = function(jenis) {
+        const modal = document.getElementById('modalTransaksi');
+        const title = document.getElementById('modalTitle');
+        const btn = document.getElementById('modalBtnSubmit');
+        const inputNominal = document.getElementById('modal-nominal');
+        
+        document.getElementById('modal-jenis').value = jenis;
+        document.getElementById('modal-ket').value = "";
+        inputNominal.value = "";
+        
+        inputNominal.type = "text"; 
+        inputNominal.setAttribute("inputmode", "numeric"); 
+        inputNominal.oninput = function() { window.formatInputRibuan(this); };
+        
+        if(jenis === 'masuk') {
+            title.innerText = "📥 INPUT UANG MASUK";
+            title.style.color = "#2ecc71";
+            btn.innerText = "Simpan Pendapatan";
+            btn.className = "btn-modal-submit bg-green";
+        } else {
+            title.innerText = "📤 CATAT PENGELUARAN";
+            title.style.color = "#e74c3c";
+            btn.innerText = "Simpan Pengeluaran";
+            btn.className = "btn-modal-submit bg-red";
+        }
+        
+        modal.classList.add('active');
+    }
+
+    window.tutupModal = function() {
+        document.getElementById('modalTransaksi').classList.remove('active');
+    }
+
+    window.tutupModalLuar = function(e) {
+        if(e.target.id === 'modalTransaksi') {
+            window.tutupModal();
+        }
+    }
+
+    window.simpanTransaksiPopUp = function(e) {
+        e.preventDefault();
+        const jenis = document.getElementById('modal-jenis').value;
+        const ket = document.getElementById('modal-ket').value;
+        
+        const nominalRaw = document.getElementById('modal-nominal').value.replace(/\./g, "");
+        const nominal = parseInt(nominalRaw) || 0;
+        
+        if (nominal <= 0) {
+            alert("Masukkan nominal yang valid, Bang!");
+            return;
+        }
+        
+        const hariIni = new Date();
+        const tglStr = String(hariIni.getDate()).padStart(2, '0') + '/' + 
+                       String(hariIni.getMonth() + 1).padStart(2, '0') + '/' + 
+                       hariIni.getFullYear();
+        
+        // Dorong data baru ke array lokal
+        transaksiData.push({ tgl: tglStr, jenis, ket, nominal });
+        
+        // Push array terbaru langsung ke Firebase (Otomatis memicu onValue di atas untuk re-render)
+        simpanKeFirebase();
+        window.tutupModal();
+    }
+
+    // --- EKSPOR LAPORAN KE PDF ---
+    window.generatePDFApp = function() {
+        const elementPDF = document.createElement('div');
+        elementPDF.style.width = "680px"; 
+        elementPDF.style.padding = "20px";
+        elementPDF.style.background = "#ffffff";
+        elementPDF.style.color = "#111111";
+        elementPDF.style.fontFamily = "Arial, sans-serif";
+        
+        const urlLogo = "https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png";
+
+        let htmlNota = `
+            <div style="border-bottom: 3px double #d4af37; padding-bottom: 15px; margin-bottom: 25px; display: flex; align-items: center;">
+                <div style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid #d4af37; padding: 3px; margin-right: 15px; background: white; display: flex; align-items: center; justify-content: center;">
+                    <img src="${urlLogo}" crossOrigin="anonymous" style="width:100%; height:100%; object-fit:contain; border-radius:50%;">
+                </div>
+                <div>
+                    <h1 style="font-size: 20px; margin: 0; color: #0d1b2a; font-weight: bold; letter-spacing: 0.5px;">PEMPEK PALEMBANG LESTARI</h1>
+                    <p style="font-size: 12px; margin: 4px 0 0 0; color: #444444; font-weight: bold;">Laporan Buku Kas Harian - Sistem Manajemen Dagang UMKM</p>
+                </div>
+            </div>
+            
+            <h3 style="text-align: center; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; color: #1b263b; font-size: 14px; font-weight: bold;">LAPORAN MUTASI KAS & SALDO</h3>
+            
+            <table style="width: 100%; margin-bottom: 30px; font-size: 13px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 12px; background: #eef9f1; border-left: 5px solid #2ecc71; font-weight: bold; color: #111111; border-bottom: 1px solid #dddddd;">Total Uang Masuk:</td>
+                    <td style="padding: 12px; background: #eef9f1; text-align: right; color: #27ae60; font-weight: bold; font-size: 14px; border-bottom: 1px solid #dddddd;">${document.getElementById('total-masuk').innerText}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; background: #fdf2f2; border-left: 5px solid #e74c3c; font-weight: bold; color: #111111; border-bottom: 1px solid #dddddd;">Total Pengeluaran:</td>
+                    <td style="padding: 12px; background: #fdf2f2; text-align: right; color: #c0392b; font-weight: bold; font-size: 14px; border-bottom: 1px solid #dddddd;">${document.getElementById('total-keluar').innerText}</td>
+                </tr>
+                <tr style="font-size: 16px;">
+                    <td style="padding: 14px; background: #f4f6f9; border-top: 2px solid #d4af37; font-weight: bold; color: #0d1b2a;">SALDO AKHIR UTAMA:</td>
+                    <td style="padding: 14px; background: #f4f6f9; text-align: right; color: #0d1b2a; font-weight: bold; border-top: 2px solid #d4af37;">${document.getElementById('saldo-utama').innerText}</td>
+                </tr>
+            </table>
+
+            <h4 style="font-size: 13px; margin-bottom: 10px; color: #1b263b; font-weight: bold;">RINCIAN TRANSAKSI DATA FISIK:</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="background: #1b263b; color: white;">
+                        <th style="padding: 10px; border: 1px solid #666666; text-align: left; font-weight: bold;">Tanggal</th>
+                        <th style="padding: 10px; border: 1px solid #666666; text-align: left; font-weight: bold;">Keterangan / Alur Kas</th>
+                        <th style="padding: 10px; border: 1px solid #666666; text-align: right; font-weight: bold;">Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        if (transaksiData.length === 0) {
+            htmlNota += `
+                <tr>
+                    <td colspan="3" style="padding: 20px; text-align: center; border: 1px solid #666666; color: #444444; font-style: italic; font-weight: bold; background: #fafafa;">Tidak ada riwayat transaksi cetak.</td>
+                </tr>
+            `;
+        } else {
+            transaksiData.forEach(item => {
+                const warnaTeks = item.jenis === 'masuk' ? '#27ae60' : '#c0392b';
+                const tandaNominal = item.jenis === 'masuk' ? '+' : '-';
+                htmlNota += `
+                    <tr style="background: white;">
+                        <td style="padding: 10px; border: 1px solid #666666; color: #111111; font-weight: bold;">${item.tgl}</td>
+                        <td style="padding: 10px; border: 1px solid #666666; color: #111111; font-weight: bold;">${item.ket}</td>
+                        <td style="padding: 10px; border: 1px solid #666666; text-align: right; color: ${warnaTeks}; font-weight: bold; font-size: 13px;">${tandaNominal} ${formatRupiah(item.nominal)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        htmlNota += `
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 50px; margin-left: auto; text-align: center; font-size: 13px; width: 180px; float: right;">
+                <p style="color: #111111; font-weight: bold; margin-bottom: 40px;">Palembang, ${new Date().toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'})}</p>
+                <p style="font-weight: bold; border-bottom: 1.5px solid #111111; padding-bottom: 3px; margin-bottom: 2px; color: #0d1b2a;">LESTARI</p>
+                <span style="font-size: 11px; color: #555555; font-weight: bold;">Sistem Buku Kas Digital</span>
+            </div>
+            <div style="clear: both;"></div>
+        `;
+        
+        elementPDF.innerHTML = htmlNota;
+        
+        const opsiCetak = {
+            margin:       10,
+            filename:     'LAPORAN_KAS_PEMPEK_LESTARI.pdf',
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { 
+                scale: 3, 
+                useCORS: true, 
+                letterRendering: true,
+                logging: false
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().from(elementPDF).set(opsiCetak).save();
+    }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((reg) => console.log('Service Worker PWA berhasil didaftarkan, Bang! ✅', reg))
+                    .catch((err) => console.error('Aduh, Service Worker gagal daftar: ❌', err));
+            });
+        }
+
+</script>
+</body>
+</html>
