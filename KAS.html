@@ -41,20 +41,13 @@
             border: 2px solid #d4af37;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            overflow: hidden; /* Mencegah teks meluap saat bergerak */
+            overflow: hidden;
         }
         
-        /* Animasi Logo Melayang / Pulse */
         @keyframes logoFloat {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            50% {
-                transform: translateY(-5px) scale(1.05);
-            }
-            100% {
-                transform: translateY(0px) scale(1);
-            }
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.05); }
+            100% { transform: translateY(0px) scale(1); }
         }
 
         .logo-wrapper {
@@ -69,7 +62,6 @@
             margin-right: 15px;
             flex-shrink: 0;
             box-shadow: 0 0 10px rgba(255,255,255,0.2);
-            /* Penerapan Animasi Logo */
             animation: logoFloat 3s ease-in-out infinite;
         }
         .logo-wrapper img {
@@ -79,17 +71,10 @@
             border-radius: 50%;
         }
 
-        /* Animasi Teks Bergerak Kiri-Kanan */
         @keyframes textMove {
-            0% {
-                transform: translateX(-10px);
-            }
-            50% {
-                transform: translateX(10px);
-            }
-            100% {
-                transform: translateX(-10px);
-            }
+            0% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            100% { transform: translateX(-10px); }
         }
 
         .title-container-animated {
@@ -98,17 +83,16 @@
         }
 
         .title-text {
-            color: #d4af37;          /* Warna Emas Solid Klasik (Gold) */
-            font-weight: bold;       /* Biar teksnya tebal dan tegas */
-            text-shadow: none;       /* Mematikan dan menghapus semua efek bayangan */
-            letter-spacing: 0.5px;   /* Jarak antar huruf sedikit renggang biar rapi */
+            color: #d4af37;
+            font-weight: bold;
+            text-shadow: none;
+            letter-spacing: 0.5px;
             display: inline-block;
             white-space: nowrap;
-            /* Penerapan Animasi Teks */
             animation: textMove 4s ease-in-out infinite;
         }
 
-        /* Grid Mutasi (Kiri Kanan) yang bisa diklik */
+        /* Grid Mutasi (Kiri Kanan) */
         .summary-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -180,7 +164,7 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Rincian Transaksi */
+        /* Rincian Transaksi Optimized Mobile Display */
         .rincian-container {
             background-color: #1b263b;
             padding: 15px;
@@ -191,30 +175,43 @@
         .rincian-title {
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             color: #ffffff;
         }
         .table-wrapper {
-            overflow-x: auto;
+            width: 100%;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
-            text-align: left;
+            font-size: 13px;
         }
-        th {
-            background-color: #415a77;
-            color: #ffffff;
-            padding: 8px;
-            border-bottom: 2px solid #d4af37;
+        
+        /* Baris Tanggal yang Memanjang (Top Layout) */
+        .row-tgl {
+            background-color: #0d1b2a;
+            color: #d4af37;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-top: 1px solid #415a77;
+            border-left: 3px solid #d4af37;
+            letter-spacing: 0.5px;
         }
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #415a77;
+        
+        /* Baris Isi Detail (Keterangan & Nominal) */
+        .row-detail td {
+            padding: 10px;
+            border-bottom: 1px solid #283854;
+            vertical-align: middle;
         }
-        tr:hover {
-            background-color: #2b3a52;
+        .row-detail:hover {
+            background-color: #223049;
+        }
+        .cell-ket {
+            color: #e0e1dd;
+            line-height: 1.4;
+            word-break: break-word;
         }
 
         /* Tombol Cetak PDF */
@@ -240,7 +237,7 @@
             transform: translateY(-1px);
         }
 
-        /* STRUKTUR STYLE UNTUK POP-UP MODAL */
+        /* POP-UP MODAL */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -340,7 +337,7 @@
         </div>
         <div class="title-container-animated">
             <div class="title-text">
-                PENGELUARAN PT. BBS
+                PENGELUARAN/KASBON PT. BBS
             </div>
         </div>
     </div>
@@ -367,15 +364,8 @@
         <div class="rincian-title">📋 Rincian Mutasi Kas Harian</div>
         <div class="table-wrapper">
             <table>
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">Tanggal</th>
-                        <th style="width: 45%;">Keterangan</th>
-                        <th style="width: 30%; text-align: right;">Nominal</th>
-                    </tr>
-                </thead>
                 <tbody id="data-transaksi">
-                    </tbody>
+                </tbody>
             </table>
         </div>
     </div>
@@ -383,7 +373,6 @@
     <button class="btn-pdf" onclick="generatePDFApp()">
         📊 GENERATE REPORT PDF
     </button>
-
 
     <div class="modal-overlay" id="modalTransaksi" onclick="tutupModalLuar(event)">
         <div class="modal-box">
@@ -409,8 +398,7 @@
         </div>
     </div>
 
-
-   <script type="module">
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
@@ -436,7 +424,6 @@
         return "Rp " + angka.toLocaleString('id-ID');
     }
 
-    // Fungsi global agar bisa dipanggil dari HTML (karena type="module" membatasi scope fungsi)
     window.formatInputRibuan = function(elemen) {
         let value = elemen.value.replace(/\D/g, "");
         if (value === "") {
@@ -469,7 +456,7 @@
         if (transaksiData.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="3" style="text-align: center; color: #a2a8b8; padding: 20px;">
+                    <td style="text-align: center; color: #a2a8b8; padding: 20px;">
                         Belum ada transaksi hari ini. Silakan ketuk opsi di atas untuk mencatatkan kas.
                     </td>
                 </tr>
@@ -480,32 +467,36 @@
         const dataTerbalik = [...transaksiData].reverse();
         
         dataTerbalik.forEach(item => {
-            const tr = document.createElement('tr');
             const classWarna = item.jenis === 'masuk' ? 'text-green' : 'text-red';
             const tanda = item.jenis === 'masuk' ? '+' : '-';
             
-            tr.innerHTML = `
-                <td>${item.tgl}</td>
-                <td>${item.ket}</td>
-                <td class="${classWarna}" style="text-align: right; font-weight: bold;">${tanda} ${formatRupiah(item.nominal)}</td>
+            // Baris 1: Tanggal di bagian atas
+            const trTgl = document.createElement('tr');
+            trTgl.innerHTML = `<td colspan="2" class="row-tgl">📅 ${item.tgl}</td>`;
+            
+            // Baris 2: Keterangan (Luas) & Nominal (Kanan)
+            const trDetail = document.createElement('tr');
+            trDetail.className = "row-detail";
+            trDetail.innerHTML = `
+                <td class="cell-ket">${item.ket}</td>
+                <td class="${classWarna}" style="text-align: right; font-weight: bold; white-space: nowrap; width: 40%;">
+                    ${tanda} ${formatRupiah(item.nominal)}
+                </td>
             `;
-            tbody.appendChild(tr);
+            
+            tbody.appendChild(trTgl);
+            tbody.appendChild(trDetail);
         });
     }
 
     // --- REALTIME DATABASE SYNC ---
-    // Fungsi mendengarkan data dari Firebase secara Realtime
     onValue(dbRefKas, (snapshot) => {
         const data = snapshot.val();
-        // Jika data di Firebase ada, masukkan ke array lokal. Jika kosong, set array kosong.
         transaksiData = data ? data : [];
-        
-        // Setiap ada perubahan data di Firebase, layar otomatis di-update
         renderTabel();
         hitungKeuangan();
     });
 
-    // Fungsi kirim data ke Firebase
     function simpanKeFirebase() {
         set(dbRefKas, transaksiData)
             .catch((error) => {
@@ -513,7 +504,7 @@
             });
     }
 
-    // --- MODAL & FORM FUNCTIONS (Dibuat Global via window) ---
+    // --- MODAL & FORM FUNCTIONS ---
     window.bukaModal = function(jenis) {
         const modal = document.getElementById('modalTransaksi');
         const title = document.getElementById('modalTitle');
@@ -571,10 +562,7 @@
                        String(hariIni.getMonth() + 1).padStart(2, '0') + '/' + 
                        hariIni.getFullYear();
         
-        // Dorong data baru ke array lokal
         transaksiData.push({ tgl: tglStr, jenis, ket, nominal });
-        
-        // Push array terbaru langsung ke Firebase (Otomatis memicu onValue di atas untuk re-render)
         simpanKeFirebase();
         window.tutupModal();
     }
@@ -680,14 +668,13 @@
         html2pdf().from(elementPDF).set(opsiCetak).save();
     }
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then((reg) => console.log('Service Worker PWA berhasil didaftarkan, Bang! ✅', reg))
-                    .catch((err) => console.error('Aduh, Service Worker gagal daftar: ❌', err));
-            });
-        }
-
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then((reg) => console.log('Service Worker PWA berhasil didaftarkan, Bang! ✅', reg))
+                .catch((err) => console.error('Aduh, Service Worker gagal daftar: ❌', err));
+        });
+    }
 </script>
 </body>
 </html>
