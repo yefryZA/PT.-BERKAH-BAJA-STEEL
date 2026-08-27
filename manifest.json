@@ -1,7 +1,7 @@
 {
-  "name": "Buku Kas Pempek Lestari",
-  "short_name": "Kas Lestari",
-  "description": "Sistem Manajemen Buku Kas Harian UMKM Pempek Palembang Lestari",
+  "name": "KAS BBS",
+  "short_name": "Kas BBS",
+  "description": "Sistem Manajemen BBS",
   "start_url": "/PT.-BERKAH-BAJA-STEEL/kas.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png",
+      "src": "https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logobbs.jpeg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
