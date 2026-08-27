@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Direksi - PT. BBS</title>
 
     <style>
@@ -22,91 +22,120 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-main);
             color: var(--text-light);
-            padding: 24px;
-            max-width: 1200px;
+            padding: 12px;
+            max-width: 600px; /* Dioptimalkan untuk lebar HP */
             margin: 0 auto;
         }
 
-        /* Header Dashboard */
+        /* Header Dashboard Mobile */
         .dashboard-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            margin-bottom: 16px;
+        }
+
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: var(--bg-card);
-            padding: 20px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            margin-bottom: 24px;
         }
 
         .header-title h1 {
-            font-size: 22px;
+            font-size: 16px;
             color: var(--accent-gold);
             letter-spacing: 0.5px;
+            font-weight: 700;
         }
 
         .header-title p {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         .status-badge {
             background: rgba(46, 204, 113, 0.15);
             color: var(--green);
-            padding: 6px 14px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: bold;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             border: 1px solid var(--green);
+            align-self: flex-start;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background-color: var(--green);
             border-radius: 50%;
             display: inline-block;
         }
 
-        /* Summary Cards / KPI */
+        /* KPI Cards Grid */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        /* Kartu Saldo Utama (Lebih Menonjol) */
+        .kpi-card-main {
+            background-color: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 5px solid var(--accent-gold);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        /* Sub KPI Grid (Masuk & Keluar Berdampingan) */
+        .kpi-sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         .kpi-card {
             background-color: var(--bg-card);
-            padding: 24px;
+            padding: 12px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .kpi-card.gold { border-left: 4px solid var(--accent-gold); }
         .kpi-card.green { border-left: 4px solid var(--green); }
         .kpi-card.red { border-left: 4px solid var(--red); }
 
         .kpi-label {
-            font-size: 13px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .kpi-value-main {
+            font-size: 24px;
+            font-weight: 700;
         }
 
         .kpi-value {
-            font-size: 28px;
+            font-size: 16px;
             font-weight: 700;
         }
 
@@ -115,123 +144,134 @@
         .text-red { color: var(--red); }
 
         .section-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
             color: var(--text-light);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        /* Layout List Transaksi Berbasis Kartu */
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tx-card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tx-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* Table Section */
-        .table-section {
-            background-color: var(--bg-card);
-            padding: 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            max-height: 550px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 16px; /* Diperbesar dari 13px ke 16px */
-            text-align: left;
-        }
-
-        th {
-            background-color: #111a2e;
+        .tx-date {
+            font-size: 12px;
             color: var(--text-muted);
-            padding: 16px; /* Padding disesuaikan */
-            position: sticky;
-            top: 0;
-            font-size: 15px; /* Diperbesar dari 13px ke 15px */
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        td {
-            padding: 16px; /* Padding disesuaikan */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 16px; /* Ukuran font data transaksi */
-        }
-
-        tr:hover {
-            background-color: var(--bg-hover);
         }
 
         .type-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 13px; /* Diperbesar dari 11px ke 13px */
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: bold;
             letter-spacing: 0.5px;
         }
 
         .type-masuk { background: rgba(46, 204, 113, 0.2); color: var(--green); }
         .type-keluar { background: rgba(231, 76, 60, 0.2); color: var(--red); }
+
+        .tx-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .tx-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            word-break: break-word;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .tx-amount {
+            font-size: 15px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 16px;
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
     <!-- Header -->
     <div class="dashboard-header">
-        <div class="header-title">
-            <h1>EXECUTIVE FINANCIAL DASHBOARD</h1>
-            <p>PT. BERKAH BAJA STEEL (BBS) — Monitoring Realtime Kas</p>
-        </div>
-        <div class="status-badge">
-            <span class="status-dot"></span> Live Sync
+        <div class="header-top">
+            <div class="header-title">
+                <h1>EXECUTIVE FINANCIAL</h1>
+                <p>PT. BERKAH BAJA STEEL (BBS)</p>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span> Realtime
+            </div>
         </div>
     </div>
 
-    <!-- Ringkasan Finansial (KPI) -->
+    <!-- Ringkasan Finansial (KPI Mobile) -->
     <div class="kpi-grid">
-        <div class="kpi-card gold">
+        <!-- Saldo Utama -->
+        <div class="kpi-card-main">
             <div class="kpi-label">Saldo Kas Saat Ini</div>
-            <div class="kpi-value text-gold" id="kpi-saldo">Rp 0</div>
+            <div class="kpi-value-main text-gold" id="kpi-saldo">Rp 0</div>
         </div>
-        <div class="kpi-card green">
-            <div class="kpi-label">Total Pemasukan</div>
-            <div class="kpi-value text-green" id="kpi-masuk">Rp 0</div>
-        </div>
-        <div class="kpi-card red">
-            <div class="kpi-label">Total Pengeluaran</div>
-            <div class="kpi-value text-red" id="kpi-keluar">Rp 0</div>
+        
+        <!-- Pemasukan & Pengeluaran (2 Kolom) -->
+        <div class="kpi-sub-grid">
+            <div class="kpi-card green">
+                <div class="kpi-label">Pemasukan</div>
+                <div class="kpi-value text-green" id="kpi-masuk">Rp 0</div>
+            </div>
+            <div class="kpi-card red">
+                <div class="kpi-label">Pengeluaran</div>
+                <div class="kpi-value text-red" id="kpi-keluar">Rp 0</div>
+            </div>
         </div>
     </div>
 
     <!-- Rincian Transaksi -->
-    <div class="table-section">
+    <div>
         <div class="section-title">
-            <span>Riwayat Transaksi Realtime</span>
-            <span style="font-size: 14px; color: var(--text-muted);" id="total-count">0 Transaksi</span>
+            <span>Riwayat Transaksi</span>
+            <span style="font-size: 12px; color: var(--text-muted);" id="total-count">0 Transaksi</span>
         </div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 22%;">Tanggal</th>
-                        <th style="width: 15%;">Tipe</th>
-                        <th>Keterangan</th>
-                        <th style="width: 28%; text-align: right;">Nominal</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px; font-size: 16px;">
-                            Memuat data transaksi...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <div class="transaction-list" id="transaction-container">
+            <div class="empty-state">
+                Memuat data transaksi...
+            </div>
         </div>
     </div>
 
@@ -272,19 +312,17 @@
             let totalMasuk = 0;
             let totalKeluar = 0;
 
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = "";
+            const container = document.getElementById('transaction-container');
+            container.innerHTML = "";
 
             if (data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px; font-size: 16px;">
-                            Belum ada data transaksi tercatat.
-                        </td>
-                    </tr>
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Belum ada data transaksi tercatat.
+                    </div>
                 `;
             } else {
-                // Tampilkan transaksi terbaru di paling atas
+                // Urutkan transaksi terbaru di posisi paling atas
                 const reverseData = [...data].reverse();
 
                 reverseData.forEach(item => {
@@ -292,20 +330,23 @@
                     if (isMasuk) totalMasuk += item.nominal;
                     else totalKeluar += item.nominal;
 
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.tgl}</td>
-                        <td>
+                    const txCard = document.createElement('div');
+                    txCard.className = 'tx-card';
+                    txCard.innerHTML = `
+                        <div class="tx-header">
+                            <span class="tx-date">${item.tgl}</span>
                             <span class="type-badge ${isMasuk ? 'type-masuk' : 'type-keluar'}">
                                 ${isMasuk ? 'MASUK' : 'KELUAR'}
                             </span>
-                        </td>
-                        <td>${item.ket}</td>
-                        <td style="text-align: right; font-weight: bold;" class="${isMasuk ? 'text-green' : 'text-red'}">
-                            ${isMasuk ? '+' : '-'} ${formatRupiah(item.nominal)}
-                        </td>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-desc">${item.ket}</div>
+                            <div class="tx-amount ${isMasuk ? 'text-green' : 'text-red'}">
+                                ${isMasuk ? '+' : '-'} ${formatRupiah(item.nominal)}
+                            </div>
+                        </div>
                     `;
-                    tbody.appendChild(row);
+                    container.appendChild(txCard);
                 });
             }
 
