@@ -135,7 +135,7 @@
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <select id="inputTujuan" onchange="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
                 <option value="PT. CHM">PT. CHM</option>
-                <option value="H. MANYAR">H. MANYAR</option>
+                <option value="FRANCO">FRANCO</option>
             </select>
             <input type="text" id="inputNamaSopir" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
@@ -230,28 +230,32 @@
         elCurrentDate.innerText = today;
     }
 
-    // Logika Otomatisasi Harga berdasarkan Tujuan Kiriman & Nama Barang
-    function cekHargaOtomatis() {
-        const tujuan = document.getElementById('inputTujuan').value;
-        const namaBarang = document.getElementById('inputNamaBarang').value;
-        const inputHarga = document.getElementById('inputHarga');
-        const text = namaBarang.trim().toLowerCase();
+// Logika Otomatisasi Harga berdasarkan Tujuan Kiriman & Nama Barang
+function cekHargaOtomatis() {
+    const elTujuan = document.getElementById('inputTujuan');
+    const elNamaBarang = document.getElementById('inputNamaBarang');
+    const inputHarga = document.getElementById('inputHarga');
 
-        // Jika tujuan ke H. MANYAR, harga otomatis 110.000
-        if (tujuan === 'H. MANYAR') {
-            inputHarga.value = '110,000';
-            return;
-        }
+    if (!elTujuan || !elNamaBarang || !inputHarga) return;
 
-        // Jika tujuan PT. CHM, gunakan aturan harga berdasarkan nama barang
-        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
-            inputHarga.value = '127,500';
-        } else if (text === 'screning' || text === 'screening') {
-            inputHarga.value = '127,500';
-        } else if (text === 'abu batu') {
-            inputHarga.value = '127,500';
-        }
+    const tujuan = elTujuan.value.trim().toUpperCase();
+    const text = elNamaBarang.value.trim().toLowerCase();
+
+    // 1. Cek jika tujuan mengandung kata "FRANCO" dan nama barang mengandung "split"
+    if (tujuan.includes('FRANCO') && text.includes('split')) {
+        inputHarga.value = '350,000';
+        return; // Hentikan fungsi agar tidak menimpa harga di bawah
     }
+
+    // 2. Aturan harga berdasarkan nama barang (untuk tujuan selain FRANCO)
+    if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+        inputHarga.value = '127,500';
+    } else if (text === 'screning' || text === 'screening') {
+        inputHarga.value = '127,500';
+    } else if (text === 'abu batu') {
+        inputHarga.value = '127,500';
+    }
+}
 
     // Format Rupiah
     function formatRupiah(angka) {
