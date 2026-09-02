@@ -25,6 +25,10 @@
         .btn-pay { background: #17a2b8; padding: 8px 12px; font-size: 12px; width: auto; margin-top: 8px; border-radius: 4px; color: white; border: none; cursor: pointer; display: inline-block; font-weight: bold; }
         .btn-pay:hover { background: #117a8b; }
         
+        /* Tombol Hapus Data Lunas di Admin */
+        .btn-delete { background: #dc3545; padding: 6px 10px; font-size: 11px; width: auto; margin-top: 6px; border-radius: 4px; color: white; border: none; cursor: pointer; display: inline-block; font-weight: bold; }
+        .btn-delete:hover { background: #a71d2a; }
+
         /* Kartu Dashboard DIRUT yang Dioptimalkan untuk HP */
         .card { background: #e3f2fd; padding: 15px; margin-bottom: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; border: 1px solid #90caf9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .card:hover { background: #bbdefb; transform: translateY(-2px); }
@@ -63,7 +67,7 @@
         th, td { border: 1px solid #bce0fd; padding: 8px 6px; text-align: left; vertical-align: top; word-break: break-word; }
         th { background: #e3f2fd; color: #0d47a1; }
         
-        /* Style Modal Pop-up */
+        /* Style Modal Pop-up Umum */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); padding: 10px; box-sizing: border-box; }
         .modal-content { background-color: #fff; margin: 5% auto; padding: 15px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; max-height: 85vh; overflow-y: auto; border-top: 5px solid #007bff; box-sizing: border-box; }
         .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 20px; }
@@ -71,6 +75,71 @@
         .modal-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; table-layout: fixed; }
         .modal-table th, .modal-table td { border: 1px solid #bce0fd; padding: 6px 4px; }
         .history-box { background: #f0f7ff; border-left: 3px solid #007bff; padding: 6px 8px; margin-top: 4px; font-size: 11px; border-radius: 0 4px 4px 0; word-break: break-all; }
+
+        /* Style Pop-up Peringatan Keras Segede Layar HP */
+        .modal-fullscreen-danger {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(220, 53, 69, 0.95);
+            padding: 20px;
+            box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .danger-content {
+            background: #ffffff;
+            padding: 25px 20px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 4px solid #721c24;
+            box-sizing: border-box;
+        }
+        .danger-title {
+            color: #dc3545;
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .danger-desc {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 20px;
+            word-break: break-word;
+        }
+        .btn-danger-action {
+            background: #dc3545;
+            color: white;
+            font-size: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn-danger-action:hover { background: #a71d2a; }
+        .btn-cancel-action {
+            background: #6c757d;
+            color: white;
+            font-size: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-cancel-action:hover { background: #5a6268; }
     </style>
 </head>
 <body>
@@ -194,9 +263,19 @@
     </div>
 </div>
 
+<!-- POP-UP PERINGATAN KERAS SEGEDE LAYAR HP (HAPUS DATA) -->
+<div id="dangerModal" class="modal-fullscreen-danger">
+    <div class="danger-content">
+        <div class="danger-title">BANG YEFRY, YAKIN KAH DATANYA AKAN DI HAPUS ⁉️⁉️⁉️</div>
+        <div id="dangerInfoText" class="danger-desc">Data yang lunas ini akan dihapus permanen dari sistem.</div>
+        <button type="button" class="btn-danger-action" onclick="eksekusiHapusData()">YA, HAPUS PERMANEN</button>
+        <button type="button" class="btn-cancel-action" onclick="tutupDangerModal()">BATAL</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
@@ -223,6 +302,7 @@
     let activeTotal = 0;
     let activeDibayar = 0;
     let activeRiwayat = [];
+    let targetHapusId = null;
 
     function formatRupiah(angka) {
         if (!angka) return "0";
@@ -349,6 +429,31 @@
         });
     }
 
+    // --- FITUR HAPUS DATA DENGAN POP-UP KERAS SEGEDE LAYAR ---
+    window.konfirmasiHapus = function(id, keterangan, total) {
+        targetHapusId = id;
+        document.getElementById("dangerInfoText").innerHTML = `Data: <b>${keterangan}</b><br>Total: <b>Rp ${formatRupiah(total)}</b><br><br>Data lunas ini akan dihapus permanen.`;
+        document.getElementById("dangerModal").style.display = "flex";
+    }
+
+    window.tutupDangerModal = function() {
+        targetHapusId = null;
+        document.getElementById("dangerModal").style.display = "none";
+    }
+
+    window.eksekusiHapusData = function() {
+        if (!targetHapusId) return;
+
+        const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetHapusId);
+        remove(itemRef).then(() => {
+            tutupDangerModal();
+            alert("Data berhasil dihapus dari sistem.");
+        }).catch((error) => {
+            alert("Gagal menghapus data: " + error.message);
+            tutupDangerModal();
+        });
+    }
+
     // --- FUNGSI POP-UP MODAL DIRUT ---
     window.bukaModal = function(tipe) {
         const modal = document.getElementById("detailModal");
@@ -402,8 +507,10 @@
     window.onclick = function(event) {
         const modal = document.getElementById("detailModal");
         const cicilModal = document.getElementById("cicilModal");
+        const dangerModal = document.getElementById("dangerModal");
         if (event.target == modal) modal.style.display = "none";
         if (event.target == cicilModal) cicilModal.style.display = "none";
+        if (event.target == dangerModal) dangerModal.style.display = "none";
     }
 
     // --- SINKRONISASI DATA REAL-TIME ---
@@ -412,8 +519,8 @@
         const data = snapshot.val();
         cacheDataTransaksi = data || {};
         
-        let totalInv = 0, sisaInv = 0, countInv = 0, lunasInvCount = 0;
-        let totalTag = 0, sisaTag = 0, countTag = 0, lunasTagCount = 0;
+        let totalInv = 0, sisaInv = 0, countInv = 0;
+        let totalTag = 0, sisaTag = 0, countTag = 0;
         
         const tableBody = document.getElementById("dataTable");
         if (tableBody) tableBody.innerHTML = "";
@@ -424,12 +531,10 @@
                     totalInv += item.total;
                     sisaInv += item.sisa;
                     countInv++;
-                    if (item.status === "Lunas") lunasInvCount++;
                 } else if (item.tipe === 'tagihan') {
                     totalTag += item.total;
                     sisaTag += item.sisa;
                     countTag++;
-                    if (item.status === "Lunas") lunasTagCount++;
                 }
 
                 if (tableBody) {
@@ -439,9 +544,10 @@
                     let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
                     let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
 
+                    // Tombol Aksi: Jika Belum Lunas muncul "+ Cicil", jika Lunas muncul Tombol Hapus Data
                     let aksiBtn = item.status === "Belum Lunas" 
                         ? `<button class="btn-pay" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">+ Cicil</button>` 
-                        : `<span style="font-size:11px; color:gray;">Lunas</span>`;
+                        : `<button class="btn-delete" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">🗑️ Hapus</button>`;
 
                     let listRiwayatAdmin = "";
                     if (item.riwayat && Array.isArray(item.riwayat)) {
@@ -483,7 +589,6 @@
         if (elTag) elTag.innerText = `Rp ${formatRupiah(totalTag)}`;
         if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
 
-        // Keterangan Lunas Menyala untuk DIRUT (muncul jika ada data dan semuanya sudah lunas, atau sesuai kondisi sisa 0)
         if (elStatusInvContainer) {
             if (countInv > 0 && sisaInv <= 0) {
                 elStatusInvContainer.innerHTML = `<span class="badge-lunas-menyala">✨ SUDAH LUNAS ✨</span>`;
