@@ -53,7 +53,21 @@
             margin-top: 10px;
         }
         .btn-add { background-color: #28a745; }
+        .btn-update { background-color: #ffc107; color: #333; display: none; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
+
+        /* Action Buttons inside Table */
+        .btn-action {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin: 0 2px;
+        }
+        .btn-edit-row { background-color: #ffc107; color: #333; }
+        .btn-del-row { background-color: #dc3545; }
 
         /* Invoice Preview Area (Target PDF) */
         #invoice-preview {
@@ -141,7 +155,8 @@
 <div class="container">
     <!-- FORM INPUT DATA -->
     <div class="form-card">
-        <h2>Input Data Barang</h2>
+        <h2 id="formTitle">Input Data Barang</h2>
+        <input type="hidden" id="editIndex" value="-1">
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
@@ -149,7 +164,9 @@
             <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
-        <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+        <button class="btn btn-add" id="btnAdd" onclick="tambahBarang()">+ Tambah Baris Data</button>
+        <button class="btn btn-update" id="btnUpdate" onclick="updateBarang()">💾 Simpan Perubahan</button>
+        <button class="btn" style="background-color: #6c757d; font-size: 14px; margin-left: 5px;" id="btnCancel" onclick="resetForm()" style="display:none;">Batal</button>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
             <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('CHM')">
@@ -177,12 +194,13 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 12%;">TGL</th>
-                    <th style="width: 21%;">NAMA BARANG</th>
-                    <th style="width: 17%;">PLAT NOMOR</th>
-                    <th style="width: 12%;">VOL (M³)</th>
-                    <th style="width: 14%;">HARGA /M³</th>
-                    <th style="width: 18%;">JUMLAH</th>
+                    <th style="width: 11%;">TGL</th>
+                    <th style="width: 18%;">NAMA BARANG</th>
+                    <th style="width: 15%;">PLAT NOMOR</th>
+                    <th style="width: 10%;">VOL (M³)</th>
+                    <th style="width: 13%;">HARGA /M³</th>
+                    <th style="width: 15%;">JUMLAH</th>
+                    <th style="width: 13%;" class="no-print">AKSI</th>
                 </tr>
             </thead>
             <tbody id="invoiceItems">
@@ -193,7 +211,7 @@
                     <td colspan="4" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
                     <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
                     <td></td>
-                    <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+                    <td id="totalKeseluruhan" class="text-right" colspan="2"><strong>Rp 0</strong></td>
                 </tr>
             </tfoot>
         </table>
@@ -209,11 +227,6 @@
                 <p style="font-weight: bold; margin: 2px 0 0 0;">H. HENDAR WAHBAGIONO</p>
             </div>
         </div>
-                 <!-- KOTAK INFORMASI REKENING -->
-    <div style="margin: 20px 0; padding: 10px 15px; background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 4px; text-align: center; font-weight: bold; font-style: italic; font-size: 13px; color: #333;">
-        Semua Transaksi di Transfer ke BANK BCA Nomor rekening 652 076 6918 An. HENDAR WAHBAGIONO
-    </div>
-        
     </div>
 </div>
 
@@ -249,7 +262,6 @@
         const plat = document.getElementById('inputPlat').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
-        // Hapus tanda koma (,) sebelum diubah menjadi angka
         const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
         const harga = parseFloat(rawHarga) || 0;
 
@@ -262,12 +274,74 @@
 
         dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
         renderTable();
+        clearForm();
+    }
 
-        // Reset input form
+    // Memuat data ke form untuk diedit
+    function editBarang(index) {
+        const item = dataBarang[index];
+        document.getElementById('inputTgl').value = item.tgl;
+        document.getElementById('inputNamaBarang').value = item.nama;
+        document.getElementById('inputPlat').value = item.plat;
+        document.getElementById('inputVolume').value = item.vol;
+        document.getElementById('inputHarga').value = item.harga.toLocaleString('en-US');
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('formTitle').innerText = "Edit Data Barang (Baris " + (index + 1) + ")";
+        
+        document.getElementById('btnAdd').style.display = 'none';
+        document.getElementById('btnUpdate').style.display = 'inline-block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Menyimpan hasil perubahan data
+    function updateBarang() {
+        const index = parseInt(document.getElementById('editIndex').value);
+        const tgl = document.getElementById('inputTgl').value;
+        const nama = document.getElementById('inputNamaBarang').value;
+        const plat = document.getElementById('inputPlat').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
+        const harga = parseFloat(rawHarga) || 0;
+
+        if (!tgl || !nama || vol <= 0 || harga <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
+        }
+
+        const jumlah = vol * harga;
+
+        dataBarang[index] = { tgl, nama, plat, vol, harga, jumlah };
+        renderTable();
+        resetForm();
+    }
+
+    // Menghapus data dari tabel
+    function hapusBarang(index) {
+        if (confirm("Yakin ingin menghapus data ini?")) {
+            dataBarang.splice(index, 1);
+            renderTable();
+            resetForm();
+        }
+    }
+
+    // Mengosongkan form input
+    function clearForm() {
         document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputPlat').value = '';
         document.getElementById('inputVolume').value = '';
         document.getElementById('inputHarga').value = '';
+    }
+
+    // Mereset status form dari mode edit kembali ke mode tambah
+    function resetForm() {
+        clearForm();
+        document.getElementById('editIndex').value = '-1';
+        document.getElementById('formTitle').innerText = "Input Data Barang";
+        document.getElementById('btnAdd').style.display = 'inline-block';
+        document.getElementById('btnUpdate').style.display = 'none';
     }
 
     function renderTable() {
@@ -298,6 +372,10 @@
                     <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
                     <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
                     <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
+                    <td class="text-center no-print" style="vertical-align: middle;">
+                        <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
+                        <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
+                    </td>
                 </tr>
             `;
             tbody.innerHTML += row;
@@ -313,7 +391,10 @@
             return;
         }
 
-        // Set Tanggal Cetak Otomatis
+        // Sembunyikan kolom aksi saat PDF dicetak
+        const actionCells = document.querySelectorAll('.no-print');
+        actionCells.forEach(el => el.style.display = 'none');
+
         const hariIni = new Date();
         const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
         const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
@@ -379,6 +460,9 @@
 
         html2pdf().set(opt).from(invoicePreview).save().then(() => {
             invoicePreview.style.width = originalWidth;
+
+            // Kembalikan tombol aksi setelah PDF selesai dibuat
+            actionCells.forEach(el => el.style.display = '');
 
             if (kopElement) kopElement.style.display = 'block';
             if (signatureImg) {
