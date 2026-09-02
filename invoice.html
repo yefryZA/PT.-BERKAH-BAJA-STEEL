@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Invoice & Tagihan</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef6fc; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,123,255,0.15); border-top: 5px solid #007bff; }
+        h2 { color: #0056b3; border-bottom: 2px solid #e1f0ff; padding-bottom: 10px; font-size: 20px; }
+        h3 { color: #0056b3; font-size: 16px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #bce0fd; border-radius: 6px; font-size: 16px; background: #f9fbff; }
+        input:focus, select:focus { outline: none; border-color: #007bff; background: #fff; box-shadow: 0 0 5px rgba(0,123,255,0.2); }
+        
+        /* Style Dropdown & Teks Khusus */
+        #tipe option[value="invoice"] { color: #008000; font-weight: bold; font-size: 16px; }
+        #tipe option[value="tagihan"] { color: #ff0000; font-weight: bold; font-size: 16px; }
+        .badge-invoice { color: #008000; font-weight: bold; }
+        .badge-tagihan { color: #ff0000; font-weight: bold; }
+
+        button { background: #007bff; color: white; border: none; padding: 12px 15px; cursor: pointer; border-radius: 6px; font-size: 16px; width: 100%; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+        .btn-pay { background: #17a2b8; padding: 8px 12px; font-size: 12px; width: auto; margin-top: 8px; border-radius: 4px; color: white; border: none; cursor: pointer; display: inline-block; font-weight: bold; }
+        .btn-pay:hover { background: #117a8b; }
+        
+        /* Kartu Dashboard DIRUT yang Dioptimalkan untuk HP */
+        .card { background: #e3f2fd; padding: 15px; margin-bottom: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; border: 1px solid #90caf9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card:hover { background: #bbdefb; transform: translateY(-2px); }
+        
+        .total-box { font-size: 22px; font-weight: bold; color: #0d47a1; text-align: center; padding: 12px; background: #ffffff; border: 1px solid #90caf9; border-radius: 6px; margin-top: 8px; word-break: break-all; }
+        
+        /* Layout Fleksibel untuk Sisa di HP agar tidak tabrakan */
+        .card-info-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 14px; gap: 10px; flex-wrap: wrap; }
+        .card-info-row span { word-break: break-all; }
+
+        /* Tanda Lunas Menyala untuk DIRUT */
+        .badge-lunas-menyala {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 10px;
+            background-color: #28a745;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+            animation: pulse-lunas 1.5s infinite;
+        }
+
+        @keyframes pulse-lunas {
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(40, 167, 69, 0.6); }
+            50% { transform: scale(1.03); box-shadow: 0 0 12px rgba(40, 167, 69, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 0 5px rgba(40, 167, 69, 0.6); }
+        }
+
+        .hidden { display: none; }
+        
+        /* Tabel Responsif Admin & Modal */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; table-layout: fixed; }
+        th, td { border: 1px solid #bce0fd; padding: 8px 6px; text-align: left; vertical-align: top; word-break: break-word; }
+        th { background: #e3f2fd; color: #0d47a1; }
+        
+        /* Style Modal Pop-up */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); padding: 10px; box-sizing: border-box; }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 15px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; max-height: 85vh; overflow-y: auto; border-top: 5px solid #007bff; box-sizing: border-box; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 20px; }
+        .close-btn:hover { color: #000; }
+        .modal-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; table-layout: fixed; }
+        .modal-table th, .modal-table td { border: 1px solid #bce0fd; padding: 6px 4px; }
+        .history-box { background: #f0f7ff; border-left: 3px solid #007bff; padding: 6px 8px; margin-top: 4px; font-size: 11px; border-radius: 0 4px 4px 0; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- TAMPILAN ADMIN (HP KAMU) -->
+    <div id="adminView" class="hidden">
+        <h2>Input Keuangan (Admin)</h2>
+        <form id="financeForm">
+            <div class="form-group">
+                <label>Kategori:</label>
+                <select id="tipe" required>
+                    <option value="invoice" style="color: #008000; font-weight: bold;">🟢 Invoice (Pemasukan)</option>
+                    <option value="tagihan" style="color: #ff0000; font-weight: bold;">🔴 Tagihan (Pengeluaran)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Keterangan / Nama:</label>
+                <input type="text" id="keterangan" placeholder="Misal: Tagihan Listrik / Invoice PT X" required>
+            </div>
+            <div class="form-group">
+                <label>Tanggal Dokumen/Transaksi:</label>
+                <input type="date" id="tanggal" required>
+            </div>
+            <div class="form-group">
+                <label>Total Nominal Tagihan/Invoice (Rp):</label>
+                <input type="text" id="total" placeholder="Contoh: 5.000.000" required>
+            </div>
+            <div class="form-group">
+                <label>Pembayaran Pertama (Rp): [Isi 0 jika belum ada]</label>
+                <input type="text" id="dibayar" placeholder="Contoh: 2.000.000" value="0" required>
+            </div>
+            <button type="submit">Simpan Data Baru</button>
+        </form>
+
+        <h3 style="margin-top: 30px;">Daftar Data Masuk & Riwayat Pembayaran</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Info</th>
+                        <th style="width: 40%;">Total & Sisa</th>
+                        <th style="width: 25%;">Status & Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable">
+                    <!-- Data dari JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAMPILAN DIRUT (HP DIRUT) -->
+    <div id="dirutView" class="hidden">
+        <h2>Dashboard Ringkasan Keuangan</h2>
+        <p style="font-size: 13px; color: #555; text-align: center; margin-bottom: 20px;">Sentuh kotak di bawah untuk melihat rincian riwayat pembayaran.</p>
+        
+        <!-- Kartu Total Invoice -->
+        <div class="card" onclick="bukaModal('invoice')">
+            <h3 style="margin-top:0; display:flex; align-items:center; gap:5px;"><span>🟢</span> Total Invoice</h3>
+            <div id="dirutTotalInvoice" class="total-box">Rp 0</div>
+            <div class="card-info-row">
+                <span>Sisa Belum Lunas:</span>
+                <span id="dirutSisaInvoice" style="font-weight:bold; color:#d9534f;">Rp 0</span>
+            </div>
+            <div id="dirutStatusInvoiceContainer" style="text-align: center;"></div>
+            <div style="margin-top: 10px; text-align: right;">
+                <small style="color: #0056b3; font-weight: bold;">🔍 Ketuk untuk lihat riwayat</small>
+            </div>
+        </div>
+
+        <!-- Kartu Total Tagihan -->
+        <div class="card" onclick="bukaModal('tagihan')" style="background: #e1f5fe;">
+            <h3 style="margin-top:0; display:flex; align-items:center; gap:5px;"><span>🔴</span> Total Tagihan</h3>
+            <div id="dirutTotalTagihan" class="total-box" style="background:#ffffff; border-color:#81d4fa;">Rp 0</div>
+            <div class="card-info-row">
+                <span>Sisa Belum Lunas:</span>
+                <span id="dirutSisaTagihan" style="font-weight:bold; color:#d9534f;">Rp 0</span>
+            </div>
+            <div id="dirutStatusTagihanContainer" style="text-align: center;"></div>
+            <div style="margin-top: 10px; text-align: right;">
+                <small style="color: #0288d1; font-weight: bold;">🔍 Ketuk untuk lihat riwayat</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL / POP-UP RINCIAN DIRUT -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="tutupModal()">&times;</span>
+        <h3 id="modalTitle" style="margin-top:0; color: #0056b3;">Riwayat Rincian</h3>
+        <div style="overflow-x:auto;">
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Keterangan</th>
+                        <th style="width: 35%;">Total & Status</th>
+                        <th style="width: 30%;">Riwayat Masuk</th>
+                    </tr>
+                </thead>
+                <tbody id="modalBody">
+                    <!-- Data masuk sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL / POP-UP INPUT CICILAN -->
+<div id="cicilModal" class="modal">
+    <div class="modal-content" style="max-width: 380px; margin: 25% auto;">
+        <span class="close-btn" onclick="tutupCicilModal()">&times;</span>
+        <h3 style="margin-top:0; color: #0056b3;">Tambah Pembayaran / Cicil</h3>
+        <p id="infoSisaCicil" style="font-size: 13px; color: #555; word-break: break-all;"></p>
+        <div class="form-group">
+            <label>Nominal Pembayaran (Rp):</label>
+            <input type="text" id="nominalCicil" placeholder="Contoh: 1.500.000">
+        </div>
+        <button type="button" onclick="prosesSimpanCicilan()">Simpan Pembayaran</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+        authDomain: "barcode-warung-81e97.firebaseapp.com",
+        projectId: "barcode-warung-81e97",
+        storageBucket: "barcode-warung-81e97.firebasestorage.app",
+        messagingSenderId: "1089837830503",
+        appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+        measurementId: "G-92V3E8BM6J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+    const hash = window.location.hash;
+    if (hash === "#dirut") {
+        document.getElementById("dirutView").classList.remove("hidden");
+    } else {
+        document.getElementById("adminView").classList.remove("hidden");
+    }
+
+    let cacheDataTransaksi = {};
+    let activeCicilId = null;
+    let activeTotal = 0;
+    let activeDibayar = 0;
+    let activeRiwayat = [];
+
+    function formatRupiah(angka) {
+        if (!angka) return "0";
+        let number_string = angka.toString().replace(/[^,\d]/g, ""),
+            split = number_string.split(","),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? "." : "";
+            rupiah += separator + ribuan.join(".");
+        }
+        return split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+    }
+
+    function setupRupiahInput(elementId) {
+        const input = document.getElementById(elementId);
+        if (input) {
+            input.addEventListener("keyup", function(e) {
+                this.value = formatRupiah(this.value);
+            });
+        }
+    }
+
+    setupRupiahInput("total");
+    setupRupiahInput("dibayar");
+    setupRupiahInput("nominalCicil");
+
+    function getWaktuSekarang() {
+        const now = new Date();
+        const tgl = now.toISOString().split('T')[0];
+        const jam = now.toTimeString().split(' ')[0].substring(0, 5);
+        return `${tgl} Jam ${jam}`;
+    }
+
+    // --- LOGIKA ADMIN ---
+    const form = document.getElementById("financeForm");
+    if (form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
+            const tipe = document.getElementById("tipe").value;
+            const keterangan = document.getElementById("keterangan").value;
+            const tanggal = document.getElementById("tanggal").value;
+            
+            const total = parseFloat(document.getElementById("total").value.replace(/\./g, '')) || 0;
+            const bayarAwal = parseFloat(document.getElementById("dibayar").value.replace(/\./g, '')) || 0;
+            
+            let riwayatPembayaran = [];
+            if (bayarAwal > 0) {
+                riwayatPembayaran.push({
+                    waktu: getWaktuSekarang(),
+                    nominal: bayarAwal
+                });
+            }
+
+            const totalDibayar = bayarAwal;
+            const sisa = total - totalDibayar;
+            const status = sisa <= 0 ? "Lunas" : "Belum Lunas";
+            const tglLunas = sisa <= 0 ? new Date().toISOString().split('T')[0] : "-";
+
+            const dbRef = ref(db, 'invoiceBBS/transaksi');
+            const newRef = push(dbRef);
+            
+            set(newRef, {
+                tipe, keterangan, tanggal, total, dibayar: totalDibayar, sisa, tglLunas, status, riwayat: riwayatPembayaran
+            }).then(() => {
+                alert("Data berhasil disimpan!");
+                form.reset();
+                document.getElementById("dibayar").value = "0";
+            }).catch((error) => {
+                alert("Gagal: " + error.message);
+            });
+        });
+    }
+
+    // --- BUKA POP-UP CICILAN ---
+    window.bukaCicilModal = function(id, totalSekarang, dibayarSekarang, riwayatLama) {
+        activeCicilId = id;
+        activeTotal = totalSekarang;
+        activeDibayar = dibayarSekarang;
+        activeRiwayat = riwayatLama ? Object.values(riwayatLama) : [];
+
+        document.getElementById("nominalCicil").value = "";
+        document.getElementById("infoSisaCicil").innerHTML = `Total Tagihan: <b>Rp ${formatRupiah(totalSekarang)}</b><br>Sisa Belum Dibayar: <b style="color:red;">Rp ${formatRupiah(totalSekarang - dibayarSekarang)}</b>`;
+        document.getElementById("cicilModal").style.display = "block";
+    }
+
+    window.tutupCicilModal = function() {
+        document.getElementById("cicilModal").style.display = "none";
+    }
+
+    // --- PROSES SIMPAN DARI POP-UP CICILAN ---
+    window.prosesSimpanCicilan = function() {
+        let tambahanStr = document.getElementById("nominalCicil").value;
+        if (!tambahanStr) return alert("Masukkan nominal pembayaran!");
+        
+        let tambahan = parseFloat(tambahanStr.replace(/\./g, '').replace(/[^0-9]/g, '')) || 0;
+        if (tambahan <= 0) return alert("Nominal tidak valid!");
+
+        let totalBaruDibayar = activeDibayar + tambahan;
+        let sisaBaru = activeTotal - totalBaruDibayar;
+        let statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Lunas";
+        let tglLunasBaru = sisaBaru <= 0 ? new Date().toISOString().split('T')[0] : "-";
+
+        activeRiwayat.push({
+            waktu: getWaktuSekarang(),
+            nominal: tambahan
+        });
+
+        const itemRef = ref(db, 'invoiceBBS/transaksi/' + activeCicilId);
+        update(itemRef, {
+            dibayar: totalBaruDibayar,
+            sisa: sisaBaru,
+            status: statusBaru,
+            tglLunas: tglLunasBaru,
+            riwayat: activeRiwayat
+        }).then(() => {
+            alert("Cicilan pembayaran berhasil dicatat!");
+            tutupCicilModal();
+        }).catch((error) => {
+            alert("Gagal update: " + error.message);
+        });
+    }
+
+    // --- FUNGSI POP-UP MODAL DIRUT ---
+    window.bukaModal = function(tipe) {
+        const modal = document.getElementById("detailModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalBody = document.getElementById("modalBody");
+        
+        modalTitle.innerText = tipe === 'invoice' ? "Riwayat Rincian Invoice" : "Riwayat Rincian Tagihan";
+        modalBody.innerHTML = "";
+
+        let adaData = false;
+        Object.values(cacheDataTransaksi).forEach(item => {
+            if (item.tipe === tipe) {
+                adaData = true;
+                let statusInfo = item.status === "Lunas" 
+                    ? `<span style="color:green; font-weight:bold;">Lunas (${item.tglLunas})</span>` 
+                    : `<span style="color:red; font-weight:bold;">Belum Lunas</span>`;
+
+                let riwayatHTML = "";
+                if (item.riwayat && Array.isArray(item.riwayat)) {
+                    item.riwayat.forEach((r, index) => {
+                        riwayatHTML += `<div class="history-box"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
+                    });
+                } else {
+                    riwayatHTML = `<small style="color:gray;">Belum ada riwayat.</small>`;
+                }
+
+                const row = `<tr>
+                    <td><b>${item.keterangan}</b><br><small style="color:gray;">Tgl: ${item.tanggal}</small></td>
+                    <td>
+                        Tot: Rp ${formatRupiah(item.total)}<br>
+                        Sisa: <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b><br>
+                        ${statusInfo}
+                    </td>
+                    <td>${riwayatHTML}</td>
+                </tr>`;
+                modalBody.innerHTML += row;
+            }
+        });
+
+        if (!adaData) {
+            modalBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:gray;">Belum ada data ${tipe}.</td></tr>`;
+        }
+
+        modal.style.display = "block";
+    }
+
+    window.tutupModal = function() {
+        document.getElementById("detailModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById("detailModal");
+        const cicilModal = document.getElementById("cicilModal");
+        if (event.target == modal) modal.style.display = "none";
+        if (event.target == cicilModal) cicilModal.style.display = "none";
+    }
+
+    // --- SINKRONISASI DATA REAL-TIME ---
+    const dbRef = ref(db, 'invoiceBBS/transaksi');
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        cacheDataTransaksi = data || {};
+        
+        let totalInv = 0, sisaInv = 0, countInv = 0, lunasInvCount = 0;
+        let totalTag = 0, sisaTag = 0, countTag = 0, lunasTagCount = 0;
+        
+        const tableBody = document.getElementById("dataTable");
+        if (tableBody) tableBody.innerHTML = "";
+
+        if (data) {
+            Object.entries(data).forEach(([id, item]) => {
+                if (item.tipe === 'invoice') {
+                    totalInv += item.total;
+                    sisaInv += item.sisa;
+                    countInv++;
+                    if (item.status === "Lunas") lunasInvCount++;
+                } else if (item.tipe === 'tagihan') {
+                    totalTag += item.total;
+                    sisaTag += item.sisa;
+                    countTag++;
+                    if (item.status === "Lunas") lunasTagCount++;
+                }
+
+                if (tableBody) {
+                    let badgeColor = item.status === "Lunas" ? "color: green; font-weight: bold;" : "color: red; font-weight: bold;";
+                    let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
+
+                    let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
+                    let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
+
+                    let aksiBtn = item.status === "Belum Lunas" 
+                        ? `<button class="btn-pay" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">+ Cicil</button>` 
+                        : `<span style="font-size:11px; color:gray;">Lunas</span>`;
+
+                    let listRiwayatAdmin = "";
+                    if (item.riwayat && Array.isArray(item.riwayat)) {
+                        item.riwayat.forEach((r, idx) => {
+                            listRiwayatAdmin += `<div style="font-size:10px; color:#555;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
+                        });
+                    }
+
+                    const row = `<tr>
+                        <td>
+                            <span class="${tipeClass}">[${tipeText}]</span><br>
+                            <b>${item.keterangan}</b><br>
+                            <small style="color:gray;">${item.tanggal}</small>
+                        </td>
+                        <td>
+                            Tot: Rp ${formatRupiah(item.total)}<br>
+                            <b>Sisa: Rp ${formatRupiah(item.sisa)}</b>
+                            <div style="margin-top:4px;">${listRiwayatAdmin}</div>
+                        </td>
+                        <td>
+                            <span style="${badgeColor}">${item.status}</span><br>
+                            ${aksiBtn}
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                }
+            });
+        }
+
+        const elInv = document.getElementById("dirutTotalInvoice");
+        const elSisaInv = document.getElementById("dirutSisaInvoice");
+        const elTag = document.getElementById("dirutTotalTagihan");
+        const elSisaTag = document.getElementById("dirutSisaTagihan");
+        const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
+        const elStatusTagContainer = document.getElementById("dirutStatusTagihanContainer");
+
+        if (elInv) elInv.innerText = `Rp ${formatRupiah(totalInv)}`;
+        if (elSisaInv) elSisaInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
+        if (elTag) elTag.innerText = `Rp ${formatRupiah(totalTag)}`;
+        if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
+
+        // Keterangan Lunas Menyala untuk DIRUT (muncul jika ada data dan semuanya sudah lunas, atau sesuai kondisi sisa 0)
+        if (elStatusInvContainer) {
+            if (countInv > 0 && sisaInv <= 0) {
+                elStatusInvContainer.innerHTML = `<span class="badge-lunas-menyala">✨ SUDAH LUNAS ✨</span>`;
+            } else {
+                elStatusInvContainer.innerHTML = "";
+            }
+        }
+
+        if (elStatusTagContainer) {
+            if (countTag > 0 && sisaTag <= 0) {
+                elStatusTagContainer.innerHTML = `<span class="badge-lunas-menyala">✨ SUDAH LUNAS ✨</span>`;
+            } else {
+                elStatusTagContainer.innerHTML = "";
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
