@@ -53,7 +53,22 @@
             margin-top: 10px;
         }
         .btn-add { background-color: #28a745; }
+        .btn-update { background-color: #ffc107; color: #333; display: none; }
+        .btn-cancel { background-color: #6c757d; display: none; margin-left: 5px; }
         .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
+
+        /* Action Buttons inside Table */
+        .btn-action {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin: 0 2px;
+        }
+        .btn-edit-row { background-color: #ffc107; color: #333; }
+        .btn-del-row { background-color: #dc3545; }
 
         /* Invoice Preview Area (Target PDF Landscape) */
         #invoice-preview {
@@ -130,12 +145,14 @@
 <div class="container">
     <!-- FORM INPUT DATA -->
     <div class="form-card">
-        <h2>Input Data Barang & Pembayaran</h2>
+        <h2 id="formTitle">Input Data Barang & Pembayaran</h2>
+        <input type="hidden" id="editIndex" value="-1">
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <select id="inputTujuan" onchange="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
                 <option value="PT. CHM">PT. CHM</option>
                 <option value="FRANCO">FRANCO</option>
+                <option value="ONGKOSAN">ONGKOSAN</option>
             </select>
             <input type="text" id="inputNamaSopir" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
@@ -143,7 +160,9 @@
             <input type="number" id="inputVolume" placeholder="Vol M³" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga /M³" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
-        <button class="btn btn-add" onclick="tambahBarang()">+ Tambah Baris Data</button>
+        <button class="btn btn-add" id="btnAdd" onclick="tambahBarang()">+ Tambah Baris Data</button>
+        <button class="btn btn-update" id="btnUpdate" onclick="updateBarang()">💾 Simpan Perubahan</button>
+        <button class="btn btn-cancel" id="btnCancel" onclick="resetForm()">Batal</button>
 
         <!-- INPUT DP (UANG MUKA) -->
         <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
@@ -153,7 +172,7 @@
 
         <!-- TOMBOL DOWNLOAD SINGLE -->
         <div style="margin-top: 15px;">
-            <button class="btn" style="background-color: #007bff; font-size: 14px; width: 100%;" onclick="generatePDF()">
+            <button class="btn btn-pdf" onclick="generatePDF()">
                 📄 Download Invoice
             </button>
         </div>
@@ -172,12 +191,13 @@
                 <tr>
                     <th style="width: 5%;">NO</th>
                     <th style="width: 10%;">TGL</th>
-                    <th style="width: 18%;">NAMA SOPIR</th>
-                    <th style="width: 18%;">NAMA BARANG</th>
-                    <th style="width: 13%;">PLAT NOMOR</th>
-                    <th style="width: 10%;">VOL (M³)</th>
-                    <th style="width: 12%;">HARGA /M³</th>
-                    <th style="width: 14%;">JUMLAH</th>
+                    <th style="width: 16%;">NAMA SOPIR</th>
+                    <th style="width: 16%;">NAMA BARANG</th>
+                    <th style="width: 12%;">PLAT NOMOR</th>
+                    <th style="width: 8%;">VOL (M³)</th>
+                    <th style="width: 13%;">HARGA /M³</th>
+                    <th style="width: 15%;">JUMLAH</th>
+                    <th style="width: 5%;" class="no-print">AKSI</th>
                 </tr>
             </thead>
             <tbody id="invoiceItems">
@@ -189,14 +209,15 @@
                     <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
                     <td></td>
                     <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+                    <td class="no-print"></td>
                 </tr>
                 <tr class="total-row">
                     <td colspan="7" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
-                    <td id="displayDP" class="text-right"><strong>Rp 0</strong></td>
+                    <td id="displayDP" class="text-right" colspan="2"><strong>Rp 0</strong></td>
                 </tr>
                 <tr class="total-row" style="background-color: #e9ecef;">
                     <td colspan="7" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
-                    <td id="displaySisa" class="text-right" style="color: #d9534f;"><strong>Rp 0</strong></td>
+                    <td id="displaySisa" class="text-right" style="color: #d9534f;" colspan="2"><strong>Rp 0</strong></td>
                 </tr>
             </tfoot>
         </table>
@@ -230,32 +251,41 @@
         elCurrentDate.innerText = today;
     }
 
-// Logika Otomatisasi Harga berdasarkan Tujuan Kiriman & Nama Barang
-function cekHargaOtomatis() {
-    const elTujuan = document.getElementById('inputTujuan');
-    const elNamaBarang = document.getElementById('inputNamaBarang');
-    const inputHarga = document.getElementById('inputHarga');
+    // Logika Otomatisasi Harga berdasarkan Tujuan Kiriman & Nama Barang
+    function cekHargaOtomatis() {
+        const elTujuan = document.getElementById('inputTujuan');
+        const elNamaBarang = document.getElementById('inputNamaBarang');
+        const inputHarga = document.getElementById('inputHarga');
 
-    if (!elTujuan || !elNamaBarang || !inputHarga) return;
+        if (!elTujuan || !elNamaBarang || !inputHarga) return;
 
-    const tujuan = elTujuan.value.trim().toUpperCase();
-    const text = elNamaBarang.value.trim().toLowerCase();
+        const tujuan = elTujuan.value.trim().toUpperCase();
+        const text = elNamaBarang.value.trim().toLowerCase();
 
-    // 1. Cek jika tujuan mengandung kata "FRANCO" dan nama barang mengandung "split"
-    if (tujuan.includes('FRANCO') && text.includes('split')) {
-        inputHarga.value = '350,000';
-        return; // Hentikan fungsi agar tidak menimpa harga di bawah
+        // Jika tujuan ONGKOSAN, ubah placeholder jadi Total Borongan
+        if (tujuan === 'ONGKOSAN') {
+            inputHarga.value = '';
+            inputHarga.placeholder = 'Total Ongkosan (Rp)';
+            return;
+        } else {
+            inputHarga.placeholder = 'Harga /M³';
+        }
+
+        // 1. Cek jika tujuan mengandung kata "FRANCO" dan nama barang mengandung "split"
+        if (tujuan.includes('FRANCO') && text.includes('split')) {
+            inputHarga.value = '350,000';
+            return; 
+        }
+
+        // 2. Aturan harga berdasarkan nama barang (untuk tujuan selain FRANCO)
+        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+            inputHarga.value = '127,500';
+        } else if (text === 'screning' || text === 'screening') {
+            inputHarga.value = '127,500';
+        } else if (text === 'abu batu') {
+            inputHarga.value = '127,500';
+        }
     }
-
-    // 2. Aturan harga berdasarkan nama barang (untuk tujuan selain FRANCO)
-    if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
-        inputHarga.value = '127,500';
-    } else if (text === 'screning' || text === 'screening') {
-        inputHarga.value = '127,500';
-    } else if (text === 'abu batu') {
-        inputHarga.value = '127,500';
-    }
-}
 
     // Format Rupiah
     function formatRupiah(angka) {
@@ -270,31 +300,110 @@ function cekHargaOtomatis() {
 
     function tambahBarang() {
         const tgl = document.getElementById('inputTgl').value;
+        const tujuan = document.getElementById('inputTujuan').value;
         const sopir = document.getElementById('inputNamaSopir').value;
         const barang = document.getElementById('inputNamaBarang').value;
         const plat = document.getElementById('inputPlat').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
-        // Ambil harga murni
         const rawHarga = document.getElementById('inputHarga').value;
-        const harga = parseAngka(rawHarga);
+        const nilaiInput = parseAngka(rawHarga);
 
-        if (!tgl || !sopir || !barang || vol <= 0 || harga <= 0) {
+        if (!tgl || !sopir || !barang || vol <= 0 || nilaiInput <= 0) {
             alert("Harap isi semua bidang input dengan benar!");
             return;
         }
 
-        const jumlah = vol * harga;
+        let harga = nilaiInput;
+        let jumlah = 0;
 
-        dataBarang.push({ tgl, sopir, barang, plat, vol, harga, jumlah });
+        if (tujuan === 'ONGKOSAN') {
+            harga = 0; 
+            jumlah = nilaiInput; // Nilai input langsung sebagai total jumlah
+        } else {
+            jumlah = vol * nilaiInput;
+            harga = nilaiInput;
+        }
+
+        dataBarang.push({ tgl, tujuan, sopir, barang, plat, vol, harga, jumlah });
         renderTable();
+        resetForm();
+    }
 
-        // Reset input form barang
+    function editBarang(index) {
+        const item = dataBarang[index];
+        document.getElementById('inputTgl').value = item.tgl;
+        document.getElementById('inputTujuan').value = item.tujuan || 'PT. CHM';
+        document.getElementById('inputNamaSopir').value = item.sopir;
+        document.getElementById('inputNamaBarang').value = item.barang;
+        document.getElementById('inputPlat').value = item.plat;
+        document.getElementById('inputVolume').value = item.vol;
+        
+        const valToInput = (item.tujuan === 'ONGKOSAN') ? item.jumlah : item.harga;
+        document.getElementById('inputHarga').value = valToInput.toLocaleString('en-US');
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('formTitle').innerText = "Edit Data Barang (Baris " + (index + 1) + ")";
+        
+        document.getElementById('btnAdd').style.display = 'none';
+        document.getElementById('btnUpdate').style.display = 'inline-block';
+        document.getElementById('btnCancel').style.display = 'inline-block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateBarang() {
+        const index = parseInt(document.getElementById('editIndex').value);
+        const tgl = document.getElementById('inputTgl').value;
+        const tujuan = document.getElementById('inputTujuan').value;
+        const sopir = document.getElementById('inputNamaSopir').value;
+        const barang = document.getElementById('inputNamaBarang').value;
+        const plat = document.getElementById('inputPlat').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        const rawHarga = document.getElementById('inputHarga').value;
+        const nilaiInput = parseAngka(rawHarga);
+
+        if (!tgl || !sopir || !barang || vol <= 0 || nilaiInput <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
+        }
+
+        let harga = nilaiInput;
+        let jumlah = 0;
+
+        if (tujuan === 'ONGKOSAN') {
+            harga = 0;
+            jumlah = nilaiInput;
+        } else {
+            jumlah = vol * nilaiInput;
+            harga = nilaiInput;
+        }
+
+        dataBarang[index] = { tgl, tujuan, sopir, barang, plat, vol, harga, jumlah };
+        renderTable();
+        resetForm();
+    }
+
+    function hapusBarang(index) {
+        if (confirm("Yakin ingin menghapus data ini?")) {
+            dataBarang.splice(index, 1);
+            renderTable();
+            resetForm();
+        }
+    }
+
+    function resetForm() {
         document.getElementById('inputNamaSopir').value = '';
         document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputPlat').value = '';
         document.getElementById('inputVolume').value = '';
         document.getElementById('inputHarga').value = '';
+        document.getElementById('editIndex').value = '-1';
+        document.getElementById('formTitle').innerText = "Input Data Barang & Pembayaran";
+        document.getElementById('btnAdd').style.display = 'inline-block';
+        document.getElementById('btnUpdate').style.display = 'none';
+        document.getElementById('btnCancel').style.display = 'none';
     }
 
     function updateTotals() {
@@ -331,6 +440,14 @@ function cekHargaOtomatis() {
                 }
             }
 
+            let displayHarga = formatRupiah(item.harga);
+            let hargaAlignClass = "text-right";
+            
+            if (item.tujuan === 'ONGKOSAN') {
+                displayHarga = 'Borongan';
+                hargaAlignClass = "text-center";
+            }
+
             const row = `
                 <tr>
                     <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
@@ -339,8 +456,12 @@ function cekHargaOtomatis() {
                     <td style="vertical-align: middle;">${item.barang}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
                     <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
-                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
+                    <td class="${hargaAlignClass}" style="vertical-align: middle;">${displayHarga}</td>
                     <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
+                    <td class="text-center no-print" style="vertical-align: middle;">
+                        <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
+                        <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
+                    </td>
                 </tr>
             `;
             tbody.innerHTML += row;
@@ -362,6 +483,10 @@ function cekHargaOtomatis() {
             return;
         }
 
+        // Sembunyikan kolom aksi saat digenerate jadi PDF
+        const actionCells = document.querySelectorAll('.no-print');
+        actionCells.forEach(el => el.style.display = 'none');
+
         // Set Tanggal Cetak Otomatis
         const hariIni = new Date();
         const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -375,6 +500,7 @@ function cekHargaOtomatis() {
         const invoicePreview = document.getElementById('invoice-preview');
         if (!invoicePreview) {
             alert("Elemen invoice-preview tidak ditemukan!");
+            actionCells.forEach(el => el.style.display = '');
             return;
         }
 
@@ -410,15 +536,18 @@ function cekHargaOtomatis() {
         if (typeof html2pdf === 'undefined') {
             alert("Library html2pdf belum dimuat dengan benar di halaman Anda!");
             invoicePreview.style.width = originalWidth;
+            actionCells.forEach(el => el.style.display = '');
             return;
         }
 
         html2pdf().set(opt).from(invoicePreview).save().then(() => {
-            // Kembalikan ukuran asli container
+            // Kembalikan ukuran asli container & tampilkan kembali tombol aksi
             invoicePreview.style.width = originalWidth;
+            actionCells.forEach(el => el.style.display = '');
         }).catch(err => {
             console.error("Gagal men-download PDF:", err);
             invoicePreview.style.width = originalWidth;
+            actionCells.forEach(el => el.style.display = '');
         });
     }
 
