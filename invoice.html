@@ -474,14 +474,14 @@
                 let riwayatHTML = "";
                 if (item.riwayat && Array.isArray(item.riwayat)) {
                     item.riwayat.forEach((r, index) => {
-                        riwayatHTML += `<div class="history-box"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
+                        riwayatHTML += `<div class="history-box" style="font-size: 12px;"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
                     });
                 } else {
-                    riwayatHTML = `<small style="color:gray;">Belum ada riwayat.</small>`;
+                    riwayatHTML = `<small style="color:gray; font-size: 12px;">Belum ada riwayat.</small>`;
                 }
 
                 const row = `<tr>
-                    <td><b>${item.keterangan}</b><br><small style="color:gray;">Tgl: ${item.tanggal}</small></td>
+                    <td><b>${item.keterangan}</b><br><small style="color:gray; font-size: 13px;">Tgl: ${item.tanggal}</small></td>
                     <td>
                         Tot: Rp ${formatRupiah(item.total)}<br>
                         Sisa: <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b><br>
@@ -560,7 +560,7 @@
                         <td>
                             <span class="${tipeClass}">[${tipeText}]</span><br>
                             <b>${item.keterangan}</b><br>
-                            <small style="color:gray;">${item.tanggal}</small>
+                            <small style="color:gray; font-size:15px;">${item.tanggal}</small>
                         </td>
                         <td>
                             Tot: Rp ${formatRupiah(item.total)}<br>
@@ -576,6 +576,7 @@
                 }
             });
         }
+   
 
         const elInv = document.getElementById("dirutTotalInvoice");
         const elSisaInv = document.getElementById("dirutSisaInvoice");
