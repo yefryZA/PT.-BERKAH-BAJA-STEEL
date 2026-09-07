@@ -193,6 +193,38 @@
     50% { box-shadow: 0 0 18px #ff5252; }
     100% { box-shadow: 0 0 8px #ff1744; }
 }
+/* Jeda Spasi & Style Khusus Status di Modal Dirut */
+.status-dirut-wrapper {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    display: inline-block;
+    clear: both;
+}
+
+/* Badge versi Dirut (ukuran pas agar tidak menutupi teks angka) */
+.badge-dirut-lunas {
+    display: inline-block;
+    background-color: #00c853;
+    color: #d50000;
+    font-weight: 900;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 15px;
+    text-shadow: 0 0 3px #ffffff, 0 0 6px #ffffff;
+    box-shadow: 0 0 8px #00c853;
+}
+
+.badge-dirut-belum {
+    display: inline-block;
+    background-color: #ff1744;
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 15px;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 8px rgba(255, 23, 68, 0.6);
+}
 </style>
 </head>
 <body>
@@ -521,35 +553,38 @@ window.bukaModal = function(tipe) {
         if (item.tipe === tipe) {
             adaData = true;
             
-            // Penyesuaian Badge LUNAS & BELUM DIBAYAR di Pop-up Rincian Dirut
+            // Badge Status khusus Dirut dengan pembungkus wrapper agar ada jeda spasi
             let statusInfo = (item.status === "Lunas" || item.sisa <= 0) 
-                ? `<span class="badge-lunas-hapus" style="cursor:default; font-size:11px; padding:3px 8px;">✨ LUNAS ✨</span>` 
-                : `<span class="badge-belum-lunas-cicil" style="cursor:default; font-size:11px; padding:3px 8px;">BELUM DIBAYAR</span>`;
+                ? `<div class="status-dirut-wrapper"><span class="badge-dirut-lunas">LUNAS </span></div>` 
+                : `<div class="status-dirut-wrapper"><span class="badge-dirut-belum">BELUM DIBAYAR</span></div>`;
 
             let riwayatHTML = "";
             if (item.riwayat && Array.isArray(item.riwayat)) {
                 item.riwayat.forEach((r, index) => {
-                    riwayatHTML += `<div class="history-box" style="font-size: 12px;"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
+                    riwayatHTML += `<div class="history-box" style="font-size: 12px; margin-top: 4px;"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
                 });
             } else {
                 riwayatHTML = `<small style="color:gray; font-size: 12px;">Belum ada riwayat.</small>`;
             }
 
             const row = `<tr>
-                <td><b>${item.keterangan}</b><br><small style="color:gray; font-size: 13px;">Tgl: ${item.tanggal}</small></td>
-                <td>
-                    Tot: Rp ${formatRupiah(item.total)}<br>
-                    Sisa: <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b><br>
-                    <div style="margin-top:5px;">${statusInfo}</div>
+                <td style="padding: 8px;">
+                    <b>${item.keterangan}</b><br>
+                    <small style="color:gray; font-size: 12px;">Tgl: ${item.tanggal}</small>
                 </td>
-                <td>${riwayatHTML}</td>
+                <td style="padding: 8px; line-height: 1.5;">
+                    <div>Tot: <b>Rp ${formatRupiah(item.total)}</b></div>
+                    <div style="margin-top: 2px;">Sisa: <b style="color:#d50000;">Rp ${formatRupiah(item.sisa)}</b></div>
+                    ${statusInfo}
+                </td>
+                <td style="padding: 8px;">${riwayatHTML}</td>
             </tr>`;
             modalBody.innerHTML += row;
         }
     });
 
     if (!adaData) {
-        modalBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:gray;">Belum ada data ${tipe}.</td></tr>`;
+        modalBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:gray; padding: 15px;">Belum ada data ${tipe}.</td></tr>`;
     }
 
     modal.style.display = "block";
@@ -601,7 +636,7 @@ onValue(dbRef, (snapshot) => {
                     `;
                 } else {
                     kolomAksi = `
-                        <span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">✨ LUNAS ✨</span>
+                        <span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>
                     `;
                 }
 
