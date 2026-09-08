@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         /* Form Styling */
@@ -70,17 +70,18 @@
         .btn-edit-row { background-color: #ffc107; color: #333; }
         .btn-del-row { background-color: #dc3545; }
 
-        /* Invoice Preview Area (Target PDF Landscape) */
+        /* Invoice Preview Area */
         #invoice-preview {
             background: #ffffff;
             padding: 20px;
             border-radius: 4px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             color: #333;
-            width: 275mm !important;
-            min-width: 275mm !important;
+            width: 100%;
+            max-width: 1100px;
             box-sizing: border-box;
-            margin: 0 auto !important;
+            margin: 0 auto;
+            overflow-x: auto;
         }
 
         .invoice-title {
@@ -94,7 +95,7 @@
 
         /* Table Design */
         table.invoice-table {
-            width: 100% !important;
+            width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
             font-size: 13px;
@@ -102,7 +103,7 @@
         }
         table.invoice-table th, table.invoice-table td {
             border: 1px solid #333;
-            padding: 8px 10px;
+            padding: 6px 8px;
             text-align: left;
             word-wrap: break-word;
         }
@@ -111,20 +112,40 @@
             text-align: center;
             font-weight: bold;
         }
+        
+        table.invoice-table tr {
+            page-break-inside: avoid;
+        }
 
         /* Alignment Helper Classes */
         .text-center { text-align: center !important; }
         .text-right { text-align: right !important; }
 
-        /* Total & Signature Section */
+        /* Total Section */
         .total-row {
             font-weight: bold;
             background-color: #f9f9f9;
         }
-        .signature-section {
-            margin-top: 40px;
+
+        /* Bottom Section: Info Rekening (Kiri) & TTD (Kanan) */
+        .bottom-section {
+            margin-top: 25px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-inside: avoid;
+        }
+        .account-info {
+            width: 50%;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-weight: bold;
+            font-style: italic;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
         }
         .signature-box {
             text-align: center;
@@ -132,7 +153,7 @@
         }
         .signature-img {
             height: 70px;
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
         #invoiceItems td, table.invoice-table th {
@@ -189,13 +210,13 @@
         <table class="invoice-table">
             <thead>
                 <tr>
-                    <th style="width: 5%;">NO</th>
+                    <th style="width: 4%;">NO</th>
                     <th style="width: 10%;">TGL</th>
                     <th style="width: 16%;">NAMA SOPIR</th>
                     <th style="width: 16%;">NAMA BARANG</th>
                     <th style="width: 12%;">PLAT NOMOR</th>
                     <th style="width: 8%;">VOL (M³)</th>
-                    <th style="width: 13%;">HARGA /M³</th>
+                    <th style="width: 14%;">HARGA /M³</th>
                     <th style="width: 15%;">JUMLAH</th>
                     <th style="width: 5%;" class="no-print">AKSI</th>
                 </tr>
@@ -222,22 +243,25 @@
             </tfoot>
         </table>
 
-      <!-- TANDA TANGAN DIRUT -->
-    <div class="signature-section">
-        <div class="signature-box" style="text-align: center;">
-            <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
-            <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
-            <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                <img src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
+        <!-- BUKTI REKENING (KIRI) DAN TANDA TANGAN (KANAN) -->
+        <div class="bottom-section">
+            <div class="account-info">
+                📌 <strong>Pembayaran:</strong><br>
+                Semua Transaksi di Transfer ke BANK BCA<br>
+                Nomor rekening : <strong>6510344934</strong><br>
+                An. <strong>DEDI ISWANDI</strong>
             </div>
-            <p style="font-weight: bold; margin: 2px 0 0 0;">DEDI ISWADI</p>
-        </div>
-    </div>
 
-        <!-- KOTAK INFORMASI REKENING -->
-        <div style="margin: 20px 0; padding: 10px 15px; background-color: #f8f9fa; border: 1px solid #ced4da; border-radius: 4px; text-align: center; font-weight: bold; font-style: italic; font-size: 13px; color: #333;">
-            Semua Transaksi di Transfer ke BANK BCA Nomor rekening 6510344934 An. DEDI ISWANDI
+            <div class="signature-box">
+                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+                <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
+                <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    <img src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
+                </div>
+                <p style="font-weight: bold; margin: 2px 0 0 0;">DEDI ISWADI</p>
+            </div>
         </div>
+
     </div>
 </div>
 
@@ -262,7 +286,6 @@
         const tujuan = elTujuan.value.trim().toUpperCase();
         const text = elNamaBarang.value.trim().toLowerCase();
 
-        // Jika tujuan ONGKOSAN, ubah placeholder jadi Total Borongan
         if (tujuan === 'ONGKOSAN') {
             inputHarga.value = '';
             inputHarga.placeholder = 'Total Ongkosan (Rp)';
@@ -271,13 +294,11 @@
             inputHarga.placeholder = 'Harga /M³';
         }
 
-        // 1. Cek jika tujuan mengandung kata "FRANCO" dan nama barang mengandung "split"
         if (tujuan.includes('FRANCO') && text.includes('split')) {
             inputHarga.value = '350,000';
             return; 
         }
 
-        // 2. Aturan harga berdasarkan nama barang (untuk tujuan selain FRANCO)
         if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
             inputHarga.value = '127,500';
         } else if (text === 'screning' || text === 'screening') {
@@ -287,12 +308,10 @@
         }
     }
 
-    // Format Rupiah
     function formatRupiah(angka) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     }
 
-    // Mengambil angka murni dari string berformat (menghapus koma atau titik)
     function parseAngka(str) {
         if (!str) return 0;
         return parseFloat(str.replace(/[^0-9]/g, '')) || 0;
@@ -319,7 +338,7 @@
 
         if (tujuan === 'ONGKOSAN') {
             harga = 0; 
-            jumlah = nilaiInput; // Nilai input langsung sebagai total jumlah
+            jumlah = nilaiInput;
         } else {
             jumlah = vol * nilaiInput;
             harga = nilaiInput;
@@ -450,15 +469,15 @@
 
             const row = `
                 <tr>
-                    <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
-                    <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
-                    <td style="vertical-align: middle;">${item.sopir}</td>
-                    <td style="vertical-align: middle;">${item.barang}</td>
-                    <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
-                    <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
-                    <td class="${hargaAlignClass}" style="vertical-align: middle;">${displayHarga}</td>
-                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
-                    <td class="text-center no-print" style="vertical-align: middle;">
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center" style="white-space: nowrap;">${tglFormatted}</td>
+                    <td>${item.sopir}</td>
+                    <td>${item.barang}</td>
+                    <td class="text-center">${item.plat || '-'}</td>
+                    <td class="text-center">${item.vol}</td>
+                    <td class="${hargaAlignClass}">${displayHarga}</td>
+                    <td class="text-right">${formatRupiah(item.jumlah)}</td>
+                    <td class="text-center no-print">
                         <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
                         <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
                     </td>
@@ -467,7 +486,6 @@
             tbody.innerHTML += row;
         });
 
-        // Render nilai ke elemen HTML
         const elTotalVol = document.getElementById('totalVolume');
         const elTotalKeseluruhan = document.getElementById('totalKeseluruhan');
 
@@ -483,11 +501,9 @@
             return;
         }
 
-        // Sembunyikan kolom aksi saat digenerate jadi PDF
         const actionCells = document.querySelectorAll('.no-print');
         actionCells.forEach(el => el.style.display = 'none');
 
-        // Set Tanggal Cetak Otomatis
         const hariIni = new Date();
         const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
         const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
@@ -504,7 +520,6 @@
             return;
         }
 
-        // Format tanggal untuk nama file (DD-MM-YYYY)
         const yyyy = hariIni.getFullYear();
         const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
         const dd = String(hariIni.getDate()).padStart(2, '0');
@@ -512,12 +527,8 @@
 
         const namaFile = `Invoice Dedi - ${tglFormat}.pdf`;
 
-        // Simpan style asli & pastikan container terukur penuh untuk A4 Landscape
-        const originalWidth = invoicePreview.style.width;
-        invoicePreview.style.width = '1122px';
-
         const opt = {
-            margin:       [5, 5, 5, 5],
+            margin:       [8, 8, 8, 8],
             filename:     namaFile,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
@@ -525,33 +536,26 @@
                 useCORS: true, 
                 allowTaint: true, 
                 scrollX: 0, 
-                scrollY: 0, 
-                width: 1122 
+                scrollY: 0
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
             pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
-        // Render ke PDF menggunakan pustaka html2pdf
         if (typeof html2pdf === 'undefined') {
             alert("Library html2pdf belum dimuat dengan benar di halaman Anda!");
-            invoicePreview.style.width = originalWidth;
             actionCells.forEach(el => el.style.display = '');
             return;
         }
 
         html2pdf().set(opt).from(invoicePreview).save().then(() => {
-            // Kembalikan ukuran asli container & tampilkan kembali tombol aksi
-            invoicePreview.style.width = originalWidth;
             actionCells.forEach(el => el.style.display = '');
         }).catch(err => {
             console.error("Gagal men-download PDF:", err);
-            invoicePreview.style.width = originalWidth;
             actionCells.forEach(el => el.style.display = '');
         });
     }
 
-    // Format angka input dengan ribuan
     function formatInputRupiah(element) {
         let value = element.value.replace(/\D/g, '');
         if (value !== '') {
