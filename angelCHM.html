@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tagihan Invoice - PT. CHM</title>
+    <title>Tagihan Invoice - PT. CAHAYA HARTA MAKMUR</title>
     <style>
         * {
             box-sizing: border-box;
@@ -19,34 +19,47 @@
             padding-bottom: 30px;
         }
 
-        /* --- HEADER DASHBOARD MOBILES (DIBAGI 2 KOLOM) --- */
+        /* --- HEADER FIXED/STICKY SAAT DI-SCROLL --- */
         .header-card {
+            position: sticky;
+            top: 12px; /* Jarak dari batas atas viewport saat scroll */
+            z-index: 1000;
             background: linear-gradient(135deg, #1b5e20, #2e7d32);
             color: #6fe8e2;
             border-radius: 16px;
             padding: 14px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* JUDUL UTAMA DI ATAS DAN CENTER */
+        .header-title-main {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-align: center;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* KONTEN HEADER DIBAGI 2 KOLOM (KIRI & KANAN) */
+        .header-body {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             align-items: center;
         }
 
-        /* KOLOM KIRI (HEAD LAMA + JAM) */
+        /* KOLOM KIRI (JAM & TANGGAL) */
         .header-left {
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-
-        .header-title {
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: #e8f5e9;
-            margin-bottom: 6px;
         }
 
         .clock-box {
@@ -55,10 +68,11 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             padding: 8px;
+            text-align: center;
         }
 
         .time-display {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             letter-spacing: 1px;
             color: #ffffff;
@@ -78,8 +92,8 @@
         .header-right {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 10px 8px;
+            border-radius: 10px;
+            padding: 8px;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -162,7 +176,6 @@
             line-height: 1.3;
         }
 
-        /* TANGGAL BESAR & HITAM PEKAT */
         .card-date {
             font-size: 14px;
             font-weight: 800;
@@ -227,21 +240,28 @@
 </head>
 <body>
 
-    <!-- HEADER / HEAD (DIBAGI 2) -->
+    <!-- HEADER / HEAD (STICKY & ATAS CENTER) -->
     <div class="header-card">
-        <!-- SEBELAH KIRI: HEAD LAMA & JAM -->
-        <div class="header-left">
-            <div class="header-title">TAGIHAN INVOICE PT. CHM</div>
-            <div class="clock-box">
-                <div id="liveClock" class="time-display">00:00:00 WIB</div>
-                <div id="liveDate" class="date-display">...</div>
-            </div>
+        <!-- TULISAN JUDUL UTAMA (ATAS & CENTER) -->
+        <div class="header-title-main">
+            TAGIHAN INVOICE PT. CAHAYA HARTA MAKMUR
         </div>
 
-        <!-- SEBELAH KANAN: TOTAL TAGIHAN -->
-        <div class="header-right">
-            <div class="total-label">TOTAL TAGIHAN</div>
-            <div id="grandTotalSisa" class="total-amount">Rp 0</div>
+        <!-- DIBAGI 2 KOLOM (KIRI: JAM & TANGGAL | KANAN: TOTAL TAGIHAN) -->
+        <div class="header-body">
+            <!-- SEBELAH KIRI: JAM & TANGGAL -->
+            <div class="header-left">
+                <div class="clock-box">
+                    <div id="liveClock" class="time-display">00:00:00 WIB</div>
+                    <div id="liveDate" class="date-display">...</div>
+                </div>
+            </div>
+
+            <!-- SEBELAH KANAN: TOTAL TAGIHAN -->
+            <div class="header-right">
+                <div class="total-label">TOTAL TAGIHAN</div>
+                <div id="grandTotalSisa" class="total-amount">Rp 0</div>
+            </div>
         </div>
     </div>
 
@@ -284,7 +304,7 @@
         function formatTanggalIndo(tanggalStr) {
             if (!tanggalStr) return "-";
             const d = new Date(tanggalStr);
-            if (isNaN(d.getTime())) return tanggalStr; // Jika string tanggal dari DB bukan format baku, tampilkan apa adanya
+            if (isNaN(d.getTime())) return tanggalStr;
             
             const tgl = String(d.getDate()).padStart(2, '0');
             const bln = String(d.getMonth() + 1).padStart(2, '0');
@@ -368,7 +388,7 @@
             if (unpaidCount === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        ✨ Semua Invoice PT. CHM Sudah Lunas! ✨
+                        ✨ Semua Invoice PT. CAHAYA HARTA MAKMUR Sudah Lunas! ✨
                     </div>
                 `;
             }
