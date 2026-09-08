@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tagihan Invoice - PT. CHM</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #5de0e9;
+            color: #333333;
+            padding: 12px;
+            padding-bottom: 30px;
+        }
+
+        /* --- HEADER DASHBOARD MOBILES (DIBAGI 2 KOLOM) --- */
+        .header-card {
+            background: linear-gradient(135deg, #1b5e20, #2e7d32);
+            color: #6fe8e2;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* KOLOM KIRI (HEAD LAMA + JAM) */
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #e8f5e9;
+            margin-bottom: 6px;
+        }
+
+        .clock-box {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .time-display {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .date-display {
+            font-size: 11px;
+            font-weight: 700;
+            color: #c8e6c9;
+            margin-top: 2px;
+            text-transform: capitalize;
+        }
+
+        /* KOLOM KANAN (TOTAL TAGIHAN) */
+        .header-right {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .total-label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #ffcdd2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .total-amount {
+            font-size: 16px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            word-break: break-word;
+        }
+
+        /* --- INFO BAR --- */
+        .info-bar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid #2e7d32;
+        }
+
+        .info-bar-text {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .info-bar-count {
+            font-size: 15px;
+            font-weight: 800;
+            color: #d32f2f;
+        }
+
+        /* --- TRANSAKSI LIST (MOBILE CARD VIEW) --- */
+        .invoice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .invoice-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1b5e20;
+            line-height: 1.3;
+        }
+
+        /* TANGGAL BESAR & HITAM PEKAT */
+        .card-date {
+            font-size: 14px;
+            font-weight: 800;
+            color: #000000;
+            margin-top: 4px;
+        }
+
+        .card-middle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .amount-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .amount-label {
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+        }
+
+        .amount-total {
+            font-size: 14px;
+            font-weight: 800;
+            color: #000000;
+            margin-top: 4px;
+        }
+
+        .amount-sisa {
+            font-size: 15px;
+            font-weight: 800;
+            color: #d32f2f;
+        }
+
+        .badge-belum {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 20px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: #fff;
+            border-radius: 12px;
+            color: #2e7d32;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER / HEAD (DIBAGI 2) -->
+    <div class="header-card">
+        <!-- SEBELAH KIRI: HEAD LAMA & JAM -->
+        <div class="header-left">
+            <div class="header-title">TAGIHAN INVOICE PT. CHM</div>
+            <div class="clock-box">
+                <div id="liveClock" class="time-display">00:00:00 WIB</div>
+                <div id="liveDate" class="date-display">...</div>
+            </div>
+        </div>
+
+        <!-- SEBELAH KANAN: TOTAL TAGIHAN -->
+        <div class="header-right">
+            <div class="total-label">TOTAL TAGIHAN</div>
+            <div id="grandTotalSisa" class="total-amount">Rp 0</div>
+        </div>
+    </div>
+
+    <!-- BAR RINGKASAN -->
+    <div class="info-bar">
+        <div class="info-bar-text">Belum Terbayarkan:</div>
+        <div id="totalUnpaidCount" class="info-bar-count">0 Invoice</div>
+    </div>
+
+    <!-- LIST CONTAINER INVOICE -->
+    <div id="invoiceContainer" class="invoice-list">
+        <!-- Data transaksi dimuat otomatis -->
+    </div>
+
+    <!-- FIREBASE SDK & SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // CONFIG FIREBASE MILIKMU
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+            authDomain: "barcode-warung-81e97.firebaseapp.com",
+            projectId: "barcode-warung-81e97",
+            storageBucket: "barcode-warung-81e97.firebasestorage.app",
+            messagingSenderId: "1089837830503",
+            appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+            measurementId: "G-92V3E8BM6J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+        // --- FUNGSI FORMAT RUPIAH ---
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID').format(angka || 0);
+        }
+
+        // --- FUNGSI FORMAT TANGGAL KE DD/MM/YYYY ---
+        function formatTanggalIndo(tanggalStr) {
+            if (!tanggalStr) return "-";
+            const d = new Date(tanggalStr);
+            if (isNaN(d.getTime())) return tanggalStr; // Jika string tanggal dari DB bukan format baku, tampilkan apa adanya
+            
+            const tgl = String(d.getDate()).padStart(2, '0');
+            const bln = String(d.getMonth() + 1).padStart(2, '0');
+            const thn = d.getFullYear();
+            
+            return `${tgl}/${bln}/${thn}`;
+        }
+
+        // --- FUNGSI JAM DIGITAL DETIK & TANGGAL ---
+        function updateClock() {
+            const now = new Date();
+            
+            // Format Waktu Detik (HH:MM:SS)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById("liveClock").innerText = `${hours}:${minutes}:${seconds} WIB`;
+
+            // Format Hari dan Tanggal
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('id-ID', options);
+            document.getElementById("liveDate").innerText = dateString;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- AMBIL DATA KHUSUS INVOICE BELUM LUNAS FROM FIREBASE ---
+        const dbRef = ref(db, 'invoiceBBS/transaksi');
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById("invoiceContainer");
+            const totalCountEl = document.getElementById("totalUnpaidCount");
+            const grandTotalEl = document.getElementById("grandTotalSisa");
+            
+            container.innerHTML = "";
+            let unpaidCount = 0;
+            let totalSisaSemua = 0;
+
+            if (data) {
+                Object.entries(data).forEach(([id, item]) => {
+                    // FILTER KHUSUS: Tipe Invoice DAN Sisa Masih Ada (> 0)
+                    if (item.tipe === 'invoice' && item.sisa > 0) {
+                        unpaidCount++;
+                        totalSisaSemua += (item.sisa || 0);
+
+                        // Format tanggal ke DD/MM/YYYY
+                        const tglFormatted = formatTanggalIndo(item.tanggal);
+
+                        const card = `
+                            <div class="invoice-card">
+                                <div class="card-top">
+                                    <div>
+                                        <div class="card-title">${item.keterangan}</div>
+                                        <div class="card-date">Tgl : ${tglFormatted}</div>
+                                    </div>
+                                </div>
+                                <div class="card-middle">
+                                    <div class="amount-box">
+                                        <span class="amount-label">Total Tagihan</span>
+                                        <span class="amount-total">Rp ${formatRupiah(item.total)}</span>
+                                    </div>
+                                    <div class="amount-box" style="text-align: right;">
+                                        <span class="amount-label">Sisa Pembayaran</span>
+                                        <span class="amount-sisa">Rp ${formatRupiah(item.sisa)}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge-belum">BELUM DIBAYAR</span>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += card;
+                    }
+                });
+            }
+
+            totalCountEl.innerText = `${unpaidCount} Invoice`;
+            grandTotalEl.innerText = `Rp ${formatRupiah(totalSisaSemua)}`;
+
+            if (unpaidCount === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        ✨ Semua Invoice PT. CHM Sudah Lunas! ✨
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
