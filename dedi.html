@@ -55,7 +55,8 @@
         .btn-add { background-color: #28a745; }
         .btn-update { background-color: #ffc107; color: #333; display: none; }
         .btn-cancel { background-color: #6c757d; display: none; margin-left: 5px; }
-        .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
+        .btn-pdf { background-color: #007bff; font-size: 15px; width: 48%; }
+        .btn-pdf-no-price { background-color: #17a2b8; font-size: 15px; width: 48%; margin-left: 2%; }
 
         /* Action Buttons inside Table */
         .btn-action {
@@ -93,7 +94,7 @@
             font-size: 17px;
         }
 
-        /* Table Design */
+        /* Table Design & Page Break Settings */
         table.invoice-table {
             width: 100%;
             border-collapse: collapse;
@@ -113,8 +114,13 @@
             font-weight: bold;
         }
         
+        /* Pencegahan Pemotongan Baris di Tengah Halaman */
         table.invoice-table tr {
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        table.invoice-table thead {
+            display: table-header-group;
         }
 
         /* Alignment Helper Classes */
@@ -125,6 +131,8 @@
         .total-row {
             font-weight: bold;
             background-color: #f9f9f9;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         /* Bottom Section: Info Rekening (Kiri) & TTD (Kanan) */
@@ -133,7 +141,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
         .account-info {
             width: 50%;
@@ -191,10 +200,13 @@
             <input type="text" inputmode="numeric" id="inputDP" placeholder="Masukkan nominal DP" oninput="formatInputRupiah(this); updateTotals();" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
 
-        <!-- TOMBOL DOWNLOAD SINGLE -->
-        <div style="margin-top: 15px;">
-            <button class="btn btn-pdf" onclick="generatePDF()">
-                📄 Download Invoice
+        <!-- TOMBOL DOWNLOAD PDF -->
+        <div style="margin-top: 15px; display: flex; justify-content: space-between;">
+            <button class="btn btn-pdf" onclick="generatePDF(false)">
+                📄 Download Invoice Lengkap
+            </button>
+            <button class="btn btn-pdf-no-price" onclick="generatePDF(true)">
+                📋 Download Tanpa Harga
             </button>
         </div>
     </div>
@@ -210,15 +222,15 @@
         <table class="invoice-table">
             <thead>
                 <tr>
-                    <th style="width: 4%;">NO</th>
-                    <th style="width: 10%;">TGL</th>
-                    <th style="width: 16%;">NAMA SOPIR</th>
-                    <th style="width: 16%;">NAMA BARANG</th>
-                    <th style="width: 12%;">PLAT NOMOR</th>
-                    <th style="width: 8%;">VOL (M³)</th>
-                    <th style="width: 14%;">HARGA /M³</th>
-                    <th style="width: 15%;">JUMLAH</th>
-                    <th style="width: 5%;" class="no-print">AKSI</th>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 11%;">TGL</th>
+                    <th style="width: 18%;">NAMA SOPIR</th>
+                    <th style="width: 18%;">NAMA BARANG</th>
+                    <th style="width: 13%;">PLAT NOMOR</th>
+                    <th style="width: 9%;">VOL (M³)</th>
+                    <th style="width: 13%;" class="col-price">HARGA /M³</th>
+                    <th style="width: 13%;" class="col-price">JUMLAH</th>
+                    <th style="width: 6%;" class="no-print">AKSI</th>
                 </tr>
             </thead>
             <tbody id="invoiceItems">
@@ -228,15 +240,15 @@
                 <tr class="total-row">
                     <td colspan="5" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
                     <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
-                    <td></td>
-                    <td id="totalKeseluruhan" class="text-right"><strong>Rp 0</strong></td>
+                    <td class="col-price"></td>
+                    <td id="totalKeseluruhan" class="text-right col-price"><strong>Rp 0</strong></td>
                     <td class="no-print"></td>
                 </tr>
-                <tr class="total-row">
+                <tr class="total-row col-price-row">
                     <td colspan="7" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
                     <td id="displayDP" class="text-right" colspan="2"><strong>Rp 0</strong></td>
                 </tr>
-                <tr class="total-row" style="background-color: #e9ecef;">
+                <tr class="total-row col-price-row" style="background-color: #e9ecef;">
                     <td colspan="7" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
                     <td id="displaySisa" class="text-right" style="color: #d9534f;" colspan="2"><strong>Rp 0</strong></td>
                 </tr>
@@ -475,8 +487,8 @@
                     <td>${item.barang}</td>
                     <td class="text-center">${item.plat || '-'}</td>
                     <td class="text-center">${item.vol}</td>
-                    <td class="${hargaAlignClass}">${displayHarga}</td>
-                    <td class="text-right">${formatRupiah(item.jumlah)}</td>
+                    <td class="${hargaAlignClass} col-price">${displayHarga}</td>
+                    <td class="text-right col-price">${formatRupiah(item.jumlah)}</td>
                     <td class="text-center no-print">
                         <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
                         <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
@@ -495,14 +507,24 @@
         updateTotals();
     }
 
-    function generatePDF() {
+    function generatePDF(tanpaHarga = false) {
         if (dataBarang.length === 0) {
             alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
             return;
         }
 
         const actionCells = document.querySelectorAll('.no-print');
+        const priceCells = document.querySelectorAll('.col-price');
+        const priceRows = document.querySelectorAll('.col-price-row');
+
+        // Sembunyikan tombol aksi
         actionCells.forEach(el => el.style.display = 'none');
+
+        // Jika opsi tanpaHarga diaktifkan
+        if (tanpaHarga) {
+            priceCells.forEach(el => el.style.display = 'none');
+            priceRows.forEach(el => el.style.display = 'none');
+        }
 
         const hariIni = new Date();
         const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -516,7 +538,7 @@
         const invoicePreview = document.getElementById('invoice-preview');
         if (!invoicePreview) {
             alert("Elemen invoice-preview tidak ditemukan!");
-            actionCells.forEach(el => el.style.display = '');
+            restoreUI();
             return;
         }
 
@@ -525,10 +547,11 @@
         const dd = String(hariIni.getDate()).padStart(2, '0');
         const tglFormat = `${dd}-${mm}-${yyyy}`;
 
-        const namaFile = `Invoice Dedi - ${tglFormat}.pdf`;
+        const suffixName = tanpaHarga ? " (Tanpa Harga)" : "";
+        const namaFile = `Invoice Dedi - ${tglFormat}${suffixName}.pdf`;
 
         const opt = {
-            margin:       [8, 8, 8, 8],
+            margin:       [10, 10, 10, 10],
             filename:     namaFile,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
@@ -539,21 +562,27 @@
                 scrollY: 0
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            pagebreak:    { mode: ['css', 'legacy'] }
         };
 
         if (typeof html2pdf === 'undefined') {
             alert("Library html2pdf belum dimuat dengan benar di halaman Anda!");
-            actionCells.forEach(el => el.style.display = '');
+            restoreUI();
             return;
         }
 
         html2pdf().set(opt).from(invoicePreview).save().then(() => {
-            actionCells.forEach(el => el.style.display = '');
+            restoreUI();
         }).catch(err => {
             console.error("Gagal men-download PDF:", err);
-            actionCells.forEach(el => el.style.display = '');
+            restoreUI();
         });
+
+        function restoreUI() {
+            actionCells.forEach(el => el.style.display = '');
+            priceCells.forEach(el => el.style.display = '');
+            priceRows.forEach(el => el.style.display = '');
+        }
     }
 
     function formatInputRupiah(element) {
