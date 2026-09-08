@@ -22,7 +22,7 @@
         /* --- HEADER FIXED/STICKY SAAT DI-SCROLL --- */
         .header-card {
             position: sticky;
-            top: 12px; /* Jarak dari batas atas viewport saat scroll */
+            top: 12px;
             z-index: 1000;
             background: linear-gradient(135deg, #1b5e20, #2e7d32);
             color: #6fe8e2;
@@ -35,7 +35,6 @@
             gap: 10px;
         }
 
-        /* JUDUL UTAMA DIBAGI DUA BARIS (CENTER) */
         .header-title-main {
             text-align: center;
             padding-bottom: 6px;
@@ -60,7 +59,6 @@
             margin-top: 2px;
         }
 
-        /* KONTEN HEADER DIBAGI 2 KOLOM (KIRI & KANAN) */
         .header-body {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -68,7 +66,6 @@
             align-items: center;
         }
 
-        /* KOLOM KIRI (JAM & TANGGAL) */
         .header-left {
             display: flex;
             flex-direction: column;
@@ -101,7 +98,6 @@
             text-transform: capitalize;
         }
 
-        /* KOLOM KANAN (TOTAL TAGIHAN) */
         .header-right {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.25);
@@ -196,13 +192,15 @@
             margin-top: 4px;
         }
 
+        /* DIBUAT GRID 3 KOLOM AGAR DANA DICICIL TAMPIL RAPI */
         .card-middle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
             background: #f9f9f9;
             padding: 10px;
             border-radius: 8px;
+            align-items: center;
         }
 
         .amount-box {
@@ -211,22 +209,31 @@
         }
 
         .amount-label {
-            font-size: 11px;
+            font-size: 10px;
             color: #777;
             text-transform: uppercase;
+            font-weight: 700;
         }
 
         .amount-total {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #000000;
             margin-top: 4px;
         }
 
+        .amount-cicil {
+            font-size: 13px;
+            font-weight: 800;
+            color: #2e7d32;
+            margin-top: 4px;
+        }
+
         .amount-sisa {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 800;
             color: #d32f2f;
+            margin-top: 4px;
         }
 
         .badge-belum {
@@ -239,6 +246,7 @@
             border-radius: 20px;
             text-align: center;
             letter-spacing: 0.5px;
+            display: inline-block;
         }
 
         .empty-state {
@@ -253,17 +261,14 @@
 </head>
 <body>
 
-    <!-- HEADER / HEAD (STICKY & ATAS CENTER DUA BARIS) -->
+    <!-- HEADER / HEAD -->
     <div class="header-card">
-        <!-- TULISAN JUDUL UTAMA -->
         <div class="header-title-main">
             <div class="header-title-top">TAGIHAN INVOICE</div>
             <div class="header-title-bottom">PT. CAHAYA HARTA MAKMUR</div>
         </div>
 
-        <!-- DIBAGI 2 KOLOM (KIRI: JAM & TANGGAL | KANAN: TOTAL TAGIHAN) -->
         <div class="header-body">
-            <!-- SEBELAH KIRI: JAM & TANGGAL -->
             <div class="header-left">
                 <div class="clock-box">
                     <div id="liveClock" class="time-display">00:00:00 WIB</div>
@@ -271,7 +276,6 @@
                 </div>
             </div>
 
-            <!-- SEBELAH KANAN: TOTAL TAGIHAN -->
             <div class="header-right">
                 <div class="total-label">TOTAL TAGIHAN</div>
                 <div id="grandTotalSisa" class="total-amount">Rp 0</div>
@@ -295,7 +299,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIG FIREBASE MILIKMU
         const firebaseConfig = {
             apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
             authDomain: "barcode-warung-81e97.firebaseapp.com",
@@ -309,12 +312,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
-        // --- FUNGSI FORMAT RUPIAH ---
         function formatRupiah(angka) {
             return new Intl.NumberFormat('id-ID').format(angka || 0);
         }
 
-        // --- FUNGSI FORMAT TANGGAL KE DD/MM/YYYY ---
         function formatTanggalIndo(tanggalStr) {
             if (!tanggalStr) return "-";
             const d = new Date(tanggalStr);
@@ -327,17 +328,14 @@
             return `${tgl}/${bln}/${thn}`;
         }
 
-        // --- FUNGSI JAM DIGITAL DETIK & TANGGAL ---
         function updateClock() {
             const now = new Date();
             
-            // Format Waktu Detik (HH:MM:SS)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById("liveClock").innerText = `${hours}:${minutes}:${seconds} WIB`;
 
-            // Format Hari dan Tanggal
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const dateString = now.toLocaleDateString('id-ID', options);
             document.getElementById("liveDate").innerText = dateString;
@@ -346,7 +344,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- AMBIL DATA KHUSUS INVOICE BELUM LUNAS FROM FIREBASE ---
         const dbRef = ref(db, 'invoiceBBS/transaksi');
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
@@ -360,13 +357,16 @@
 
             if (data) {
                 Object.entries(data).forEach(([id, item]) => {
-                    // FILTER KHUSUS: Tipe Invoice DAN Sisa Masih Ada (> 0)
                     if (item.tipe === 'invoice' && item.sisa > 0) {
                         unpaidCount++;
                         totalSisaSemua += (item.sisa || 0);
 
-                        // Format tanggal ke DD/MM/YYYY
                         const tglFormatted = formatTanggalIndo(item.tanggal);
+
+                        // PERHITUNGAN DANA DICICIL
+                        // Jika di Firebase ada property item.terbayar/item.bayar, pakai itu. 
+                        // Jika tidak ada, dihitung otomatis dari Total dikurangi Sisa:
+                        const terbayar = item.terbayar !== undefined ? item.terbayar : ((item.total || 0) - (item.sisa || 0));
 
                         const card = `
                             <div class="invoice-card">
@@ -378,11 +378,15 @@
                                 </div>
                                 <div class="card-middle">
                                     <div class="amount-box">
-                                        <span class="amount-label">Total Tagihan</span>
+                                        <span class="amount-label">Total</span>
                                         <span class="amount-total">Rp ${formatRupiah(item.total)}</span>
                                     </div>
+                                    <div class="amount-box" style="text-align: center;">
+                                        <span class="amount-label">Dicicil</span>
+                                        <span class="amount-cicil">Rp ${formatRupiah(terbayar)}</span>
+                                    </div>
                                     <div class="amount-box" style="text-align: right;">
-                                        <span class="amount-label">Sisa Pembayaran</span>
+                                        <span class="amount-label">Sisa</span>
                                         <span class="amount-sisa">Rp ${formatRupiah(item.sisa)}</span>
                                     </div>
                                 </div>
