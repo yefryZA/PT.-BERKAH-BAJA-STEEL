@@ -157,16 +157,19 @@
     <div class="form-card">
         <h2 id="formTitle">Input Data Barang</h2>
         <input type="hidden" id="editIndex" value="-1">
+        
+        <!-- URUTAN INPUT BARU -->
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
+        
         <button class="btn btn-add" id="btnAdd" onclick="tambahBarang()">+ Tambah Baris Data</button>
         <button class="btn btn-update" id="btnUpdate" onclick="updateBarang()">💾 Simpan Perubahan</button>
-        <button class="btn" style="background-color: #6c757d; font-size: 14px; margin-left: 5px;" id="btnCancel" onclick="resetForm()" style="display:none;">Batal</button>
+        <button class="btn" style="background-color: #6c757d; font-size: 14px; margin-left: 5px; display:none;" id="btnCancel" onclick="resetForm()">Batal</button>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
             <button class="btn" style="background-color: #6c757d; font-size: 14px;" onclick="generatePDF('CHM')">
@@ -258,8 +261,8 @@
 
     function tambahBarang() {
         const tgl = document.getElementById('inputTgl').value;
-        const nama = document.getElementById('inputNamaBarang').value;
         const plat = document.getElementById('inputPlat').value;
+        const nama = document.getElementById('inputNamaBarang').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
         const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
@@ -281,8 +284,8 @@
     function editBarang(index) {
         const item = dataBarang[index];
         document.getElementById('inputTgl').value = item.tgl;
-        document.getElementById('inputNamaBarang').value = item.nama;
         document.getElementById('inputPlat').value = item.plat;
+        document.getElementById('inputNamaBarang').value = item.nama;
         document.getElementById('inputVolume').value = item.vol;
         document.getElementById('inputHarga').value = item.harga.toLocaleString('en-US');
         
@@ -291,6 +294,7 @@
         
         document.getElementById('btnAdd').style.display = 'none';
         document.getElementById('btnUpdate').style.display = 'inline-block';
+        document.getElementById('btnCancel').style.display = 'inline-block';
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -299,8 +303,8 @@
     function updateBarang() {
         const index = parseInt(document.getElementById('editIndex').value);
         const tgl = document.getElementById('inputTgl').value;
-        const nama = document.getElementById('inputNamaBarang').value;
         const plat = document.getElementById('inputPlat').value;
+        const nama = document.getElementById('inputNamaBarang').value;
         const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
         
         const rawHarga = document.getElementById('inputHarga').value.replace(/,/g, '');
@@ -329,8 +333,9 @@
 
     // Mengosongkan form input
     function clearForm() {
-        document.getElementById('inputNamaBarang').value = '';
+        document.getElementById('inputTgl').value = '';
         document.getElementById('inputPlat').value = '';
+        document.getElementById('inputNamaBarang').value = '';
         document.getElementById('inputVolume').value = '';
         document.getElementById('inputHarga').value = '';
     }
@@ -342,6 +347,7 @@
         document.getElementById('formTitle').innerText = "Input Data Barang";
         document.getElementById('btnAdd').style.display = 'inline-block';
         document.getElementById('btnUpdate').style.display = 'none';
+        document.getElementById('btnCancel').style.display = 'none';
     }
 
     function renderTable() {
