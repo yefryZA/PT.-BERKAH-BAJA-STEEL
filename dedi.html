@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEDI</title>
-    <!-- HTML2PDF Library -->
+    <title>Invoice Trucking</title>
+    <!-- Library untuk cetak PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -70,6 +71,29 @@
         }
         .btn-edit-row { background-color: #ffc107; color: #333; }
         .btn-del-row { background-color: #dc3545; }
+
+        /* Style Khusus Dropdown Penyedia (Warna Biru / Merah) */
+        .select-penyedia {
+            width: 100%;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 15px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-dedi {
+            background-color: #0d6efd;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .option-herman {
+            background-color: #dc3545;
+            color: #ffffff;
+            font-weight: bold;
+        }
 
         /* Invoice Preview Area */
         #invoice-preview {
@@ -178,7 +202,18 @@
         <h2 id="formTitle">Input Data Barang & Pembayaran</h2>
         <input type="hidden" id="editIndex" value="-1">
         
-        <!-- URUTAN INPUT BARU -->
+        <!-- PILIHAN PENYEDIA JASA BERWARNA -->
+        <div style="margin-bottom: 15px; padding: 12px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 6px;">
+            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 6px; color: #333;">
+                Pilih Penyedia Sewa Truck:
+            </label>
+            <select id="selectPenyedia" class="select-penyedia" onchange="gantiPenyedia()">
+                <option value="DEDI" class="option-dedi">Trucking Dedi (Bank BCA)</option>
+                <option value="HERMAN" class="option-herman">Trucking Herman (Bank BCA)</option>
+            </select>
+        </div>
+
+        <!-- FORM INPUT BARANG -->
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
@@ -262,18 +297,18 @@
         <div class="bottom-section">
             <div class="account-info">
                 📌 <strong>Pembayaran:</strong><br>
-                Semua Transaksi di Transfer ke BANK BCA<br>
-                Nomor rekening : <strong>6510344934</strong><br>
-                An. <strong>DEDI ISWANDI</strong>
+                Semua Transaksi di Transfer ke <span id="textBank">BANK BCA</span><br>
+                Nomor rekening : <strong id="textNorek">6510344934</strong><br>
+                An. <strong id="textAtasNama">DEDI ISWANDI</strong>
             </div>
 
             <div class="signature-box">
                 <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
                 <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
                 <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                    <img src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
+                    <img id="imgTTD" src="ttd.dedi.png" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
                 </div>
-                <p style="font-weight: bold; margin: 2px 0 0 0;">DEDI ISWADI</p>
+                <p style="font-weight: bold; margin: 2px 0 0 0;" id="textNamaTTD">DEDI ISWADI</p>
             </div>
         </div>
 
@@ -282,6 +317,56 @@
 
 <script>
     let dataBarang = [];
+
+    // Database Penyedia Jasa beserta Warna Tema
+    const dataPenyedia = {
+        DEDI: {
+            bank: "BANK BCA",
+            norek: "6510344934",
+            nama: "DEDI ISWANDI",
+            ttdImg: "ttd.dedi.png",
+            filePrefix: "Invoice Dedi",
+            bgColor: "#0d6efd", // Warna Biru BCA
+            textColor: "#ffffff",
+            borderColor: "#0a58ca"
+        },
+        HERMAN: {
+            bank: "BANK BCA",
+            norek: "65 212 683 41",
+            nama: "YULIANA",
+            ttdImg: "ttd.herman.png",
+            filePrefix: "Invoice Herman",
+            bgColor: "#dc3545", // Warna Merah BNI
+            textColor: "#ffffff",
+            borderColor: "#b02a37"
+        }
+    };
+
+    // Fungsi Mengganti Data Penyedia Jasa & Warna Dropdown secara Dinamis
+    function gantiPenyedia() {
+        const selectEl = document.getElementById('selectPenyedia');
+        const selectedKey = selectEl.value;
+        const penyedia = dataPenyedia[selectedKey];
+
+        if (penyedia) {
+            // Update Teks & Gambar Invoice
+            document.getElementById('textBank').innerText = penyedia.bank;
+            document.getElementById('textNorek').innerText = penyedia.norek;
+            document.getElementById('textAtasNama').innerText = penyedia.nama;
+            document.getElementById('textNamaTTD').innerText = penyedia.nama;
+            document.getElementById('imgTTD').src = penyedia.ttdImg;
+
+            // Update Warna Background & Teks Dropdown
+            selectEl.style.backgroundColor = penyedia.bgColor;
+            selectEl.style.color = penyedia.textColor;
+            selectEl.style.borderColor = penyedia.borderColor;
+        }
+    }
+
+    // Jalankan gantiPenyedia saat halaman pertama kali selesai dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+        gantiPenyedia();
+    });
 
     // Set tanggal saat ini di bagian TTD
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -522,10 +607,8 @@
         const priceCells = document.querySelectorAll('.col-price');
         const priceRows = document.querySelectorAll('.col-price-row');
 
-        // Sembunyikan tombol aksi
         actionCells.forEach(el => el.style.display = 'none');
 
-        // Jika opsi tanpaHarga diaktifkan
         if (tanpaHarga) {
             priceCells.forEach(el => el.style.display = 'none');
             priceRows.forEach(el => el.style.display = 'none');
@@ -552,8 +635,10 @@
         const dd = String(hariIni.getDate()).padStart(2, '0');
         const tglFormat = `${dd}-${mm}-${yyyy}`;
 
+        const selectedKey = document.getElementById('selectPenyedia').value;
+        const prefix = dataPenyedia[selectedKey] ? dataPenyedia[selectedKey].filePrefix : "Invoice";
         const suffixName = tanpaHarga ? " (Tanpa Harga)" : "";
-        const namaFile = `Invoice Dedi - ${tglFormat}${suffixName}.pdf`;
+        const namaFile = `${prefix} - ${tglFormat}${suffixName}.pdf`;
 
         const opt = {
             margin:       [10, 10, 10, 10],
@@ -571,7 +656,7 @@
         };
 
         if (typeof html2pdf === 'undefined') {
-            alert("Library html2pdf belum dimuat dengan benar di halaman Anda!");
+            alert("Library html2pdf belum dimuat dengan benar!");
             restoreUI();
             return;
         }
