@@ -238,11 +238,13 @@
 
     // Set tanggal saat ini di bagian TTD
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('currentDate').innerText = today;
+    const elDateInit = document.getElementById('currentDate');
+    if (elDateInit) elDateInit.innerText = today;
 
     // Logika Otomatisasi Harga berdasarkan Nama Barang
     function cekHargaOtomatis(namaBarang) {
         const inputHarga = document.getElementById('inputHarga');
+        if (!inputHarga) return;
         const text = namaBarang.trim().toLowerCase();
 
         if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
@@ -352,6 +354,7 @@
 
     function renderTable() {
         const tbody = document.getElementById('invoiceItems');
+        if (!tbody) return;
         tbody.innerHTML = '';
         
         let totalVol = 0;
@@ -387,8 +390,10 @@
             tbody.innerHTML += row;
         });
 
-        document.getElementById('totalVolume').innerText = `${totalVol.toLocaleString('id-ID')} m³`;
-        document.getElementById('totalKeseluruhan').innerText = formatRupiah(totalHarga);
+        const elTotVol = document.getElementById('totalVolume');
+        const elTotHarga = document.getElementById('totalKeseluruhan');
+        if (elTotVol) elTotVol.innerText = `${totalVol.toLocaleString('id-ID')} m³`;
+        if (elTotHarga) elTotHarga.innerText = formatRupiah(totalHarga);
     }
 
     function generatePDF(model) {
@@ -397,7 +402,7 @@
             return;
         }
 
-        // Sembunyikan kolom aksi saat PDF dicetak
+        // Sembunyikan tombol aksi saat membuat PDF
         const actionCells = document.querySelectorAll('.no-print');
         actionCells.forEach(el => el.style.display = 'none');
 
@@ -440,13 +445,18 @@
                 signatureImg.style.maxHeight = '65px';
                 signatureImg.style.height = 'auto';
                 signatureImg.style.width = 'auto';
+                signatureImg.style.objectFit = 'contain';
                 signatureImg.style.transform = 'none';
             }
             namaFile = `2. Invoice CHM - ${tglFormat}.pdf`;
         }
 
+        // Simpan ukuran asli dan paksa lebar ke standar piksel A4
         const originalWidth = invoicePreview.style.width;
         invoicePreview.style.width = '794px';
+        
+        // Reset posisi scroll ke paling atas agar canvas menangkap dari koordinat 0
+        window.scrollTo(0, 0);
 
         const opt = {
             margin:       [5, 5, 5, 5],
@@ -458,25 +468,30 @@
                 allowTaint: true, 
                 scrollX: 0, 
                 scrollY: 0, 
-                width: 794 
+                width: 794
             },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
-        html2pdf().set(opt).from(invoicePreview).save().then(() => {
-            invoicePreview.style.width = originalWidth;
+        // PERBAIKAN UTAMA: Tambahkan jeda 300ms agar browser sempat memuat ulang Kop/Logo sebelum dicetak
+        setTimeout(() => {
+            html2pdf().set(opt).from(invoicePreview).save().then(() => {
+                // Kembalikan ukuran asli
+                invoicePreview.style.width = originalWidth;
 
-            // Kembalikan tombol aksi setelah PDF selesai dibuat
-            actionCells.forEach(el => el.style.display = '');
+                // Tampilkan kembali tombol aksi
+                actionCells.forEach(el => el.style.display = '');
 
-            if (kopElement) kopElement.style.display = 'block';
-            if (signatureImg) {
-                signatureImg.src = 'cap.png';
-                signatureImg.style.maxHeight = '65px';
-                signatureImg.style.transform = 'none';
-            }
-        });
+                // Reset Tampilan Kop & Stempel ke kondisi default
+                if (kopElement) kopElement.style.display = 'block';
+                if (signatureImg) {
+                    signatureImg.src = 'cap.png';
+                    signatureImg.style.maxHeight = '65px';
+                    signatureImg.style.transform = 'none';
+                }
+            });
+        }, 300);
     }
 
     // Format angka input harga dengan koma ribuan
