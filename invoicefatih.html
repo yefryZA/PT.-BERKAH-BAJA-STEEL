@@ -426,36 +426,21 @@
         const dd = String(hariIni.getDate()).padStart(2, '0');
         const tglFormat = `${dd}-${mm}-${yyyy}`;
 
+        // Tentukan gambar dan nama file
+        let targetSrc = '';
         if (model === 'BBS') {
             if (kopElement) kopElement.style.display = 'none';
-            if (signatureImg) {
-                signatureImg.src = 'ttd.png';
-                signatureImg.style.maxHeight = '90px';
-                signatureImg.style.maxWidth = '220px';
-                signatureImg.style.height = 'auto';
-                signatureImg.style.width = 'auto';
-                signatureImg.style.objectFit = 'contain';
-                signatureImg.style.transform = 'none';
-            }
+            targetSrc = 'ttd.png';
             namaFile = `1. Invoice FATIH - ${tglFormat}.pdf`;
         } else {
             if (kopElement) kopElement.style.display = 'block';
-            if (signatureImg) {
-                signatureImg.src = 'cap.png';
-                signatureImg.style.maxHeight = '65px';
-                signatureImg.style.height = 'auto';
-                signatureImg.style.width = 'auto';
-                signatureImg.style.objectFit = 'contain';
-                signatureImg.style.transform = 'none';
-            }
+            targetSrc = 'cap.png';
             namaFile = `2. Invoice CHM - ${tglFormat}.pdf`;
         }
 
         // Simpan ukuran asli dan paksa lebar ke standar piksel A4
         const originalWidth = invoicePreview.style.width;
         invoicePreview.style.width = '794px';
-        
-        // Reset posisi scroll ke paling atas agar canvas menangkap dari koordinat 0
         window.scrollTo(0, 0);
 
         const opt = {
@@ -474,8 +459,8 @@
             pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
-        // PERBAIKAN UTAMA: Tambahkan jeda 300ms agar browser sempat memuat ulang Kop/Logo sebelum dicetak
-        setTimeout(() => {
+        // Fungsi internal untuk cetak PDF
+        const prosesCetak = () => {
             html2pdf().set(opt).from(invoicePreview).save().then(() => {
                 // Kembalikan ukuran asli
                 invoicePreview.style.width = originalWidth;
@@ -491,9 +476,36 @@
                     signatureImg.style.transform = 'none';
                 }
             });
-        }, 300);
-    }
+        };
 
+        // KUNCI JAWABAN: Cek apakah gambar ttd/cap perlu diubah src-nya
+        if (signatureImg) {
+            if (signatureImg.src.includes(targetSrc) && signatureImg.complete) {
+                // Jika gambar sudah sesuai & ter-load penuh di cache, langsung cetak
+                prosesCetak();
+            } else {
+                // Jika gambar baru diganti, TUNGGU event onload selesai 100% baru cetak
+                signatureImg.onload = () => {
+                    // Beri jeda kecil agar layout CSS selesai dirender penuh
+                    setTimeout(prosesCetak, 100);
+                };
+
+                signatureImg.src = targetSrc;
+                if (model === 'BBS') {
+                    signatureImg.style.maxHeight = '90px';
+                    signatureImg.style.maxWidth = '220px';
+                } else {
+                    signatureImg.style.maxHeight = '65px';
+                }
+                signatureImg.style.height = 'auto';
+                signatureImg.style.width = 'auto';
+                signatureImg.style.objectFit = 'contain';
+                signatureImg.style.transform = 'none';
+            }
+        } else {
+            prosesCetak();
+        }
+    }
     // Format angka input harga dengan koma ribuan
     function formatInputRupiah(element) {
         let value = element.value.replace(/\D/g, '');
