@@ -1,22 +1,24 @@
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KAS BBS</title>
+    <title>KAS BBS - PT. BERKAH BAJA STEEL</title>
 
     <link rel="manifest" href="manifest.json">
     
     <meta name="theme-color" content="#1b263b">
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Meta Tag PWA Standar Terbaru -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Kas Lestari">
+    <meta name="apple-mobile-web-app-title" content="Kas BBS">
     <link rel="apple-touch-icon" href="https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Library PDFMake (Anti-Blank & Sangat Cepat) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -187,7 +189,7 @@
             font-size: 13px;
         }
         
-        /* Baris Tanggal yang Memanjang (Top Layout) */
+        /* Baris Tanggal yang Memanjang */
         .row-tgl {
             background-color: #0d1b2a;
             color: #d4af37;
@@ -199,7 +201,7 @@
             letter-spacing: 0.5px;
         }
         
-        /* Baris Isi Detail (Keterangan & Nominal) */
+        /* Baris Isi Detail (Keterangan, Nominal, & Edit) */
         .row-detail td {
             padding: 10px;
             border-bottom: 1px solid #283854;
@@ -212,6 +214,23 @@
             color: #e0e1dd;
             line-height: 1.4;
             word-break: break-word;
+        }
+
+        /* Tombol Edit Kecil di Tabel */
+        .btn-edit-item {
+            background-color: #f39c12;
+            color: #0d1b2a;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 7px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: 0.2s;
+        }
+        .btn-edit-item:hover {
+            background-color: #e67e22;
         }
 
         /* Tombol Cetak PDF */
@@ -327,6 +346,8 @@
         .bg-green:hover { background-color: #27ae60; }
         .bg-red { background-color: #e74c3c; color: white; }
         .bg-red:hover { background-color: #c0392b; }
+        .bg-orange { background-color: #f39c12; color: #0d1b2a; }
+        .bg-orange:hover { background-color: #e67e22; }
     </style>
 </head>
 <body>
@@ -382,15 +403,16 @@
             </div>
             <form id="modal-form" onsubmit="simpanTransaksiPopUp(event)">
                 <input type="hidden" id="modal-jenis">
+                <input type="hidden" id="modal-index" value="-1">
                 
                 <div class="form-group">
                     <label>Keterangan / Nama Item</label>
-                    <input type="text" class="form-control" id="modal-ket" placeholder="Contoh: Jual 20 porsi pempek kapal selam" required>
+                    <input type="text" class="form-control" id="modal-ket" placeholder="Contoh: Pembelian besi beton" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Nominal Rupiah (Rp)</label>
-                    <input type="number" class="form-control" id="modal-nominal" placeholder="Contoh: 50000" required>
+                    <input type="text" class="form-control" id="modal-nominal" placeholder="Contoh: 50.000" inputmode="numeric" required>
                 </div>
                 
                 <button type="submit" class="btn-modal-submit" id="modalBtnSubmit">Simpan</button>
@@ -417,11 +439,12 @@
     const db = getDatabase(app);
     const dbRefKas = ref(db, "KAS_BBS");
 
-    let transaksiData = [];
+    // Dibuat Global di Window
+    window.transaksiData = [];
 
     // --- UTILITY FUNCTIONS ---
     function formatRupiah(angka) {
-        return "Rp " + angka.toLocaleString('id-ID');
+        return "Rp " + (angka || 0).toLocaleString('id-ID');
     }
 
     window.formatInputRibuan = function(elemen) {
@@ -437,7 +460,7 @@
         let masuk = 0;
         let keluar = 0;
         
-        transaksiData.forEach(item => {
+        window.transaksiData.forEach(item => {
             if(item.jenis === 'masuk') masuk += item.nominal;
             if(item.jenis === 'keluar') keluar += item.nominal;
         });
@@ -453,7 +476,7 @@
         const tbody = document.getElementById('data-transaksi');
         tbody.innerHTML = "";
         
-        if (transaksiData.length === 0) {
+        if (!window.transaksiData || window.transaksiData.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td style="text-align: center; color: #a2a8b8; padding: 20px;">
@@ -464,44 +487,68 @@
             return;
         }
         
-        const dataTerbalik = [...transaksiData].reverse();
-        
-        dataTerbalik.forEach(item => {
+        // Render dengan indeks asli dari array
+        for (let i = window.transaksiData.length - 1; i >= 0; i--) {
+            const item = window.transaksiData[i];
             const classWarna = item.jenis === 'masuk' ? 'text-green' : 'text-red';
             const tanda = item.jenis === 'masuk' ? '+' : '-';
             
-            // Baris 1: Tanggal di bagian atas
             const trTgl = document.createElement('tr');
             trTgl.innerHTML = `<td colspan="2" class="row-tgl">📅 ${item.tgl}</td>`;
             
-            // Baris 2: Keterangan (Luas) & Nominal (Kanan)
             const trDetail = document.createElement('tr');
             trDetail.className = "row-detail";
             trDetail.innerHTML = `
                 <td class="cell-ket">${item.ket}</td>
-                <td class="${classWarna}" style="text-align: right; font-weight: bold; white-space: nowrap; width: 40%;">
+                <td class="${classWarna}" style="text-align: right; font-weight: bold; white-space: nowrap; width: 45%;">
                     ${tanda} ${formatRupiah(item.nominal)}
+                    <button class="btn-edit-item" onclick="editTransaksi(${i})" title="Edit Item">✏️ Edit</button>
                 </td>
             `;
             
             tbody.appendChild(trTgl);
             tbody.appendChild(trDetail);
-        });
+        }
     }
 
     // --- REALTIME DATABASE SYNC ---
     onValue(dbRefKas, (snapshot) => {
         const data = snapshot.val();
-        transaksiData = data ? data : [];
+        window.transaksiData = data ? data : [];
         renderTabel();
         hitungKeuangan();
     });
 
-    function simpanKeFirebase() {
-        set(dbRefKas, transaksiData)
+    window.simpanKeFirebase = function() {
+        set(dbRefKas, window.transaksiData)
             .catch((error) => {
                 alert("Gagal sinkronisasi data ke Cloud: " + error.message);
             });
+    }
+
+    // --- EDIT TRANSAKSI ---
+    window.editTransaksi = function(index) {
+        const item = window.transaksiData[index];
+        if (!item) return;
+
+        const modal = document.getElementById('modalTransaksi');
+        const title = document.getElementById('modalTitle');
+        const btn = document.getElementById('modalBtnSubmit');
+        const inputNominal = document.getElementById('modal-nominal');
+
+        document.getElementById('modal-index').value = index;
+        document.getElementById('modal-jenis').value = item.jenis;
+        document.getElementById('modal-ket').value = item.ket;
+        
+        inputNominal.value = item.nominal ? item.nominal.toLocaleString('id-ID') : "";
+        inputNominal.oninput = function() { window.formatInputRibuan(this); };
+
+        title.innerText = "✏️ EDIT TRANSAKSI";
+        title.style.color = "#f39c12";
+        btn.innerText = "Update Transaksi";
+        btn.className = "btn-modal-submit bg-orange";
+
+        modal.classList.add('active');
     }
 
     // --- MODAL & FORM FUNCTIONS ---
@@ -511,12 +558,11 @@
         const btn = document.getElementById('modalBtnSubmit');
         const inputNominal = document.getElementById('modal-nominal');
         
+        document.getElementById('modal-index').value = "-1"; // Status Tambah Baru
         document.getElementById('modal-jenis').value = jenis;
         document.getElementById('modal-ket').value = "";
         inputNominal.value = "";
         
-        inputNominal.type = "text"; 
-        inputNominal.setAttribute("inputmode", "numeric"); 
         inputNominal.oninput = function() { window.formatInputRibuan(this); };
         
         if(jenis === 'masuk') {
@@ -546,6 +592,7 @@
 
     window.simpanTransaksiPopUp = function(e) {
         e.preventDefault();
+        const index = parseInt(document.getElementById('modal-index').value);
         const jenis = document.getElementById('modal-jenis').value;
         const ket = document.getElementById('modal-ket').value;
         
@@ -556,125 +603,143 @@
             alert("Masukkan nominal yang valid, Bang!");
             return;
         }
-        
-        const hariIni = new Date();
-        const tglStr = String(hariIni.getDate()).padStart(2, '0') + '/' + 
-                       String(hariIni.getMonth() + 1).padStart(2, '0') + '/' + 
-                       hariIni.getFullYear();
-        
-        transaksiData.push({ tgl: tglStr, jenis, ket, nominal });
-        simpanKeFirebase();
+
+        if (index >= 0) {
+            // mode EDIT
+            window.transaksiData[index].ket = ket;
+            window.transaksiData[index].nominal = nominal;
+        } else {
+            // mode TAMBAH BARU
+            const hariIni = new Date();
+            const tglStr = String(hariIni.getDate()).padStart(2, '0') + '/' + 
+                           String(hariIni.getMonth() + 1).padStart(2, '0') + '/' + 
+                           hariIni.getFullYear();
+            
+            window.transaksiData.push({ tgl: tglStr, jenis, ket, nominal });
+        }
+
+        window.simpanKeFirebase();
         window.tutupModal();
     }
 
-    // --- EKSPOR LAPORAN KE PDF ---
+    // --- EKSPOR LAPORAN PDF DENGAN PDFMAKE ---
     window.generatePDFApp = function() {
-        const elementPDF = document.createElement('div');
-        elementPDF.style.width = "680px"; 
-        elementPDF.style.padding = "20px";
-        elementPDF.style.background = "#ffffff";
-        elementPDF.style.color = "#111111";
-        elementPDF.style.fontFamily = "Arial, sans-serif";
-        
-        const urlLogo = "https://yefryza.github.io/PT.-BERKAH-BAJA-STEEL/Logo.png";
+        const totalMasukText = document.getElementById('total-masuk') ? document.getElementById('total-masuk').innerText : 'Rp 0';
+        const totalKeluarText = document.getElementById('total-keluar') ? document.getElementById('total-keluar').innerText : 'Rp 0';
+        const saldoUtamaText = document.getElementById('saldo-utama') ? document.getElementById('saldo-utama').innerText : 'Rp 0';
 
-        let htmlNota = `
-            <div style="border-bottom: 3px double #d4af37; padding-bottom: 15px; margin-bottom: 25px; display: flex; align-items: center;">
-                <div style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid #d4af37; padding: 3px; margin-right: 15px; background: white; display: flex; align-items: center; justify-content: center;">
-                    <img src="${urlLogo}" crossOrigin="anonymous" style="width:100%; height:100%; object-fit:contain; border-radius:50%;">
-                </div>
-                <div>
-                    <h1 style="font-size: 20px; margin: 0; color: #0d1b2a; font-weight: bold; letter-spacing: 0.5px;">PEMPEK PALEMBANG LESTARI</h1>
-                    <p style="font-size: 12px; margin: 4px 0 0 0; color: #444444; font-weight: bold;">Laporan Buku Kas Harian - Sistem Manajemen Dagang UMKM</p>
-                </div>
-            </div>
-            
-            <h3 style="text-align: center; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; color: #1b263b; font-size: 14px; font-weight: bold;">LAPORAN MUTASI KAS & SALDO</h3>
-            
-            <table style="width: 100%; margin-bottom: 30px; font-size: 13px; border-collapse: collapse;">
-                <tr>
-                    <td style="padding: 12px; background: #eef9f1; border-left: 5px solid #2ecc71; font-weight: bold; color: #111111; border-bottom: 1px solid #dddddd;">Total Uang Masuk:</td>
-                    <td style="padding: 12px; background: #eef9f1; text-align: right; color: #27ae60; font-weight: bold; font-size: 14px; border-bottom: 1px solid #dddddd;">${document.getElementById('total-masuk').innerText}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 12px; background: #fdf2f2; border-left: 5px solid #e74c3c; font-weight: bold; color: #111111; border-bottom: 1px solid #dddddd;">Total Pengeluaran:</td>
-                    <td style="padding: 12px; background: #fdf2f2; text-align: right; color: #c0392b; font-weight: bold; font-size: 14px; border-bottom: 1px solid #dddddd;">${document.getElementById('total-keluar').innerText}</td>
-                </tr>
-                <tr style="font-size: 16px;">
-                    <td style="padding: 14px; background: #f4f6f9; border-top: 2px solid #d4af37; font-weight: bold; color: #0d1b2a;">SALDO AKHIR UTAMA:</td>
-                    <td style="padding: 14px; background: #f4f6f9; text-align: right; color: #0d1b2a; font-weight: bold; border-top: 2px solid #d4af37;">${document.getElementById('saldo-utama').innerText}</td>
-                </tr>
-            </table>
+        let bodyTabel = [
+            [
+                { text: 'Tanggal', style: 'tableHeader' },
+                { text: 'Keterangan / Alur Kas', style: 'tableHeader' },
+                { text: 'Nominal', style: 'tableHeader', alignment: 'right' }
+            ]
+        ];
 
-            <h4 style="font-size: 13px; margin-bottom: 10px; color: #1b263b; font-weight: bold;">RINCIAN TRANSAKSI DATA FISIK:</h4>
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                    <tr style="background: #1b263b; color: white;">
-                        <th style="padding: 10px; border: 1px solid #666666; text-align: left; font-weight: bold;">Tanggal</th>
-                        <th style="padding: 10px; border: 1px solid #666666; text-align: left; font-weight: bold;">Keterangan / Alur Kas</th>
-                        <th style="padding: 10px; border: 1px solid #666666; text-align: right; font-weight: bold;">Nominal</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        if (transaksiData.length === 0) {
-            htmlNota += `
-                <tr>
-                    <td colspan="3" style="padding: 20px; text-align: center; border: 1px solid #666666; color: #444444; font-style: italic; font-weight: bold; background: #fafafa;">Tidak ada riwayat transaksi cetak.</td>
-                </tr>
-            `;
+        if (!window.transaksiData || window.transaksiData.length === 0) {
+            bodyTabel.push([
+                { text: 'Tidak ada riwayat transaksi cetak.', colSpan: 3, alignment: 'center', italics: true, margin: [0, 10, 0, 10] },
+                {}, {}
+            ]);
         } else {
-            transaksiData.forEach(item => {
-                const warnaTeks = item.jenis === 'masuk' ? '#27ae60' : '#c0392b';
-                const tandaNominal = item.jenis === 'masuk' ? '+' : '-';
-                htmlNota += `
-                    <tr style="background: white;">
-                        <td style="padding: 10px; border: 1px solid #666666; color: #111111; font-weight: bold;">${item.tgl}</td>
-                        <td style="padding: 10px; border: 1px solid #666666; color: #111111; font-weight: bold;">${item.ket}</td>
-                        <td style="padding: 10px; border: 1px solid #666666; text-align: right; color: ${warnaTeks}; font-weight: bold; font-size: 13px;">${tandaNominal} ${formatRupiah(item.nominal)}</td>
-                    </tr>
-                `;
+            window.transaksiData.forEach(item => {
+                const isMasuk = item.jenis === 'masuk';
+                const warnaTeks = isMasuk ? '#27ae60' : '#c0392b';
+                const tanda = isMasuk ? '+ ' : '- ';
+                const nominalFormatted = formatRupiah(item.nominal);
+
+                bodyTabel.push([
+                    { text: item.tgl || '-', fontSize: 10 },
+                    { text: item.ket || '-', fontSize: 10 },
+                    { text: tanda + nominalFormatted, fontSize: 10, bold: true, color: warnaTeks, alignment: 'right' }
+                ]);
             });
         }
 
-        htmlNota += `
-                </tbody>
-            </table>
-            
-            <div style="margin-top: 50px; margin-left: auto; text-align: center; font-size: 13px; width: 180px; float: right;">
-                <p style="color: #111111; font-weight: bold; margin-bottom: 40px;">Palembang, ${new Date().toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'})}</p>
-                <p style="font-weight: bold; border-bottom: 1.5px solid #111111; padding-bottom: 3px; margin-bottom: 2px; color: #0d1b2a;">LESTARI</p>
-                <span style="font-size: 11px; color: #555555; font-weight: bold;">Sistem Buku Kas Digital</span>
-            </div>
-            <div style="clear: both;"></div>
-        `;
-        
-        elementPDF.innerHTML = htmlNota;
-        
-        const opsiCetak = {
-            margin:       10,
-            filename:     'LAPORAN_KAS_PEMPEK_LESTARI.pdf',
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { 
-                scale: 3, 
-                useCORS: true, 
-                letterRendering: true,
-                logging: false
-            },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        html2pdf().from(elementPDF).set(opsiCetak).save();
-    }
+        const tglCetak = new Date().toLocaleDateString('id-ID', {year: 'numeric', month: 'long', day: 'numeric'});
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then((reg) => console.log('Service Worker PWA berhasil didaftarkan, Bang! ✅', reg))
-                .catch((err) => console.error('Aduh, Service Worker gagal daftar: ❌', err));
-        });
+        const docDefinition = {
+            pageSize: 'A4',
+            pageMargins: [30, 30, 30, 30],
+            content: [
+                { text: 'LAPORAN KAS', style: 'headerMain' },
+                { text: 'PT. BERKAH BAJA STEEL', style: 'subHeaderMain' },
+                { text: 'Sistem Buku Kas Harian Digital', style: 'captionMain' },
+                
+                { canvas: [{ type: 'line', x1: 0, y1: 10, x2: 535, y2: 10, lineWidth: 2, lineColor: '#d4af37' }] },
+                
+                { text: 'LAPORAN MUTASI KAS & SALDO', style: 'sectionTitle', margin: [0, 15, 0, 15] },
+                
+                {
+                    table: {
+                        widths: ['*', '*'],
+                        body: [
+                            [
+                                { text: 'Total Uang Masuk:', bold: true, fillColor: '#eef9f1' },
+                                { text: totalMasukText, bold: true, color: '#27ae60', alignment: 'right', fillColor: '#eef9f1' }
+                            ],
+                            [
+                                { text: 'Total Pengeluaran:', bold: true, fillColor: '#fdf2f2' },
+                                { text: totalKeluarText, bold: true, color: '#c0392b', alignment: 'right', fillColor: '#fdf2f2' }
+                            ],
+                            [
+                                { text: 'SALDO AKHIR UTAMA:', bold: true, fontSize: 12, fillColor: '#f4f6f9' },
+                                { text: saldoUtamaText, bold: true, fontSize: 12, color: '#0d1b2a', alignment: 'right', fillColor: '#f4f6f9' }
+                            ]
+                        ]
+                    },
+                    layout: 'horizontalLines',
+                    margin: [0, 0, 0, 20]
+                },
+
+                { text: 'RINCIAN TRANSAKSI DATA FISIK:', style: 'sectionSubTitle', margin: [0, 0, 0, 8] },
+
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: [80, '*', 120],
+                        body: bodyTabel
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+
+                {
+                    columns: [
+                        { width: '*', text: '' },
+                        {
+                            width: 200,
+                            margin: [0, 40, 0, 0],
+                            stack: [
+                                { text: `Palembang, ${tglCetak}`, alignment: 'center', fontSize: 10 },
+                                { text: 'PT. BERKAH BAJA STEEL', alignment: 'center', bold: true, margin: [0, 35, 0, 2], fontSize: 11, color: '#0d1b2a' },
+                                { text: 'Sistem Buku Kas Digital', alignment: 'center', fontSize: 9, color: '#555555' }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            styles: {
+                headerMain: { fontSize: 18, bold: true, alignment: 'center', color: '#0d1b2a' },
+                subHeaderMain: { fontSize: 13, bold: true, alignment: 'center', color: '#1b263b', margin: [0, 3, 0, 0] },
+                captionMain: { fontSize: 10, alignment: 'center', color: '#555555', margin: [0, 2, 0, 0] },
+                sectionTitle: { fontSize: 12, bold: true, alignment: 'center', color: '#1b263b' },
+                sectionSubTitle: { fontSize: 11, bold: true, color: '#1b263b' },
+                tableHeader: { bold: true, fontSize: 10, color: '#ffffff', fillColor: '#1b263b', padding: 5 }
+            }
+        };
+
+        pdfMake.createPdf(docDefinition).download('LAPORAN_KAS_BBS.pdf');
+
+        setTimeout(() => {
+            const hapusData = confirm("PDF berhasil di-download!\n\nApakah Anda ingin MENGHAPUS/RESET seluruh data kas di Firebase?");
+            if (hapusData) {
+                window.transaksiData = [];
+                if (typeof window.simpanKeFirebase === 'function') {
+                    window.simpanKeFirebase();
+                }
+            }
+        }, 800);
     }
-</script>
+    </script>
 </body>
 </html>
