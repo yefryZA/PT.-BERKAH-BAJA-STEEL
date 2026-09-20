@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Kasir - Barcode Warung</title>
+    <style>
+        /* Styling Halaman Utama */
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 12px; 
+            background-color: #009cb4; 
+            margin: 0;
+        }
+
+      h2 { 
+    color: #FFD700; /* Warna Emas Menyala */
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6), 0 0 2px #000; /* Efek menyala/glowing & outline hitam tipis agar jelas di background terang */
+    margin-top: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+        /* Modal Styles untuk HP */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 999; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.7); 
+        }
+
+        .modal-content { 
+            background: white; 
+            margin: 15% auto; 
+            padding: 20px; 
+            border-radius: 12px; 
+            width: 90%; 
+            max-width: 400px; 
+            text-align: center; 
+            box-sizing: border-box;
+        }
+
+        .btn-modal { 
+            width: 100%; 
+            padding: 12px; 
+            background: #ff1744; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+        }
+
+        .btn-simpan { 
+            background: #2e7d32; 
+        }
+
+        input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 10px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        /* Container List Tagihan */
+        #containerTagihan {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================
+           CARD TAGIHAN FULL WIDTH (PER BARIS)
+           ========================================== */
+
+        .card-tagihan {
+            background: #ea5858;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 1. Baris Hari & Tanggal (Full Kiri ke Kanan) */
+        .card-row-tanggal {
+            width: 100%;
+            font-size: 13px;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-weight: bold;
+        }
+
+        /* 2. Baris Rincian Keterangan (Full Kiri ke Kanan) */
+        .card-row-rincian {
+            width: 100%;
+            font-size: 17px;
+            color: #222;
+            line-height: 1.4;
+            padding: 0 2px;
+            margin-bottom: 12px;
+            word-break: break-word;
+            box-sizing: border-box;
+        }
+
+        /* 3. Baris Totalan (Full Kiri ke Kanan) */
+        .card-row-totalan {
+            width: 100%;
+            background-color: #fff8f8;
+            border: 1px solid #ffe0e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .card-row-totalan .item-nominal {
+            width: 100%;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .card-row-totalan .item-nominal:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-row-totalan .text-sisa {
+            color: #d50000;
+            font-size: 15px;
+            border-top: 1px dashed #ffd0d0;
+            padding-top: 6px;
+            margin-top: 6px;
+        }
+
+        /* 4. Baris Tombol & Badge Aksi (Full Kiri ke Kanan) */
+        .card-row-aksi {
+            width: 100%;
+        }
+
+        .btn-bayar-full {
+            width: 100%;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .btn-bayar-full:active {
+            background-color: #0b5ed7;
+        }
+
+        .badge-pending-full {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #ffc107;
+            color: #000;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .badge-lunas-full {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #198754;
+            color: white;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>DAFTAR TAGIHAN PT. BERKAH BAJA STEEL</h2>
+
+    <!-- Container Utama Card Tagihan -->
+    <div id="containerTagihan">
+        <div style="text-align:center; padding: 20px; color: gray;">Memuat data...</div>
+    </div>
+
+    <!-- POP-UP BACA TAGIHAN BARU FOR KASIR -->
+    <div id="popTagihanBaru" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #ff1744; margin-top:0;">⚠️ TAGIHAN BARU MASUK!</h2>
+            <div id="isiNotifTagihan" style="font-size: 16px; text-align: left; line-height: 1.6;"></div>
+            <button class="btn-modal" onclick="konfirmasiBacaTagihan()">Saya Sudah Baca & Mengerti</button>
+        </div>
+    </div>
+
+    <!-- POP-UP INPUT BAYAR TAGIHAN -->
+    <div id="modalBayarKasir" class="modal">
+        <div class="modal-content" style="text-align: left;">
+            <h3 style="margin-top:0;">💳 Input Pembayaran Tagihan</h3>
+            <div id="infoDetailTagihan"></div>
+            <label style="display:block; margin-top:15px; font-weight:bold;">Nominal Dibayar (Rp):</label>
+            <input type="text" id="nominalBayarKasir" placeholder="0">
+            <button class="btn-modal btn-simpan" onclick="prosesBayarKasir()">Simpan Pembayaran</button>
+            <button class="btn-modal" style="background:gray;" onclick="tutupBayarModal()">Batal</button>
+        </div>
+    </div>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+        authDomain: "barcode-warung-81e97.firebaseapp.com",
+        projectId: "barcode-warung-81e97",
+        storageBucket: "barcode-warung-81e97.firebasestorage.app",
+        messagingSenderId: "1089837830503",
+        appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+        measurementId: "G-92V3E8BM6J"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+    let listTagihanBelumDibaca = [];
+    let activeBayarId = null;
+    let activeTotal = 0;
+    let activeDibayar = 0;
+    let activeRiwayat = [];
+
+    // Helper Format Rupiah
+    function formatRupiah(angka) {
+        if (!angka) return "0";
+        let number_string = angka.toString().replace(/[^,\d]/g, ""),
+            split = number_string.split(","),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? "." : "";
+            rupiah += separator + ribuan.join(".");
+        }
+        return rupiah;
+    }
+
+    // Input Auto Format Rupiah
+    const inputNominal = document.getElementById("nominalBayarKasir");
+    if (inputNominal) {
+        inputNominal.addEventListener("keyup", function() {
+            this.value = formatRupiah(this.value);
+        });
+    }
+
+    // Listener Realtime Tagihan Kasir
+const dbRef = ref(db, 'invoiceBBS/transaksi');
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById("containerTagihan");
+    container.innerHTML = "";
+    listTagihanBelumDibaca = [];
+
+    if (data) {
+        Object.entries(data).forEach(([id, item]) => {
+            if (item.tipe === 'tagihan') {
+
+                if (item.dibacaKasir === false && item.sisa > 0) {
+                    listTagihanBelumDibaca.push({ id, ...item });
+                }
+
+                let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
+
+                let tombolAksi = "";
+                if (item.status === "Menunggu Konfirmasi") {
+                    tombolAksi = `<span class="badge-pending-full">⏳ MENUNGGU KONFIRMASI (Rp ${formatRupiah(item.nominalPengajuanKasir)})</span>`;
+                } else if (item.sisa > 0) {
+                    tombolAksi = `<button class="btn-bayar-full" onclick="bukaBayarModal('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BAYAR</button>`;
+                } else {
+                    tombolAksi = `<span class="badge-lunas-full">LUNAS</span>`;
+                }
+
+                // Ubah item.tanggal dengan fungsi formatTanggalIndo(item.tanggal)
+                const cardRow = `
+                <div class="card-tagihan">
+                    <!-- 1. Hari & Tanggal (Otomatis: Minggu, 20/9/2026) -->
+                    <div class="card-row-tanggal">
+                        📅 ${formatTanggalIndo(item.tanggal)}
+                    </div>
+
+                    <!-- 2. Rincian Keterangan -->
+                    <div class="card-row-rincian">
+                        <b>${item.keterangan}</b>
+                    </div>
+
+                    <!-- 3. Totalan -->
+                    <div class="card-row-totalan">
+                        <div class="item-nominal">Total Tagihan: <b>Rp ${formatRupiah(item.total)}</b></div>
+                        <div class="item-nominal text-sisa">Sisa Tagihan: <b>Rp ${formatRupiah(item.sisa)}</b></div>
+                    </div>
+
+                    <!-- 4. Tombol Bayar / Status -->
+                    <div class="card-row-aksi">
+                        ${tombolAksi}
+                    </div>
+                </div>`;
+
+                container.innerHTML += cardRow;
+            }
+        });
+    } else {
+        container.innerHTML = `<div style="text-align:center; padding: 20px; color: gray;">Tidak ada data tagihan.</div>`;
+    }
+
+    if (listTagihanBelumDibaca.length > 0) {
+        tampilkanPopUpTagihanBaru();
+    }
+});
+
+    // Pop-up Tagihan Baru untuk Kasir
+    function tampilkanPopUpTagihanBaru() {
+        const container = document.getElementById("isiNotifTagihan");
+        let htmlContent = "";
+        
+        listTagihanBelumDibaca.forEach((item, idx) => {
+            htmlContent += `<div style="border-bottom:1px solid #ccc; padding:8px 0;">
+                <b>#${idx + 1}. ${item.keterangan}</b><br>
+                Tanggal: ${item.tanggal}<br>
+                Total Tagihan: <b style="color:#d50000;">Rp ${formatRupiah(item.total)}</b>
+            </div>`;
+        });
+
+        container.innerHTML = htmlContent;
+        document.getElementById("popTagihanBaru").style.display = "block";
+    }
+
+    // Konfirmasi Pembacaan Tagihan Baru
+    window.konfirmasiBacaTagihan = function() {
+        listTagihanBelumDibaca.forEach(item => {
+            const itemRef = ref(db, 'invoiceBBS/transaksi/' + item.id);
+            update(itemRef, { dibacaKasir: true });
+        });
+        document.getElementById("popTagihanBaru").style.display = "none";
+    }
+
+    // Buka Modal Bayar Kasir
+    window.bukaBayarModal = function(id, keterangan, total, dibayar, riwayatLama) {
+        activeBayarId = id;
+        activeTotal = total;
+        activeDibayar = dibayar;
+        activeRiwayat = riwayatLama ? Object.values(riwayatLama) : [];
+
+        document.getElementById("infoDetailTagihan").innerHTML = `
+            <b>Tagihan:</b> ${keterangan}<br>
+            <b>Total Tagihan:</b> Rp ${formatRupiah(total)}<br>
+            <b>Sisa Tagihan:</b> <span style="color:red; font-weight:bold;">Rp ${formatRupiah(total - dibayar)}</span>
+        `;
+        document.getElementById("nominalBayarKasir").value = "";
+        document.getElementById("modalBayarKasir").style.display = "block";
+    }
+
+    // Tutup Modal Bayar
+    window.tutupBayarModal = function() {
+        document.getElementById("modalBayarKasir").style.display = "none";
+    }
+
+    // Kirim Pengajuan Pembayaran ke Manager
+    window.prosesBayarKasir = function() {
+        let nominalStr = document.getElementById("nominalBayarKasir").value;
+        let nominal = parseFloat(nominalStr.replace(/\./g, '').replace(/[^0-9]/g, '')) || 0;
+        let sisaSekarang = activeTotal - activeDibayar;
+
+        if (nominal <= 0) return alert("Masukkan nominal yang valid!");
+        if (nominal > sisaSekarang) return alert("Nominal pembayaran melebihi sisa tagihan!");
+
+        const itemRef = ref(db, 'invoiceBBS/transaksi/' + activeBayarId);
+        update(itemRef, {
+            nominalPengajuanKasir: nominal,
+            status: "Menunggu Konfirmasi",
+            notifAdminDilihat: false
+        }).then(() => {
+            alert("Pengajuan pembayaran berhasil dikirim! Menunggu konfirmasi Manager.");
+            tutupBayarModal();
+        }).catch((err) => {
+            alert("Gagal mengirim pengajuan: " + err.message);
+        });
+    }
+    // Helper Format Hari & Tanggal (Contoh: Minggu, 20/9/2026)
+function formatTanggalIndo(tglString) {
+    if (!tglString) return "-";
+    
+    // Konversi string ke objek Date
+    const date = new Date(tglString);
+    if (isNaN(date.getTime())) return tglString; // Kembalikan teks asli jika format bukan tanggal valid
+
+    const namaHari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const hari = namaHari[date.getDay()];
+    const tgl = date.getDate();
+    const bulan = date.getMonth() + 1; // Month dimulai dari 0
+    const tahun = date.getFullYear();
+
+    return `${hari}, ${tgl}/${bulan}/${tahun}`;
+}
+</script>
+</body>
+</html>
