@@ -6,9 +6,9 @@
     <title>Sistem Keuangan - MANAGER BBS</title>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script type="text/javascript">
-   (function(){
-      emailjs.init("PfFPPaTrq6QBETvjp"); // Public Key kamu
-   })();
+   (function(){
+      emailjs.init("PfFPPaTrq6QBETvjp"); // Public Key
+   })();
 </script>
 
     <style>
@@ -27,12 +27,24 @@
         .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
         
         .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .modal-content { 
+            background: white; 
+            margin: 5% auto; 
+            padding: 20px; 
+            border-radius: 8px; 
+            width: 90%; 
+            max-width: 400px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+        }
         .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-success { background: #2e7d32; color: white; }
         .btn-danger { background: #d50000; color: white; }
         .btn-secondary { background: gray; color: white; }
-        input, select { width: 100%; padding: 8px; margin: 5px 0 15px 0; box-sizing: border-box; }
+        .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
+        .btn-remove { background: #ff1744; color: white; padding: 5px 8px; font-size: 12px; margin-top: 5px; }
+
+        input, select { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
 
         #tipe {
             font-weight: bold;
@@ -43,6 +55,14 @@
         }
         #tipe option[value="invoice"] { background-color: #00e676; color: black; font-weight: bold; }
         #tipe option[value="tagihan"] { background-color: #ff1744; color: white; font-weight: bold; }
+
+        .item-row {
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -60,19 +80,35 @@
                     <option value="tagihan">🔴 Tagihan (Pengeluaran Kasir)</option>
                 </select>
 
-                <label>Keterangan:</label>
-                <input type="text" id="keterangan" required placeholder="Contoh: Beli Bahan Baku">
-
-                <label>Tanggal:</label>
+                <label>Tanggal Transaksi:</label>
                 <input type="date" id="tanggal" required>
 
-                <label>Total Nominal (Rp):</label>
-                <input type="text" id="total" required placeholder="0">
+                <!-- CONTAINER ITEM DINAMIS -->
+                <div id="itemsContainer">
+                    <div class="item-row">
+                        <label>Keterangan Tagihan #1:</label>
+                        <input type="text" class="input-keterangan" required placeholder="Contoh: Tagihan Mobil 3 unit">
 
-                <label>Dibayar Awal (Rp):</label>
-                <input type="text" id="dibayar" value="0">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <label>Total Nominal (Rp):</label>
+                                <input type="text" class="input-total" required placeholder="0" onkeyup="hitungGrandTotal()">
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Dibayar Awal (Rp):</label>
+                                <input type="text" class="input-dibayar" value="0" onkeyup="hitungGrandTotal()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <button type="submit" class="btn btn-success" style="width: 100%;">Simpan Transaksi</button>
+                <button type="button" class="btn btn-add" onclick="tambahBarisItem()">+ Tambah Tagihan Lainnya</button>
+
+                <div style="margin: 15px 0; font-size: 16px; font-weight: bold; background: #e3f2fd; padding: 10px; border-radius: 4px;">
+                    Total Akumulasi Transaksi: <span id="grandTotalText" style="color: #0d47a1;">Rp 0</span>
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">Simpan Semua Transaksi</button>
             </form>
         </div>
 
@@ -151,16 +187,18 @@
     <div id="detailModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <h3 id="modalTitle">Riwayat Rincian</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Keterangan</th>
-                        <th>Nominal</th>
-                        <th>Riwayat</th>
-                    </tr>
-                </thead>
-                <tbody id="modalBody"></tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Keterangan</th>
+                            <th>Nominal</th>
+                            <th>Riwayat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalBody"></tbody>
+                </table>
+            </div>
             <button class="btn btn-secondary" onclick="tutupModal()" style="width:100%; margin-top:15px;">Tutup</button>
         </div>
     </div>
@@ -177,7 +215,7 @@
         }
     </script>
 
-    <!-- SCRIPT FIREBASE -->
+    <!-- SCRIPT FIREBASE & UTILS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -236,8 +274,6 @@
             }
         }
 
-        setupRupiahInput("total");
-        setupRupiahInput("dibayar");
         setupRupiahInput("nominalCicil");
 
         function getWaktuSekarang() {
@@ -247,62 +283,147 @@
             return `${tgl} Jam ${jam}`;
         }
 
+        // --- MANAJEMEN BARIS INPUT DINAMIS ---
+        let itemCount = 1;
+        window.tambahBarisItem = function() {
+            itemCount++;
+            const container = document.getElementById("itemsContainer");
+            const div = document.createElement("div");
+            div.className = "item-row";
+            div.id = `item-row-${itemCount}`;
+            div.innerHTML = `
+                <label>Keterangan Tagihan #${itemCount}:</label>
+                <input type="text" class="input-keterangan" required placeholder="Contoh: Keterangan tagihan">
 
-
-// --- LOGIKA FORM ADMIN ---
-const form = document.getElementById("financeForm");
-if (form) {
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        
-        const tipe = document.getElementById("tipe").value;
-        const keterangan = document.getElementById("keterangan").value;
-        const tanggal = document.getElementById("tanggal").value;
-        
-        const total = parseFloat(document.getElementById("total").value.replace(/\./g, '')) || 0;
-        const bayarAwal = parseFloat(document.getElementById("dibayar").value.replace(/\./g, '')) || 0;
-        
-        let riwayatPembayaran = [];
-        if (bayarAwal > 0) {
-            riwayatPembayaran.push({
-                waktu: getWaktuSekarang(),
-                nominal: bayarAwal
-            });
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Total Nominal (Rp):</label>
+                        <input type="text" class="input-total" required placeholder="0" onkeyup="hitungGrandTotal()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Dibayar Awal (Rp):</label>
+                        <input type="text" class="input-dibayar" value="0" onkeyup="hitungGrandTotal()">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-remove" onclick="hapusBarisItem(${itemCount})">🗑️ Hapus Baris Ini</button>
+            `;
+            container.appendChild(div);
         }
 
-        const totalDibayar = bayarAwal;
-        const sisa = total - totalDibayar;
-        const status = sisa <= 0 ? "Lunas" : "Belum Dibayar";
-        const tglLunas = sisa <= 0 ? new Date().toISOString().split('T')[0] : "-";
-
-        const dbRef = ref(db, 'invoiceBBS/transaksi');
-        const newRef = push(dbRef);
-        
-        set(newRef, {
-            tipe, keterangan, tanggal, total, dibayar: totalDibayar, sisa, tglLunas, status, 
-            riwayat: riwayatPembayaran,
-            dibacaKasir: false,
-            notifAdminDilihat: true
-        }).then(() => {
-
-            // 🔔 KIRIM EMAIL OTOMATIS JIKA TIPE NYA 'tagihan'
-            if (tipe === 'tagihan') {
-                kirimEmailKeKasir(total);
+        window.hapusBarisItem = function(id) {
+            const row = document.getElementById(`item-row-${id}`);
+            if (row) {
+                row.remove();
+                hitungGrandTotal();
             }
+        }
 
-            alert("Data berhasil disimpan!");
-            form.reset();
-            document.getElementById("dibayar").value = "0";
-            const tipeEl = document.getElementById("tipe");
-            if (tipeEl) {
-                tipeEl.style.color = "#00c853";
-                tipeEl.style.borderColor = "#00c853";
-            }
-        }).catch((error) => {
-            alert("Gagal: " + error.message);
-        });
-    });
-}
+        window.hitungGrandTotal = function() {
+            let totalSemua = 0;
+            const rows = document.querySelectorAll(".item-row");
+            rows.forEach(row => {
+                const totalEl = row.querySelector(".input-total");
+                if (totalEl) {
+                    totalEl.value = formatRupiah(totalEl.value);
+                    let val = parseFloat(totalEl.value.replace(/\./g, '')) || 0;
+                    totalSemua += val;
+                }
+                const dibayarEl = row.querySelector(".input-dibayar");
+                if (dibayarEl) {
+                    dibayarEl.value = formatRupiah(dibayarEl.value);
+                }
+            });
+            document.getElementById("grandTotalText").innerText = `Rp ${formatRupiah(totalSemua)}`;
+            return totalSemua;
+        }
+
+        // --- LOGIKA SIMPAN SEMUA TRANSAKSI ---
+        const form = document.getElementById("financeForm");
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                
+                const tipe = document.getElementById("tipe").value;
+                const tanggal = document.getElementById("tanggal").value;
+                const rows = document.querySelectorAll(".item-row");
+
+                let totalAkumulasiSemua = 0;
+                let promises = [];
+
+                rows.forEach(row => {
+                    const keterangan = row.querySelector(".input-keterangan").value;
+                    const total = parseFloat(row.querySelector(".input-total").value.replace(/\./g, '')) || 0;
+                    const bayarAwal = parseFloat(row.querySelector(".input-dibayar").value.replace(/\./g, '')) || 0;
+
+                    totalAkumulasiSemua += total;
+
+                    let riwayatPembayaran = [];
+                    if (bayarAwal > 0) {
+                        riwayatPembayaran.push({
+                            waktu: getWaktuSekarang(),
+                            nominal: bayarAwal
+                        });
+                    }
+
+                    const totalDibayar = bayarAwal;
+                    const sisa = total - totalDibayar;
+                    const status = sisa <= 0 ? "Lunas" : "Belum Dibayar";
+                    const tglLunas = sisa <= 0 ? new Date().toISOString().split('T')[0] : "-";
+
+                    const dbRef = ref(db, 'invoiceBBS/transaksi');
+                    const newRef = push(dbRef);
+
+                    promises.push(set(newRef, {
+                        tipe, keterangan, tanggal, total, dibayar: totalDibayar, sisa, tglLunas, status, 
+                        riwayat: riwayatPembayaran,
+                        dibacaKasir: false,
+                        notifAdminDilihat: true
+                    }));
+                });
+
+                try {
+                    await Promise.all(promises);
+
+                    // 🔔 KIRIM EMAIL CUKUP 1 KALI DENGAN TOTAL AKUMULASI
+                    if (tipe === 'tagihan' && totalAkumulasiSemua > 0) {
+                        kirimEmailKeKasir(totalAkumulasiSemua);
+                    }
+
+                    alert("Semua transaksi berhasil disimpan!");
+                    
+                    // Reset Form ke Tampilan Awal 1 Baris
+                    form.reset();
+                    document.getElementById("itemsContainer").innerHTML = `
+                        <div class="item-row">
+                            <label>Keterangan Tagihan #1:</label>
+                            <input type="text" class="input-keterangan" required placeholder="Contoh: Tagihan Mobil 3 unit">
+
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label>Total Nominal (Rp):</label>
+                                    <input type="text" class="input-total" required placeholder="0" onkeyup="hitungGrandTotal()">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Dibayar Awal (Rp):</label>
+                                    <input type="text" class="input-dibayar" value="0" onkeyup="hitungGrandTotal()">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    itemCount = 1;
+                    hitungGrandTotal();
+
+                    const tipeEl = document.getElementById("tipe");
+                    if (tipeEl) {
+                        tipeEl.style.color = "#00c853";
+                        tipeEl.style.borderColor = "#00c853";
+                    }
+
+                } catch (error) {
+                    alert("Gagal menyimpan data: " + error.message);
+                }
+            });
+        }
 
         // --- BUKA POP-UP CICILAN ---
         window.bukaCicilModal = function(id, totalSekarang, dibayarSekarang, riwayatLama) {
@@ -340,7 +461,7 @@ if (form) {
             const itemRef = ref(db, 'invoiceBBS/transaksi/' + activeCicilId);
             update(itemRef, {
                 dibayar: totalBaruDibayar,
-                sisa: sisaBaru,
+                sisa: sisaBaru < 0 ? 0 : sisaBaru,
                 status: statusBaru,
                 tglLunas: tglLunasBaru,
                 riwayat: activeRiwayat
@@ -403,7 +524,7 @@ if (form) {
                 status: statusBaru,
                 tglLunas: tglLunasBaru,
                 riwayat: riwayatBaru,
-                nominalPengajuanKasir: null, // Reset pengajuan
+                nominalPengajuanKasir: null,
                 notifAdminDilihat: true
             }).then(() => {
                 alert("Pembayaran berhasil disetujui & dicatat!");
@@ -418,8 +539,8 @@ if (form) {
 
             const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetKonfirmasiId);
             update(itemRef, {
-                status: "Belum Dibayar", // Kembalikan status ke Belum Dibayar
-                nominalPengajuanKasir: null, // Hapus pengajuan
+                status: "Belum Dibayar",
+                nominalPengajuanKasir: null,
                 notifAdminDilihat: true
             }).then(() => {
                 alert("Pembayaran dari kasir ditolak.");
@@ -473,8 +594,9 @@ if (form) {
                         : `<span style="color:red; font-weight:bold;">${item.status.toUpperCase()}</span>`;
 
                     let riwayatHTML = "";
-                    if (item.riwayat && Array.isArray(item.riwayat)) {
-                        item.riwayat.forEach((r, index) => {
+                    let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+                    if (listRiwayat.length > 0) {
+                        listRiwayat.forEach((r, index) => {
                             riwayatHTML += `<div style="font-size: 12px; margin-top: 4px;"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
                         });
                     } else {
@@ -530,7 +652,6 @@ if (form) {
                         countTag++;
                     }
 
-                    // DETEKSI PENGAJUAN PEMBAYARAN KASIR UNTUK POP-UP MANAGER
                     if (item.status === "Menunggu Konfirmasi" && item.notifAdminDilihat === false) {
                         tampilkanModalKonfirmasiAdmin(id, item);
                     }
@@ -550,8 +671,9 @@ if (form) {
                         }
 
                         let listRiwayatAdmin = "";
-                        if (item.riwayat && Array.isArray(item.riwayat)) {
-                            item.riwayat.forEach((r) => {
+                        let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+                        if (listRiwayat.length > 0) {
+                            listRiwayat.forEach((r) => {
                                 listRiwayatAdmin += `<div style="font-size:10px; color:#555;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
                             });
                         }
@@ -599,26 +721,32 @@ if (form) {
                     : "";
             }
         });
- // --- FUNGSI KIRIM EMAIL VIA EMAILJS ---
-function kirimEmailKeKasir(nominalTagihan) {
-    // Fungsi format rupiah untuk isi email
-    const formatRp = (angka) => {
-        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    };
 
-    const emailParams = {
-        to_email: "alifalfasyafawwaz@gmail.com", // Email kasir sudah terpasang
-        nominal: formatRp(nominalTagihan)
-    };
+// --- FUNGSI KIRIM EMAIL VIA EMAILJS (KIRIM KE 2 EMAIL SEPARATELY) ---
+        function kirimEmailKeKasir(nominalTagihanTotal) {
+            const listEmail = [
+                "alifalfasyafawwaz@gmail.com",
+                "invoicebbs70@gmail.com"
+            ];
 
-    emailjs.send("service_bvje5nt", "template_9zsj61r", emailParams)
-        .then((response) => {
-            console.log("Email notifikasi berhasil dikirim!", response.status, response.text);
-        })
-        .catch((error) => {
-            console.error("Gagal mengirim email:", error);
-        });
-}
+            const nominalFormatted = formatRupiah(nominalTagihanTotal);
+
+            // Kirim ke masing-masing email menggunakan looping
+            listEmail.forEach((emailTujuan) => {
+                const emailParams = {
+                    to_email: emailTujuan,
+                    nominal: nominalFormatted
+                };
+
+                emailjs.send("service_bvje5nt", "template_9zsj61r", emailParams)
+                    .then((response) => {
+                        console.log(`Email notifikasi ke ${emailTujuan} berhasil dikirim!`, response.status);
+                    })
+                    .catch((error) => {
+                        console.error(`Gagal mengirim email ke ${emailTujuan}:`, error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
