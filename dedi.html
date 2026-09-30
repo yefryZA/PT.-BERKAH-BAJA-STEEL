@@ -72,7 +72,7 @@
         .btn-edit-row { background-color: #ffc107; color: #333; }
         .btn-del-row { background-color: #dc3545; }
 
-        /* Style Khusus Dropdown Penyedia (Warna Biru / Merah) */
+        /* Style Khusus Dropdown Penyedia */
         .select-penyedia {
             width: 100%;
             padding: 10px;
@@ -91,6 +91,11 @@
         }
         .option-herman {
             background-color: #dc3545;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .option-erika {
+            background-color: #198754;
             color: #ffffff;
             font-weight: bold;
         }
@@ -210,6 +215,7 @@
             <select id="selectPenyedia" class="select-penyedia" onchange="gantiPenyedia()">
                 <option value="DEDI" class="option-dedi">Trucking Dedi (Bank BCA)</option>
                 <option value="HERMAN" class="option-herman">Trucking Herman (Bank BCA)</option>
+                <option value="ERIKA" class="option-erika">Trucking Erika (Bank BCA)</option>
             </select>
         </div>
 
@@ -322,7 +328,7 @@
     const dataPenyedia = {
         DEDI: {
             bank: "BANK BCA",
-            norek: "6510344934",
+            norek: "652 130 4143",
             nama: "DEDI ISWANDI",
             ttdImg: "ttd.dedi.png",
             filePrefix: "Invoice Dedi",
@@ -336,9 +342,19 @@
             nama: "YULIANA",
             ttdImg: "ttd.herman.png",
             filePrefix: "Invoice Herman",
-            bgColor: "#dc3545", // Warna Merah BNI
+            bgColor: "#dc3545", // Warna Merah
             textColor: "#ffffff",
             borderColor: "#b02a37"
+        },
+        ERIKA: {
+            bank: "BANK BCA",
+            norek: "652 083 7530",
+            nama: "ERIKA NURMALASARI",
+            ttdImg: "ttd.erika.png",
+            filePrefix: "Invoice Erika",
+            bgColor: "#198754", // Warna Hijau
+            textColor: "#ffffff",
+            borderColor: "#146c43"
         }
     };
 
@@ -684,6 +700,5 @@
         }
     }
 </script>
-
 </body>
 </html>
