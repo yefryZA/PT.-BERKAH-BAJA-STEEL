@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Trucking</title>
+    <!-- Library untuk cetak PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        /* Form Styling */
+        .form-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .form-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        input, select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            margin-top: 10px;
+        }
+        .btn-add { background-color: #28a745; }
+        .btn-update { background-color: #ffc107; color: #333; display: none; }
+        .btn-cancel { background-color: #6c757d; display: none; margin-left: 5px; }
+        .btn-pdf { background-color: #007bff; font-size: 15px; width: 48%; }
+        .btn-pdf-no-price { background-color: #17a2b8; font-size: 15px; width: 48%; margin-left: 2%; }
+
+        /* Action Buttons inside Table */
+        .btn-action {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin: 0 2px;
+        }
+        .btn-edit-row { background-color: #ffc107; color: #333; }
+        .btn-del-row { background-color: #dc3545; }
+
+        /* Style Khusus Dropdown Penyedia */
+        .select-penyedia {
+            width: 100%;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 15px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .option-herman {
+            background-color: #dc3545;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .option-erika {
+            background-color: #198754;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Invoice Preview Area */
+        #invoice-preview {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #333;
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        .invoice-title {
+            text-align: center;
+            margin: 17px 0;
+        }
+        .invoice-title h2 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        /* Table Design & Page Break Settings */
+        table.invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        table.invoice-table th, table.invoice-table td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        table.invoice-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Pencegahan Pemotongan Baris di Tengah Halaman */
+        table.invoice-table tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        table.invoice-table thead {
+            display: table-header-group;
+        }
+
+        /* Alignment Helper Classes */
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+
+        /* Total Section */
+        .total-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Bottom Section: Info Rekening (Kiri) & TTD (Kanan) */
+        .bottom-section {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .account-info {
+            width: 50%;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-weight: bold;
+            font-style: italic;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .signature-box {
+            text-align: center;
+            width: 220px;
+        }
+        .signature-img {
+            height: 70px;
+            margin: 5px 0;
+        }
+
+        #invoiceItems td, table.invoice-table th {
+            vertical-align: middle !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- FORM INPUT DATA -->
+    <div class="form-card">
+        <h2 id="formTitle">Input Data Barang & Pembayaran</h2>
+        <input type="hidden" id="editIndex" value="-1">
+        
+        <!-- PILIHAN PENYEDIA JASA BERWARNA -->
+        <div style="margin-bottom: 15px; padding: 12px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 6px;">
+            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 6px; color: #333;">
+                Pilih Penyedia Sewa Truck:
+            </label>
+            <select id="selectPenyedia" class="select-penyedia" onchange="gantiPenyedia()">
+                <option value="HERMAN" class="option-herman">Trucking Herman (Bank BCA)</option>
+                <option value="ERIKA" class="option-erika">Trucking Erika (Bank BCA)</option>
+            </select>
+        </div>
+
+        <!-- FORM INPUT BARANG -->
+        <div class="form-group">
+            <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaSopir" placeholder="Nama Sopir" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="number" id="inputVolume" placeholder="Vol M³" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga /M³" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+               <select id="inputTujuan" onchange="cekHargaOtomatis()" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+                <option value="ONGKOSAN">ONGKOSAN</option>
+                <option value="PT. CHM">PT. CHM</option>
+                <option value="FRANCO">FRANCO</option>
+                
+            </select>
+        </div>
+
+        <button class="btn btn-add" id="btnAdd" onclick="tambahBarang()">+ Tambah Baris Data</button>
+        <button class="btn btn-update" id="btnUpdate" onclick="updateBarang()">💾 Simpan Perubahan</button>
+        <button class="btn btn-cancel" id="btnCancel" onclick="resetForm()">Batal</button>
+
+        <!-- INPUT DP (UANG MUKA) -->
+        <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">DP / Uang Muka (Rp):</label>
+            <input type="text" inputmode="numeric" id="inputDP" placeholder="Masukkan nominal DP" oninput="formatInputRupiah(this); updateTotals();" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+        </div>
+
+        <!-- TOMBOL DOWNLOAD PDF -->
+        <div style="margin-top: 15px; display: flex; justify-content: space-between;">
+            <button class="btn btn-pdf" onclick="generatePDF(false)">
+                📄 Download Invoice Lengkap
+            </button>
+            <button class="btn btn-pdf-no-price" onclick="generatePDF(true)">
+                📋 Download Tanpa Harga
+            </button>
+        </div>
+    </div>
+
+    <!-- PREVIEW INVOICE / AREA PDF -->
+    <div id="invoice-preview">
+
+        <div class="invoice-title">
+            <h2>BUKTI PEMBAYARAN<br>TRUCK CHARTER KIRIMAN KE PT. BERKAH BAJA STEEL</h2>
+        </div>
+
+        <!-- TABEL BARANG -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 11%;">TGL</th>
+                    <th style="width: 18%;">NAMA SOPIR</th>
+                    <th style="width: 18%;">NAMA BARANG</th>
+                    <th style="width: 13%;">PLAT NOMOR</th>
+                    <th style="width: 9%;">VOL (M³)</th>
+                    <th style="width: 13%;" class="col-price">HARGA /M³</th>
+                    <th style="width: 13%;" class="col-price">JUMLAH</th>
+                    <th style="width: 6%;" class="no-print">AKSI</th>
+                </tr>
+            </thead>
+            <tbody id="invoiceItems">
+                <!-- Data barang akan muncul di sini via JavaScript -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="text-center"><strong>TOTAL KESELURUHAN</strong></td>
+                    <td id="totalVolume" class="text-center"><strong>0 M³</strong></td>
+                    <td class="col-price"></td>
+                    <td id="totalKeseluruhan" class="text-right col-price"><strong>Rp 0</strong></td>
+                    <td class="no-print"></td>
+                </tr>
+                <tr class="total-row col-price-row">
+                    <td colspan="7" class="text-right"><strong>DP Yang Sudah Masuk :</strong></td>
+                    <td id="displayDP" class="text-right" colspan="2"><strong>Rp 0</strong></td>
+                </tr>
+                <tr class="total-row col-price-row" style="background-color: #e9ecef;">
+                    <td colspan="7" class="text-right"><strong>Sisa Yang Harus Dilunasi :</strong></td>
+                    <td id="displaySisa" class="text-right" style="color: #d9534f;" colspan="2"><strong>Rp 0</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- BUKTI REKENING (KIRI) DAN TANDA TANGAN (KANAN) -->
+        <div class="bottom-section">
+            <div class="account-info">
+                📌 <strong>Pembayaran:</strong><br>
+                Semua Transaksi di Transfer ke <span id="textBank">BANK BCA</span><br>
+                Nomor rekening : <strong id="textNorek">652 130 4143</strong><br>
+                An. <strong id="textAtasNama">AJUN</strong>
+            </div>
+
+            <div class="signature-box">
+                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+                <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
+                <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
+                    <img id="imgTTD" src="ttd.ajun.jpeg" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
+                </div>
+                <p style="font-weight: bold; margin: 2px 0 0 0;" id="textNamaTTD">AJUN</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let dataBarang = [];
+
+    // Database Penyedia Jasa beserta Warna Tema
+    const dataPenyedia = {
+            HERMAN: {
+            bank: "BANK BCA",
+            norek: "65 212 683 41",
+            nama: "YULIANA",
+            ttdImg: "ttd.herman.png",
+            filePrefix: "Invoice Herman",
+            bgColor: "#dc3545", // Warna Merah
+            textColor: "#ffffff",
+            borderColor: "#b02a37"
+        },
+        ERIKA: {
+            bank: "BANK BCA",
+            norek: "652 083 7530",
+            nama: "ERIKA NURMALASARI",
+            ttdImg: "ttd.erika.png",
+            filePrefix: "Invoice Erika",
+            bgColor: "#198754", // Warna Hijau
+            textColor: "#ffffff",
+            borderColor: "#146c43"
+        }
+    };
+
+    // Fungsi Mengganti Data Penyedia Jasa & Warna Dropdown secara Dinamis
+    function gantiPenyedia() {
+        const selectEl = document.getElementById('selectPenyedia');
+        const selectedKey = selectEl.value;
+        const penyedia = dataPenyedia[selectedKey];
+
+        if (penyedia) {
+            // Update Teks & Gambar Invoice
+            document.getElementById('textBank').innerText = penyedia.bank;
+            document.getElementById('textNorek').innerText = penyedia.norek;
+            document.getElementById('textAtasNama').innerText = penyedia.nama;
+            document.getElementById('textNamaTTD').innerText = penyedia.nama;
+            document.getElementById('imgTTD').src = penyedia.ttdImg;
+
+            // Update Warna Background & Teks Dropdown
+            selectEl.style.backgroundColor = penyedia.bgColor;
+            selectEl.style.color = penyedia.textColor;
+            selectEl.style.borderColor = penyedia.borderColor;
+        }
+    }
+
+    // Jalankan gantiPenyedia saat halaman pertama kali selesai dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+        gantiPenyedia();
+    });
+
+    // Set tanggal saat ini di bagian TTD
+    const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const elCurrentDate = document.getElementById('currentDate');
+    if (elCurrentDate) {
+        elCurrentDate.innerText = today;
+    }
+
+    // Logika Otomatisasi Harga berdasarkan Tujuan Kiriman & Nama Barang
+    function cekHargaOtomatis() {
+        const elTujuan = document.getElementById('inputTujuan');
+        const elNamaBarang = document.getElementById('inputNamaBarang');
+        const inputHarga = document.getElementById('inputHarga');
+
+        if (!elTujuan || !elNamaBarang || !inputHarga) return;
+
+        const tujuan = elTujuan.value.trim().toUpperCase();
+        const text = elNamaBarang.value.trim().toLowerCase();
+
+        if (tujuan === 'ONGKOSAN') {
+            inputHarga.value = '';
+            inputHarga.placeholder = 'Total Ongkosan (Rp)';
+            return;
+        } else {
+            inputHarga.placeholder = 'Harga /M³';
+        }
+
+        if (tujuan.includes('FRANCO') && text.includes('split')) {
+            inputHarga.value = '350,000';
+            return; 
+        }
+
+        if (text === 'split 1.2' || text === 'split 1/2' || text === 'split 1.2 ') {
+            inputHarga.value = '127,500';
+        } else if (text === 'screning' || text === 'screening') {
+            inputHarga.value = '127,500';
+        } else if (text === 'abu batu') {
+            inputHarga.value = '127,500';
+        }
+    }
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+    }
+
+    function parseAngka(str) {
+        if (!str) return 0;
+        return parseFloat(str.replace(/[^0-9]/g, '')) || 0;
+    }
+
+    function tambahBarang() {
+        const tgl = document.getElementById('inputTgl').value;
+        const plat = document.getElementById('inputPlat').value;
+        const sopir = document.getElementById('inputNamaSopir').value;
+        const tujuan = document.getElementById('inputTujuan').value;
+        const barang = document.getElementById('inputNamaBarang').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        const rawHarga = document.getElementById('inputHarga').value;
+        const nilaiInput = parseAngka(rawHarga);
+
+        if (!tgl || !sopir || !barang || vol <= 0 || nilaiInput <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
+        }
+
+        let harga = nilaiInput;
+        let jumlah = 0;
+
+        if (tujuan === 'ONGKOSAN') {
+            harga = 0; 
+            jumlah = nilaiInput;
+        } else {
+            jumlah = vol * nilaiInput;
+            harga = nilaiInput;
+        }
+
+        dataBarang.push({ tgl, tujuan, sopir, barang, plat, vol, harga, jumlah });
+        renderTable();
+        resetForm();
+    }
+
+    function editBarang(index) {
+        const item = dataBarang[index];
+        document.getElementById('inputTgl').value = item.tgl;
+        document.getElementById('inputPlat').value = item.plat;
+        document.getElementById('inputNamaSopir').value = item.sopir;
+        document.getElementById('inputTujuan').value = item.tujuan || 'PT. CHM';
+        document.getElementById('inputNamaBarang').value = item.barang;
+        document.getElementById('inputVolume').value = item.vol;
+        
+        const valToInput = (item.tujuan === 'ONGKOSAN') ? item.jumlah : item.harga;
+        document.getElementById('inputHarga').value = valToInput.toLocaleString('en-US');
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('formTitle').innerText = "Edit Data Barang (Baris " + (index + 1) + ")";
+        
+        document.getElementById('btnAdd').style.display = 'none';
+        document.getElementById('btnUpdate').style.display = 'inline-block';
+        document.getElementById('btnCancel').style.display = 'inline-block';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateBarang() {
+        const index = parseInt(document.getElementById('editIndex').value);
+        const tgl = document.getElementById('inputTgl').value;
+        const plat = document.getElementById('inputPlat').value;
+        const sopir = document.getElementById('inputNamaSopir').value;
+        const tujuan = document.getElementById('inputTujuan').value;
+        const barang = document.getElementById('inputNamaBarang').value;
+        const vol = parseFloat(document.getElementById('inputVolume').value) || 0;
+        
+        const rawHarga = document.getElementById('inputHarga').value;
+        const nilaiInput = parseAngka(rawHarga);
+
+        if (!tgl || !sopir || !barang || vol <= 0 || nilaiInput <= 0) {
+            alert("Harap isi semua bidang input dengan benar!");
+            return;
+        }
+
+        let harga = nilaiInput;
+        let jumlah = 0;
+
+        if (tujuan === 'ONGKOSAN') {
+            harga = 0;
+            jumlah = nilaiInput;
+        } else {
+            jumlah = vol * nilaiInput;
+            harga = nilaiInput;
+        }
+
+        dataBarang[index] = { tgl, tujuan, sopir, barang, plat, vol, harga, jumlah };
+        renderTable();
+        resetForm();
+    }
+
+    function hapusBarang(index) {
+        if (confirm("Yakin ingin menghapus data ini?")) {
+            dataBarang.splice(index, 1);
+            renderTable();
+            resetForm();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('inputTgl').value = '';
+        document.getElementById('inputPlat').value = '';
+        document.getElementById('inputNamaSopir').value = '';
+        document.getElementById('inputTujuan').selectedIndex = 0;
+        document.getElementById('inputNamaBarang').value = '';
+        document.getElementById('inputVolume').value = '';
+        document.getElementById('inputHarga').value = '';
+        document.getElementById('editIndex').value = '-1';
+        document.getElementById('formTitle').innerText = "Input Data Barang & Pembayaran";
+        document.getElementById('btnAdd').style.display = 'inline-block';
+        document.getElementById('btnUpdate').style.display = 'none';
+        document.getElementById('btnCancel').style.display = 'none';
+    }
+
+    function updateTotals() {
+        let totalHarga = dataBarang.reduce((sum, item) => sum + item.jumlah, 0);
+        const dpInput = document.getElementById('inputDP') ? document.getElementById('inputDP').value : '0';
+        const dpVal = parseAngka(dpInput);
+        const sisaVal = totalHarga - dpVal;
+
+        if (document.getElementById('displayDP')) {
+            document.getElementById('displayDP').innerText = formatRupiah(dpVal);
+        }
+        if (document.getElementById('displaySisa')) {
+            document.getElementById('displaySisa').innerText = formatRupiah(sisaVal);
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('invoiceItems');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        let totalVol = 0;
+        let totalHarga = 0;
+
+        dataBarang.forEach((item, index) => {
+            totalVol += item.vol;
+            totalHarga += item.jumlah;
+
+            let tglFormatted = item.tgl;
+            if (item.tgl) {
+                const parts = item.tgl.split('-');
+                if (parts.length === 3) {
+                    tglFormatted = `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
+                }
+            }
+
+            let displayHarga = formatRupiah(item.harga);
+            let hargaAlignClass = "text-right";
+            
+            if (item.tujuan === 'ONGKOSAN') {
+                displayHarga = 'Borongan';
+                hargaAlignClass = "text-center";
+            }
+
+            const row = `
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center" style="white-space: nowrap;">${tglFormatted}</td>
+                    <td>${item.sopir}</td>
+                    <td>${item.barang}</td>
+                    <td class="text-center">${item.plat || '-'}</td>
+                    <td class="text-center">${item.vol}</td>
+                    <td class="${hargaAlignClass} col-price">${displayHarga}</td>
+                    <td class="text-right col-price">${formatRupiah(item.jumlah)}</td>
+                    <td class="text-center no-print">
+                        <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
+                        <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        const elTotalVol = document.getElementById('totalVolume');
+        const elTotalKeseluruhan = document.getElementById('totalKeseluruhan');
+
+        if (elTotalVol) elTotalVol.innerText = `${totalVol.toLocaleString('id-ID')} M³`;
+        if (elTotalKeseluruhan) elTotalKeseluruhan.innerText = formatRupiah(totalHarga);
+        
+        updateTotals();
+    }
+
+    function generatePDF(tanpaHarga = false) {
+        if (dataBarang.length === 0) {
+            alert("Tambahkan minimal 1 data barang sebelum men-download PDF!");
+            return;
+        }
+
+        const actionCells = document.querySelectorAll('.no-print');
+        const priceCells = document.querySelectorAll('.col-price');
+        const priceRows = document.querySelectorAll('.col-price-row');
+
+        actionCells.forEach(el => el.style.display = 'none');
+
+        if (tanpaHarga) {
+            priceCells.forEach(el => el.style.display = 'none');
+            priceRows.forEach(el => el.style.display = 'none');
+        }
+
+        const hariIni = new Date();
+        const opsiTanggal = { day: 'numeric', month: 'long', year: 'numeric' };
+        const tanggalFormatted = hariIni.toLocaleDateString('id-ID', opsiTanggal);
+
+        const elDate = document.getElementById('currentDate');
+        if (elDate) {
+            elDate.innerText = tanggalFormatted;
+        }
+
+        const invoicePreview = document.getElementById('invoice-preview');
+        if (!invoicePreview) {
+            alert("Elemen invoice-preview tidak ditemukan!");
+            restoreUI();
+            return;
+        }
+
+        const yyyy = hariIni.getFullYear();
+        const mm = String(hariIni.getMonth() + 1).padStart(2, '0');
+        const dd = String(hariIni.getDate()).padStart(2, '0');
+        const tglFormat = `${dd}-${mm}-${yyyy}`;
+
+        const selectedKey = document.getElementById('selectPenyedia').value;
+        const prefix = dataPenyedia[selectedKey] ? dataPenyedia[selectedKey].filePrefix : "Invoice";
+        const suffixName = tanpaHarga ? " (Tanpa Harga)" : "";
+        const namaFile = `${prefix} - ${tglFormat}${suffixName}.pdf`;
+
+        const opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     namaFile,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2, 
+                useCORS: true, 
+                allowTaint: true, 
+                scrollX: 0, 
+                scrollY: 0
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak:    { mode: ['css', 'legacy'] }
+        };
+
+        if (typeof html2pdf === 'undefined') {
+            alert("Library html2pdf belum dimuat dengan benar!");
+            restoreUI();
+            return;
+        }
+
+        html2pdf().set(opt).from(invoicePreview).save().then(() => {
+            restoreUI();
+        }).catch(err => {
+            console.error("Gagal men-download PDF:", err);
+            restoreUI();
+        });
+
+        function restoreUI() {
+            actionCells.forEach(el => el.style.display = '');
+            priceCells.forEach(el => el.style.display = '');
+            priceRows.forEach(el => el.style.display = '');
+        }
+    }
+
+    function formatInputRupiah(element) {
+        let value = element.value.replace(/\D/g, '');
+        if (value !== '') {
+            element.value = parseInt(value, 10).toLocaleString('en-US');
+        } else {
+            element.value = '';
+        }
+    }
+</script>
+
+</body>
+</html>
