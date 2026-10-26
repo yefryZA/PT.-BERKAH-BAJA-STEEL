@@ -303,14 +303,20 @@
                 An. <strong id="textAtasNama">AJUN</strong>
             </div>
 
-            <div class="signature-box">
-                <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
-                <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
-                <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0;">
-                    <img id="imgTTD" src="ttd.ajun.jpeg" alt="Tanda Tangan Direktur" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
-                </div>
-                <p style="font-weight: bold; margin: 2px 0 0 0;" id="textNamaTTD">AJUN</p>
-            </div>
+          <div class="signature-box" style="position: relative;"> <!-- Tambahkan position relative agar cap bisa diatur posisinya -->
+    <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
+    <p style="font-weight: bold; margin: 0;">PENYEDIA SEWA TRUCK</p>
+    
+    <div class="signature-wrapper" style="min-height: 70px; display: flex; align-items: center; justify-content: center; margin: 4px 0; position: relative;">
+        <!-- Tanda Tangan -->
+        <img id="imgTTD" src="ttd.ajun.jpeg" alt="Tanda Tangan" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
+        
+        <!-- TAMBAHAN: Cap Lunas (Kecil & Estetik) -->
+        <img src="cap.lunas.png" alt="Lunas" style="position: absolute; left: 50px; opacity: 0.85; max-height: 50px; width: auto; transform: rotate(-10deg); pointer-events: none;">
+    </div>
+    
+    <p style="font-weight: bold; margin: 2px 0 0 0;" id="textNamaTTD">AJUN</p>
+</div>
         </div>
 
     </div>
@@ -325,7 +331,8 @@
             bank: "BANK BCA",
             norek: "65 212 683 41",
             nama: "YULIANA",
-            ttdImg: "ttd.herman.png",
+            namaTTD: "RIKI JAYA",
+            ttdImg: "ttd.riki.png",
             filePrefix: "Invoice Herman",
             bgColor: "#dc3545", // Warna Merah
             textColor: "#ffffff",
@@ -335,6 +342,7 @@
             bank: "BANK BCA",
             norek: "652 083 7530",
             nama: "ERIKA NURMALASARI",
+            namaTTD: "RIKI JAYA",
             ttdImg: "ttd.erika.png",
             filePrefix: "Invoice Erika",
             bgColor: "#198754", // Warna Hijau
@@ -343,7 +351,7 @@
         }
     };
 
-    // Fungsi Mengganti Data Penyedia Jasa & Warna Dropdown secara Dinamis
+ // Fungsi Mengganti Data Penyedia Jasa & Warna Dropdown secara Dinamis
     function gantiPenyedia() {
         const selectEl = document.getElementById('selectPenyedia');
         const selectedKey = selectEl.value;
@@ -354,7 +362,10 @@
             document.getElementById('textBank').innerText = penyedia.bank;
             document.getElementById('textNorek').innerText = penyedia.norek;
             document.getElementById('textAtasNama').innerText = penyedia.nama;
-            document.getElementById('textNamaTTD').innerText = penyedia.nama;
+            
+            // ---> UBAH BAGIAN INI <---
+            document.getElementById('textNamaTTD').innerText = penyedia.namaTTD; 
+            
             document.getElementById('imgTTD').src = penyedia.ttdImg;
 
             // Update Warna Background & Teks Dropdown
