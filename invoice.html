@@ -643,7 +643,11 @@
             if (tableBody) tableBody.innerHTML = "";
 
             if (data) {
-                Object.entries(data).forEach(([id, item]) => {
+                // Ubah object ke array, lalu balik posisinya (reverse) 
+                // supaya data yang baru/terakhir masuk tampil di paling atas
+                const entries = Object.entries(data).reverse();
+
+                entries.forEach(([id, item]) => {
                     if (item.tipe === 'invoice') {
                         sisaInv += (item.sisa || 0);
                         countInv++;
@@ -721,7 +725,6 @@
                     : "";
             }
         });
-
 // --- FUNGSI KIRIM EMAIL VIA EMAILJS (KIRIM KE 2 EMAIL SEPARATELY) ---
         function kirimEmailKeKasir(nominalTagihanTotal) {
             const listEmail = [
