@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dirut - Mobile</title>
+
+    <!-- PWA Web App Manifest (Android/Chrome) -->
+    <link rel="manifest" href="manifest_dirut.json">
+    <meta name="theme-color" content="#f4f6f8">
+
+    <!-- Dukungan PWA Khusus iOS / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dirut App">
+
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 15px;
+            color: #333;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #111;
+        }
+        
+        /* Dashboard Ringkasan Atas */
+        .summary-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+        .bg-invoice { background: linear-gradient(135deg, #00c853, #009624); }
+        .bg-tagihan { background: linear-gradient(135deg, #ff1744, #d50000); }
+        .summary-card span { font-size: 11px; opacity: 0.9; text-transform: uppercase; }
+        .summary-card .amount { font-size: 15px; font-weight: bold; margin-top: 4px; }
+
+        /* Container Kartu Memanjang */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .card-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc;
+            cursor: pointer;
+            transition: active 0.2s;
+        }
+        .card-item:active {
+            background-color: #f0f0f0;
+        }
+        .card-item.border-invoice { border-left-color: #00c853; }
+        .card-item.border-tagihan { border-left-color: #ff1744; }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .card-date {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        .badge-tipe {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+        .badge-tipe.inv { background-color: #e8f5e9; color: #2e7d32; }
+        .badge-tipe.tag { background-color: #ffebee; color: #c62828; }
+
+        .card-keterangan {
+            font-size: 14px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px dashed #eee;
+            padding-top: 8px;
+        }
+        .nominal-info {
+            font-size: 12px;
+            color: #555;
+        }
+        .nominal-info b {
+            font-size: 13px;
+        }
+        .badge-status {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* POPUP MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background-color: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #111;
+        }
+        .close-btn {
+            font-size: 22px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .detail-row {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .detail-row b {
+            color: #111;
+        }
+        .riwayat-box {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #eee;
+        }
+        .riwayat-item {
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        .riwayat-item:last-child {
+            border-bottom: none;
+        }
+        .text-empty {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            padding: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-title">📊 Dashboard Dirut</div>
+
+    <!-- Ringkasan Atas -->
+    <div class="summary-container">
+        <div class="summary-card bg-invoice">
+            <span>Sisa Invoice</span>
+            <div class="amount" id="dirutSisaInvoice">Rp 0</div>
+        </div>
+        <div class="summary-card bg-tagihan">
+            <span>Sisa Tagihan</span>
+            <div class="amount" id="dirutSisaTagihan">Rp 0</div>
+        </div>
+    </div>
+
+    <!-- Daftar Tagihan / Invoice Memanjang (Mobile View) -->
+    <div id="containerData" class="list-container">
+        <div class="text-empty">Memuat data...</div>
+    </div>
+
+    <!-- POP-UP MODAL RINCIAN -->
+    <div id="popupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Rincian Transaksi</h3>
+                <button class="close-btn" onclick="tutupPopup()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Data Rincian Masuk Lewat JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+            authDomain: "barcode-warung-81e97.firebaseapp.com",
+            projectId: "barcode-warung-81e97",
+            storageBucket: "barcode-warung-81e97.firebasestorage.app",
+            messagingSenderId: "1089837830503",
+            appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+            measurementId: "G-92V3E8BM6J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
+
+        let cacheDataTransaksi = {};
+
+        function formatRupiah(angka) {
+            if (!angka) return "0";
+            let number_string = angka.toString().replace(/[^,\d]/g, ""),
+                split = number_string.split(","),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                let separator = sisa ? "." : "";
+                rupiah += separator + ribuan.join(".");
+            }
+            return split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+        }
+
+        // --- REALTIME LISTENER ---
+        const dbRef = ref(db, 'invoiceBBS/transaksi');
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            cacheDataTransaksi = data || {};
+            
+            let sisaInv = 0;
+            let sisaTag = 0;
+            
+            const container = document.getElementById("containerData");
+            container.innerHTML = "";
+
+            let adaDataTampil = false;
+
+            if (data) {
+                const entries = Object.entries(data).reverse();
+
+                entries.forEach(([id, item]) => {
+                    // Akumulasi Total Sisa
+                    if (item.tipe === 'invoice') {
+                        sisaInv += (item.sisa || 0);
+                    } else if (item.tipe === 'tagihan') {
+                        sisaTag += (item.sisa || 0);
+                    }
+
+                    // KHUSUS DIRUT: Hanya tampilkan yang BELUM LUNAS (sisa > 0)
+                    if (item.sisa > 0) {
+                        adaDataTampil = true;
+
+                        const isInv = item.tipe === 'invoice';
+                        const borderClass = isInv ? 'border-invoice' : 'border-tagihan';
+                        const badgeClass = isInv ? 'inv' : 'tag';
+                        const tipeText = isInv ? 'INVOICE' : 'TAGIHAN';
+
+                        // Container Memanjang Kebawah per Tagihan/Invoice
+                        const cardHTML = `
+                            <div class="card-item ${borderClass}" onclick="bukaPopupRincian('${id}')">
+                                <!-- 1. Hari, Tanggal & Tipe -->
+                                <div class="card-header-row">
+                                    <span class="card-date">📅 ${item.tanggal}</span>
+                                    <span class="badge-tipe ${badgeClass}">${tipeText}</span>
+                                </div>
+
+                                <!-- 2. Isi Keterangan Tagihan/Invoice -->
+                                <div class="card-keterangan">
+                                    ${item.keterangan}
+                                </div>
+
+                                <!-- 3. Sisa Nominal & Keterangan Belum Lunas -->
+                                <div class="card-footer-row">
+                                    <div class="nominal-info">
+                                        Total: Rp ${formatRupiah(item.total)}<br>
+                                        Sisa: <b style="color: ${isInv ? '#00c853' : '#ff1744'};">Rp ${formatRupiah(item.sisa)}</b>
+                                    </div>
+                                    <div class="badge-status">
+                                        BELUM DIBAYAR
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += cardHTML;
+                    }
+                });
+
+                if (!adaDataTampil) {
+                    container.innerHTML = `<div class="text-empty">✨ Semua transaksi telah lunas. ✨</div>`;
+                }
+            } else {
+                container.innerHTML = `<div class="text-empty">Belum ada data transaksi.</div>`;
+            }
+
+            // Update Total Sisa Ringkasan Atas
+            document.getElementById("dirutSisaInvoice").innerText = `Rp ${formatRupiah(sisaInv)}`;
+            document.getElementById("dirutSisaTagihan").innerText = `Rp ${formatRupiah(sisaTag)}`;
+        });
+
+        // --- FUNGSI BUKA POPUP RINCIAN ---
+        window.bukaPopupRincian = function(id) {
+            const item = cacheDataTransaksi[id];
+            if (!item) return;
+
+            const modal = document.getElementById("popupModal");
+            const modalTitle = document.getElementById("modalTitle");
+            const modalBody = document.getElementById("modalBody");
+
+            const isInv = item.tipe === 'invoice';
+            modalTitle.innerText = `Rincian ${isInv ? 'Invoice' : 'Tagihan'}`;
+
+            let riwayatHTML = "";
+            let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+
+            if (listRiwayat.length > 0) {
+                listRiwayat.forEach((r, idx) => {
+                    riwayatHTML += `
+                        <div class="riwayat-item">
+                            <span><b>#${idx + 1}</b> ${r.waktu}</span>
+                            <span style="color:green; font-weight:bold;">+ Rp ${formatRupiah(r.nominal)}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                riwayatHTML = `<div style="color:gray; font-size:12px; text-align:center; padding:5px;">Belum ada riwayat cicilan.</div>`;
+            }
+
+            modalBody.innerHTML = `
+                <div class="detail-row"><b>Tipe:</b> ${item.tipe.toUpperCase()}</div>
+                <div class="detail-row"><b>Tanggal:</b> ${item.tanggal}</div>
+                <div class="detail-row"><b>Keterangan:</b> ${item.keterangan}</div>
+                <hr style="border:0.5px dashed #eee; margin:10px 0;">
+                <div class="detail-row"><b>Total Nominal:</b> Rp ${formatRupiah(item.total)}</div>
+                <div class="detail-row"><b>Sudah Dibayar:</b> Rp ${formatRupiah(item.dibayar)}</div>
+                <div class="detail-row"><b>Sisa Tagihan:</b> <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b></div>
+                <div class="detail-row"><b>Status:</b> <span style="color:#ef6c00; font-weight:bold;">${item.status}</span></div>
+
+                <div style="margin-top:15px; font-weight:bold; font-size:13px;">Riwayat Pembayaran:</div>
+                <div class="riwayat-box">
+                    ${riwayatHTML}
+                </div>
+            `;
+
+            modal.style.display = "flex";
+        }
+
+        window.tutupPopup = function() {
+            document.getElementById("popupModal").style.display = "none";
+        }
+
+        // Tutup modal jika user klik area gelap di luar box
+        window.onclick = function(event) {
+            const modal = document.getElementById("popupModal");
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
