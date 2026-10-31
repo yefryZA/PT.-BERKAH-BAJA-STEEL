@@ -291,9 +291,10 @@ onValue(dbRef, (snapshot) => {
 
     if (data) {
         Object.entries(data).forEach(([id, item]) => {
-            if (item.tipe === 'tagihan') {
+            // Filter: Hanya tampilkan tipe tagihan yang belum lunas (sisa > 0)
+            if (item.tipe === 'tagihan' && item.sisa > 0) {
 
-                if (item.dibacaKasir === false && item.sisa > 0) {
+                if (item.dibacaKasir === false) {
                     listTagihanBelumDibaca.push({ id, ...item });
                 }
 
@@ -302,10 +303,8 @@ onValue(dbRef, (snapshot) => {
                 let tombolAksi = "";
                 if (item.status === "Menunggu Konfirmasi") {
                     tombolAksi = `<span class="badge-pending-full">⏳ MENUNGGU KONFIRMASI (Rp ${formatRupiah(item.nominalPengajuanKasir)})</span>`;
-                } else if (item.sisa > 0) {
-                    tombolAksi = `<button class="btn-bayar-full" onclick="bukaBayarModal('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BAYAR</button>`;
                 } else {
-                    tombolAksi = `<span class="badge-lunas-full">LUNAS</span>`;
+                    tombolAksi = `<button class="btn-bayar-full" onclick="bukaBayarModal('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BAYAR</button>`;
                 }
 
                 // Ubah item.tanggal dengan fungsi formatTanggalIndo(item.tanggal)
@@ -336,6 +335,11 @@ onValue(dbRef, (snapshot) => {
                 container.innerHTML += cardRow;
             }
         });
+
+        // Jika setelah difilter tidak ada tagihan yang tersisa di container
+        if (container.innerHTML === "") {
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: gray;">Semua tagihan sudah lunas.</div>`;
+        }
     } else {
         container.innerHTML = `<div style="text-align:center; padding: 20px; color: gray;">Tidak ada data tagihan.</div>`;
     }
