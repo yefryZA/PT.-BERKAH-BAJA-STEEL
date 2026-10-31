@@ -208,9 +208,9 @@
                 Pilih Penyedia Sewa Truck:
             </label>
             <select id="selectPenyedia" class="select-penyedia" onchange="gantiPenyedia()">
-                <option value="HERMAN" class="option-herman">Trucking Herman (Bank BCA)</option>
-                <option value="ERIKA" class="option-erika">Trucking Erika (Bank BCA)</option>
-            </select>
+                <option value="AGUS" class="option-AGUS">Trucking AGUS DARYANTO</option>
+                <option value="MISJAYA" class="option-MISJAYA">Trucking MISJAYA</option>
+                </select>
         </div>
 
         <!-- FORM INPUT BARANG -->
@@ -312,7 +312,7 @@
         <img id="imgTTD" src="ttd.ajun.jpeg" alt="Tanda Tangan" class="signature-img" style="display: block; margin: 0 auto; max-height: 90px; max-width: 220px; height: auto; width: auto; object-fit: contain;">
         
         <!-- TAMBAHAN: Cap Lunas (Kecil & Estetik) -->
-        <img src="cap.lunas.png" alt="Lunas" style="position: absolute; left: 50px; opacity: 0.85; max-height: 50px; width: auto; transform: rotate(-10deg); pointer-events: none;">
+        <img src="cap.lunas.png" alt="Lunas" style="position: absolute; left: 40px; opacity: 0.85; max-height: 60px; width: auto; transform: rotate(-10deg); pointer-events: none;">
     </div>
     
     <p style="font-weight: bold; margin: 2px 0 0 0;" id="textNamaTTD">AJUN</p>
@@ -327,28 +327,30 @@
 
     // Database Penyedia Jasa beserta Warna Tema
     const dataPenyedia = {
-            HERMAN: {
+
+            AGUS: {
             bank: "BANK BCA",
-            norek: "65 212 683 41",
-            nama: "YULIANA",
-            namaTTD: "RIKI JAYA",
-            ttdImg: "ttd.riki.png",
+            norek: "295 0793 409",
+            nama: "AGUS DARYANTO",
+            namaTTD: "AGUS DARYANTO",
+            ttdImg: "ttd.agus.png",
             filePrefix: "Invoice Herman",
             bgColor: "#dc3545", // Warna Merah
             textColor: "#ffffff",
             borderColor: "#b02a37"
         },
-        ERIKA: {
+            MISJAYA: {
             bank: "BANK BCA",
-            norek: "652 083 7530",
-            nama: "ERIKA NURMALASARI",
-            namaTTD: "ERIKA NURMALASARI",
-            ttdImg: "ttd.erika.png",
-            filePrefix: "Invoice Erika",
-            bgColor: "#198754", // Warna Hijau
+            norek: "844 5669 233",
+            nama: "MISJAYA",
+            namaTTD: "MISJAYA",
+            ttdImg: "ttd.misjaya.png",
+            filePrefix: "Invoice Herman",
+            bgColor: "#198754", // hijau
             textColor: "#ffffff",
-            borderColor: "#146c43"
-        }
+            borderColor: "#b02a37"
+        },
+
     };
 
  // Fungsi Mengganti Data Penyedia Jasa & Warna Dropdown secara Dinamis
