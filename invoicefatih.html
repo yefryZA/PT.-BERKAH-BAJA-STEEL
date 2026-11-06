@@ -3,150 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PT. C H M</title>
-    <!-- HTML2PDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>Sistem Invoice Material Alam</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f4f6f9;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 900px;
-            margin: 0 auto;
+            max-width: 1000px;
+            margin: auto;
         }
-        /* Form Styling */
         .form-card {
-            background: #ffffff;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .form-card h2 {
-            margin-top: 0;
-            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         .form-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        input {
-            padding: 8px 12px;
+        .form-group input {
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 14px;
-            width: 100%;
-            box-sizing: border-box;
         }
         .btn {
-            padding: 10px 20px;
+            padding: 10px 15px;
             border: none;
             border-radius: 4px;
+            color: #fff;
             cursor: pointer;
             font-weight: bold;
-            color: white;
-            margin-top: 10px;
+            font-size: 14px;
         }
         .btn-add { background-color: #28a745; }
-        .btn-update { background-color: #ffc107; color: #333; display: none; }
-        .btn-pdf { background-color: #007bff; font-size: 16px; width: 100%; margin-top: 15px; }
-
-        /* Action Buttons inside Table */
-        .btn-action {
-            padding: 4px 8px;
-            font-size: 11px;
-            border-radius: 3px;
-            border: none;
-            cursor: pointer;
-            color: white;
-            margin: 0 2px;
-        }
-        .btn-edit-row { background-color: #ffc107; color: #333; }
-        .btn-del-row { background-color: #dc3545; }
-
-        /* Invoice Preview Area (Target PDF) */
+        .btn-update { background-color: #ffc107; color: #000; display: none; }
+        .btn-danger { background-color: #dc3545; }
         #invoice-preview {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            color: #333;
-            width: 190mm !important;
-            min-width: 190mm !important;
-            box-sizing: border-box;
-            margin: 0 auto !important;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        /* KOP Surat Header */
-        .kop-surat {
+        .kop-surat img {
             width: 100%;
-            margin-bottom: 20px;
+            max-height: 120px;
+            object-fit: contain;
         }
-        .kop-img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
         .invoice-title {
             text-align: center;
-            margin: 17px 0;
+            margin: 20px 0;
         }
         .invoice-title h2 {
+            font-size: 18px;
             margin: 0;
-            font-size: 17px;
         }
-
-        /* Table Design */
-        table.invoice-table {
-            width: 100% !important;
+        .invoice-table {
+            width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 13px;
-            table-layout: fixed;
         }
-        table.invoice-table th, table.invoice-table td {
+        .invoice-table th, .invoice-table td {
             border: 1px solid #333;
-            padding: 8px 10px;
-            text-align: left;
-            word-wrap: break-word;
+            padding: 8px;
+            font-size: 13px;
         }
-        table.invoice-table th {
-            background-color: #f0f0f0;
+        .invoice-table th {
+            background-color: #f2f2f2;
             text-align: center;
-            font-weight: bold;
         }
-
-        /* Alignment Helper Classes */
-        .text-center { text-align: center !important; }
-        .text-right { text-align: right !important; }
-
-        /* Total & Signature Section */
-        .total-row {
-            font-weight: bold;
-            background-color: #f9f9f9;
-        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
         .signature-section {
             margin-top: 40px;
             display: flex;
             justify-content: flex-end;
         }
-        .signature-box {
-            text-align: center;
-            width: 220px;
+        .btn-sm {
+            padding: 3px 8px;
+            font-size: 11px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            color: white;
         }
-        .signature-img {
-            height: 70px;
-            margin: 10px 0;
-        }
-
-        #invoiceItems td, table.invoice-table th {
-            vertical-align: middle !important;
+        .btn-edit { background-color: #ffc107; color: #000; }
+        .btn-delete { background-color: #dc3545; }
+        @media print {
+            .form-card, .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            #invoice-preview { box-shadow: none; padding: 0; }
         }
     </style>
 </head>
@@ -156,14 +110,13 @@
     <!-- FORM INPUT DATA -->
     <div class="form-card">
         <h2 id="formTitle">Input Data Barang</h2>
-        <input type="hidden" id="editIndex" value="-1">
+        <input type="hidden" id="editKey" value="">
         
-        <!-- URUTAN INPUT BARU -->
         <div class="form-group">
             <input type="date" id="inputTgl" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputPlat" placeholder="Plat Nomor" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" id="inputNamaBarang" placeholder="Nama Barang" oninput="cekHargaOtomatis(this.value)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
-            <input type="number" id="inputVolume" placeholder="Vol" min="1" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
+            <input type="number" id="inputVolume" placeholder="Vol" min="1" step="any" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
             <input type="text" inputmode="numeric" id="inputHarga" placeholder="Harga Satuan (Rp)" oninput="formatInputRupiah(this)" style="font-family: 'Arial Black', sans-serif; font-weight: bold;">
         </div>
         
@@ -171,20 +124,23 @@
         <button class="btn btn-update" id="btnUpdate" onclick="updateBarang()">💾 Simpan Perubahan</button>
         <button class="btn" style="background-color: #6c757d; font-size: 14px; margin-left: 5px; display:none;" id="btnCancel" onclick="resetForm()">Batal</button>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-            
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
             <button class="btn" style="background-color: #007bff; font-size: 14px;" onclick="generatePDF('BBS')">
                 📄 Download PERTAMA FATIH
             </button>
             <button class="btn" style="background-color: #ed4242; font-size: 14px;" onclick="generatePDF('CHM')">
                 📄 Download KEDUA CHM
             </button>
+            <!-- MENU HAPUS TOTAL -->
+            <button class="btn btn-danger" style="font-size: 14px;" onclick="hapusSemuaBarang()">
+                🗑️ Hapus Total Data
+            </button>
         </div>
     </div>
 
     <!-- PREVIEW INVOICE / AREA PDF -->
     <div id="invoice-preview">
-        <!-- KOP SURAT FULL GAMBAR JPG/JPEG -->
+        <!-- KOP SURAT -->
         <div class="kop-surat">
             <img src="kop.jpeg" alt="KOP Surat" class="kop-img">
         </div>
@@ -208,7 +164,7 @@
                 </tr>
             </thead>
             <tbody id="invoiceItems">
-                <!-- Data barang akan muncul di sini via JavaScript -->
+                <!-- Data barang dari Firebase akan muncul di sini -->
             </tbody>
             <tfoot>
                 <tr class="total-row">
@@ -220,7 +176,7 @@
             </tfoot>
         </table>
 
-        <!-- TANDA TANGAN DIRUT -->
+        <!-- TANDA TANGAN -->
         <div class="signature-section">
             <div class="signature-box" style="text-align: center;">
                 <p style="margin: 0 0 2px 0;">Cilegon, <span id="currentDate"></span></p>
@@ -234,16 +190,52 @@
     </div>
 </div>
 
-<script>
+<!-- FIREBASE INTEGRATION SCRIPT -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_wvEsCCOEjiwxui7_pdOrG8-xMBCw3mw",
+        authDomain: "barcode-warung-81e97.firebaseapp.com",
+        databaseURL: "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "barcode-warung-81e97",
+        storageBucket: "barcode-warung-81e97.firebasestorage.app",
+        messagingSenderId: "1089837830503",
+        appId: "1:1089837830503:web:410644c17a04314e37dfc2",
+        measurementId: "G-92V3E8BM6J"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'invoiceItems');
+
     let dataBarang = [];
 
-    // Set tanggal saat ini di bagian TTD
+    // Set tanggal hari ini di TTD
     const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const elDateInit = document.getElementById('currentDate');
     if (elDateInit) elDateInit.innerText = today;
 
-    // Logika Otomatisasi Harga berdasarkan Nama Barang
-    function cekHargaOtomatis(namaBarang) {
+    // Mendengarkan perubahan data secara Real-time dari Firebase
+    onValue(dbRef, (snapshot) => {
+        dataBarang = [];
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            for (let key in data) {
+                dataBarang.push({
+                    key: key,
+                    ...data[key]
+                });
+            }
+        }
+        renderTable();
+    });
+
+    // Otomatisasi harga berdasarkan nama barang
+    window.cekHargaOtomatis = function(namaBarang) {
         const inputHarga = document.getElementById('inputHarga');
         if (!inputHarga) return;
         const text = namaBarang.trim().toLowerCase();
@@ -255,14 +247,25 @@
         } else if (text === 'abu batu') {
             inputHarga.value = '262,500';
         }
-    }
+    };
 
-    // Format Rupiah
+    // Format Rupiah Input
+    window.formatInputRupiah = function(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value) {
+            input.value = parseInt(value, 10).toLocaleString('en-US');
+        } else {
+            input.value = '';
+        }
+    };
+
+    // Format angka ke Rupiah
     function formatRupiah(angka) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
     }
 
-    function tambahBarang() {
+    // Tambah Barang (Simpan ke Firebase)
+    window.tambahBarang = function() {
         const tgl = document.getElementById('inputTgl').value;
         const plat = document.getElementById('inputPlat').value;
         const nama = document.getElementById('inputNamaBarang').value;
@@ -277,34 +280,44 @@
         }
 
         const jumlah = vol * harga;
+        const newItem = { tgl, nama, plat, vol, harga, jumlah };
 
-        dataBarang.push({ tgl, nama, plat, vol, harga, jumlah });
-        renderTable();
-        clearForm();
-    }
+        // Push data baru ke Firebase Database
+        push(dbRef, newItem)
+            .then(() => {
+                clearForm();
+            })
+            .catch((err) => {
+                alert("Gagal menambahkan data: " + err.message);
+            });
+    };
 
-    // Memuat data ke form untuk diedit
-    function editBarang(index) {
-        const item = dataBarang[index];
+    // Load data ke form untuk Edit
+    window.editBarang = function(key) {
+        const item = dataBarang.find(d => d.key === key);
+        if (!item) return;
+
         document.getElementById('inputTgl').value = item.tgl;
         document.getElementById('inputPlat').value = item.plat;
         document.getElementById('inputNamaBarang').value = item.nama;
         document.getElementById('inputVolume').value = item.vol;
         document.getElementById('inputHarga').value = item.harga.toLocaleString('en-US');
         
-        document.getElementById('editIndex').value = index;
-        document.getElementById('formTitle').innerText = "Edit Data Barang (Baris " + (index + 1) + ")";
+        document.getElementById('editKey').value = key;
+        document.getElementById('formTitle').innerText = "Edit Data Barang";
         
         document.getElementById('btnAdd').style.display = 'none';
         document.getElementById('btnUpdate').style.display = 'inline-block';
         document.getElementById('btnCancel').style.display = 'inline-block';
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
 
-    // Menyimpan hasil perubahan data
-    function updateBarang() {
-        const index = parseInt(document.getElementById('editIndex').value);
+    // Update barang yang ada di Firebase
+    window.updateBarang = function() {
+        const key = document.getElementById('editKey').value;
+        if (!key) return;
+
         const tgl = document.getElementById('inputTgl').value;
         const plat = document.getElementById('inputPlat').value;
         const nama = document.getElementById('inputNamaBarang').value;
@@ -319,22 +332,42 @@
         }
 
         const jumlah = vol * harga;
+        const itemRef = ref(db, `invoiceItems/${key}`);
 
-        dataBarang[index] = { tgl, nama, plat, vol, harga, jumlah };
-        renderTable();
-        resetForm();
-    }
+        set(itemRef, { tgl, nama, plat, vol, harga, jumlah })
+            .then(() => {
+                resetForm();
+            })
+            .catch((err) => {
+                alert("Gagal memperbarui data: " + err.message);
+            });
+    };
 
-    // Menghapus data dari tabel
-    function hapusBarang(index) {
-        if (confirm("Yakin ingin menghapus data ini?")) {
-            dataBarang.splice(index, 1);
-            renderTable();
-            resetForm();
+    // Hapus 1 baris barang dari Firebase
+    window.hapusBarang = function(key) {
+        if (confirm("Yakin ingin menghapus baris data ini?")) {
+            const itemRef = ref(db, `invoiceItems/${key}`);
+            remove(itemRef).catch((err) => {
+                alert("Gagal menghapus data: " + err.message);
+            });
         }
-    }
+    };
 
-    // Mengosongkan form input
+    // Hapus SEMUA data dari Firebase (Menu Hapus Total)
+    window.hapusSemuaBarang = function() {
+        if (confirm("⚠️ YAKIN INGIN MENGHAPUS SEMUA DATA INVOICE?\nData yang dihapus tidak dapat dikembalikan!")) {
+            remove(dbRef)
+                .then(() => {
+                    alert("Seluruh data invoice berhasil dikosongkan.");
+                    resetForm();
+                })
+                .catch((err) => {
+                    alert("Gagal mengosongkan data: " + err.message);
+                });
+        }
+    };
+
+    // Clear Form
     function clearForm() {
         document.getElementById('inputTgl').value = '';
         document.getElementById('inputPlat').value = '';
@@ -343,16 +376,17 @@
         document.getElementById('inputHarga').value = '';
     }
 
-    // Mereset status form dari mode edit kembali ke mode tambah
-    function resetForm() {
+    // Reset Status Form
+    window.resetForm = function() {
         clearForm();
-        document.getElementById('editIndex').value = '-1';
+        document.getElementById('editKey').value = '';
         document.getElementById('formTitle').innerText = "Input Data Barang";
         document.getElementById('btnAdd').style.display = 'inline-block';
         document.getElementById('btnUpdate').style.display = 'none';
         document.getElementById('btnCancel').style.display = 'none';
-    }
+    };
 
+    // Render Tabel dari array dataBarang
     function renderTable() {
         const tbody = document.getElementById('invoiceItems');
         if (!tbody) return;
@@ -373,28 +407,25 @@
                 }
             }
 
-            const row = `
-                <tr>
-                    <td class="text-center" style="vertical-align: middle;">${index + 1}</td>
-                    <td class="text-center" style="vertical-align: middle; white-space: nowrap;">${tglFormatted}</td>
-                    <td style="vertical-align: middle;">${item.nama}</td>
-                    <td class="text-center" style="vertical-align: middle;">${item.plat || '-'}</td>
-                    <td class="text-center" style="vertical-align: middle;">${item.vol}</td>
-                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.harga)}</td>
-                    <td class="text-right" style="vertical-align: middle;">${formatRupiah(item.jumlah)}</td>
-                    <td class="text-center no-print" style="vertical-align: middle;">
-                        <button class="btn-action btn-edit-row" onclick="editBarang(${index})">Edit</button>
-                        <button class="btn-action btn-del-row" onclick="hapusBarang(${index})">Hapus</button>
-                    </td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center">${index + 1}</td>
+                <td class="text-center">${tglFormatted}</td>
+                <td>${item.nama}</td>
+                <td class="text-center">${item.plat || '-'}</td>
+                <td class="text-center">${item.vol}</td>
+                <td class="text-right">${formatRupiah(item.harga)}</td>
+                <td class="text-right">${formatRupiah(item.jumlah)}</td>
+                <td class="text-center no-print">
+                    <button class="btn-sm btn-edit" onclick="editBarang('${item.key}')">Edit</button>
+                    <button class="btn-sm btn-delete" onclick="hapusBarang('${item.key}')">Hapus</button>
+                </td>
             `;
-            tbody.innerHTML += row;
+            tbody.appendChild(tr);
         });
 
-        const elTotVol = document.getElementById('totalVolume');
-        const elTotHarga = document.getElementById('totalKeseluruhan');
-        if (elTotVol) elTotVol.innerText = `${totalVol.toLocaleString('id-ID')} m³`;
-        if (elTotHarga) elTotHarga.innerText = formatRupiah(totalHarga);
+        document.getElementById('totalVolume').innerHTML = `<strong>${totalVol} M³</strong>`;
+        document.getElementById('totalKeseluruhan').innerHTML = `<strong>${formatRupiah(totalHarga)}</strong>`;
     }
 
     function generatePDF(model) {
