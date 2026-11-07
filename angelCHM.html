@@ -315,18 +315,7 @@
         function formatRupiah(angka) {
             return new Intl.NumberFormat('id-ID').format(angka || 0);
         }
-
-        function formatTanggalIndo(tanggalStr) {
-            if (!tanggalStr) return "-";
-            const d = new Date(tanggalStr);
-            if (isNaN(d.getTime())) return tanggalStr;
-            
-            const tgl = String(d.getDate()).padStart(2, '0');
-            const bln = String(d.getMonth() + 1).padStart(2, '0');
-            const thn = d.getFullYear();
-            
-            return `${tgl}/${bln}/${thn}`;
-        }
+    
 
         function updateClock() {
             const now = new Date();
@@ -344,73 +333,93 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        const dbRef = ref(db, 'invoiceBBS/transaksi');
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            const container = document.getElementById("invoiceContainer");
-            const totalCountEl = document.getElementById("totalUnpaidCount");
-            const grandTotalEl = document.getElementById("grandTotalSisa");
-            
-            container.innerHTML = "";
-            let unpaidCount = 0;
-            let totalSisaSemua = 0;
+        // Helper Function untuk format Tanggal + Hari (Bahasa Indonesia)
+function formatTanggalIndo(tanggalStr) {
+    if (!tanggalStr) return '-';
+    
+    const d = new Date(tanggalStr);
+    
+    // Jika format tanggal valid
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    // Fallback jika item.tanggal berupa teks biasa
+    return tanggalStr;
+}
 
-            if (data) {
-                Object.entries(data).forEach(([id, item]) => {
-                    if (item.tipe === 'invoice' && item.sisa > 0) {
-                        unpaidCount++;
-                        totalSisaSemua += (item.sisa || 0);
+// --- REALTIME LISTENER ---
+const dbRef = ref(db, 'invoiceBBS/transaksi');
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById("invoiceContainer");
+    const totalCountEl = document.getElementById("totalUnpaidCount");
+    const grandTotalEl = document.getElementById("grandTotalSisa");
+    
+    container.innerHTML = "";
+    let unpaidCount = 0;
+    let totalSisaSemua = 0;
 
-                        const tglFormatted = formatTanggalIndo(item.tanggal);
+    if (data) {
+        Object.entries(data).forEach(([id, item]) => {
+            if (item.tipe === 'invoice' && item.sisa > 0) {
+                unpaidCount++;
+                totalSisaSemua += (item.sisa || 0);
 
-                        // PERHITUNGAN DANA DICICIL
-                        // Jika di Firebase ada property item.terbayar/item.bayar, pakai itu. 
-                        // Jika tidak ada, dihitung otomatis dari Total dikurangi Sisa:
-                        const terbayar = item.terbayar !== undefined ? item.terbayar : ((item.total || 0) - (item.sisa || 0));
+                // Format tanggal dengan nama hari (misal: Senin, 15 Mei 2024)
+                const tglFormatted = formatTanggalIndo(item.tanggal);
 
-                        const card = `
-                            <div class="invoice-card">
-                                <div class="card-top">
-                                    <div>
-                                        <div class="card-title">${item.keterangan}</div>
-                                        <div class="card-date">Tgl : ${tglFormatted}</div>
-                                    </div>
-                                </div>
-                                <div class="card-middle">
-                                    <div class="amount-box">
-                                        <span class="amount-label">Total</span>
-                                        <span class="amount-total">Rp ${formatRupiah(item.total)}</span>
-                                    </div>
-                                    <div class="amount-box" style="text-align: center;">
-                                        <span class="amount-label">Dicicil</span>
-                                        <span class="amount-cicil">Rp ${formatRupiah(terbayar)}</span>
-                                    </div>
-                                    <div class="amount-box" style="text-align: right;">
-                                        <span class="amount-label">Sisa</span>
-                                        <span class="amount-sisa">Rp ${formatRupiah(item.sisa)}</span>
-                                    </div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <span class="badge-belum">BELUM DIBAYAR</span>
-                                </div>
+                // PERHITUNGAN DANA DICICIL
+                const terbayar = item.terbayar !== undefined ? item.terbayar : ((item.total || 0) - (item.sisa || 0));
+
+                const card = `
+                    <div class="invoice-card">
+                        <div class="card-top">
+                            <div>
+                                <div class="card-title">${item.keterangan}</div>
+                                <div class="card-date">📅 ${tglFormatted}</div>
                             </div>
-                        `;
-                        container.innerHTML += card;
-                    }
-                });
-            }
-
-            totalCountEl.innerText = `${unpaidCount} Invoice`;
-            grandTotalEl.innerText = `Rp ${formatRupiah(totalSisaSemua)}`;
-
-            if (unpaidCount === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        ✨ Semua Invoice PT. CAHAYA HARTA MAKMUR Sudah Lunas! ✨
+                        </div>
+                        <div class="card-middle">
+                            <div class="amount-box">
+                                <span class="amount-label">Total</span>
+                                <span class="amount-total">Rp ${formatRupiah(item.total)}</span>
+                            </div>
+                            <div class="amount-box" style="text-align: center;">
+                                <span class="amount-label">Dicicil</span>
+                                <span class="amount-cicil">Rp ${formatRupiah(terbayar)}</span>
+                            </div>
+                            <div class="amount-box" style="text-align: right;">
+                                <span class="amount-label">Sisa</span>
+                                <span class="amount-sisa">Rp ${formatRupiah(item.sisa)}</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge-belum">BELUM DIBAYAR</span>
+                        </div>
                     </div>
                 `;
+                container.innerHTML += card;
             }
         });
+    }
+
+    totalCountEl.innerText = `${unpaidCount} Invoice`;
+    grandTotalEl.innerText = `Rp ${formatRupiah(totalSisaSemua)}`;
+
+    if (unpaidCount === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                ✨ Semua Invoice PT. CAHAYA HARTA MAKMUR Sudah Lunas! ✨
+            </div>
+        `;
+    }
+});
     </script>
 </body>
 </html>
