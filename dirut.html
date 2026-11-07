@@ -272,81 +272,104 @@
             return split[1] != undefined ? rupiah + "," + split[1] : rupiah;
         }
 
-        // --- REALTIME LISTENER ---
-        const dbRef = ref(db, 'invoiceBBS/transaksi');
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            cacheDataTransaksi = data || {};
-            
-            let sisaInv = 0;
-            let sisaTag = 0;
-            
-            const container = document.getElementById("containerData");
-            container.innerHTML = "";
+      // Helper Function untuk format Tanggal + Hari (Bahasa Indonesia)
+function formatTanggalDenganHari(tanggalStr) {
+    if (!tanggalStr) return '-';
+    
+    const d = new Date(tanggalStr);
+    
+    // Jika format tanggal valid
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    // Fallback jika item.tanggal sudah berupa teks biasa
+    return tanggalStr;
+}
 
-            let adaDataTampil = false;
+// --- REALTIME LISTENER ---
+const dbRef = ref(db, 'invoiceBBS/transaksi');
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    cacheDataTransaksi = data || {};
+    
+    let sisaInv = 0;
+    let sisaTag = 0;
+    
+    const container = document.getElementById("containerData");
+    container.innerHTML = "";
 
-            if (data) {
-                const entries = Object.entries(data).reverse();
+    let adaDataTampil = false;
 
-                entries.forEach(([id, item]) => {
-                    // Akumulasi Total Sisa
-                    if (item.tipe === 'invoice') {
-                        sisaInv += (item.sisa || 0);
-                    } else if (item.tipe === 'tagihan') {
-                        sisaTag += (item.sisa || 0);
-                    }
+    if (data) {
+        const entries = Object.entries(data).reverse();
 
-                    // KHUSUS DIRUT: Hanya tampilkan yang BELUM LUNAS (sisa > 0)
-                    if (item.sisa > 0) {
-                        adaDataTampil = true;
-
-                        const isInv = item.tipe === 'invoice';
-                        const borderClass = isInv ? 'border-invoice' : 'border-tagihan';
-                        const badgeClass = isInv ? 'inv' : 'tag';
-                        const tipeText = isInv ? 'INVOICE' : 'TAGIHAN';
-
-                        // Container Memanjang Kebawah per Tagihan/Invoice
-                        const cardHTML = `
-                            <div class="card-item ${borderClass}" onclick="bukaPopupRincian('${id}')">
-                                <!-- 1. Hari, Tanggal & Tipe -->
-                                <div class="card-header-row">
-                                    <span class="card-date">📅 ${item.tanggal}</span>
-                                    <span class="badge-tipe ${badgeClass}">${tipeText}</span>
-                                </div>
-
-                                <!-- 2. Isi Keterangan Tagihan/Invoice -->
-                                <div class="card-keterangan">
-                                    ${item.keterangan}
-                                </div>
-
-                                <!-- 3. Sisa Nominal & Keterangan Belum Lunas -->
-                                <div class="card-footer-row">
-                                    <div class="nominal-info">
-                                        Total: Rp ${formatRupiah(item.total)}<br>
-                                        Sisa: <b style="color: ${isInv ? '#00c853' : '#ff1744'};">Rp ${formatRupiah(item.sisa)}</b>
-                                    </div>
-                                    <div class="badge-status">
-                                        BELUM DIBAYAR
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        container.innerHTML += cardHTML;
-                    }
-                });
-
-                if (!adaDataTampil) {
-                    container.innerHTML = `<div class="text-empty">✨ Semua transaksi telah lunas. ✨</div>`;
-                }
-            } else {
-                container.innerHTML = `<div class="text-empty">Belum ada data transaksi.</div>`;
+        entries.forEach(([id, item]) => {
+            // Akumulasi Total Sisa
+            if (item.tipe === 'invoice') {
+                sisaInv += (item.sisa || 0);
+            } else if (item.tipe === 'tagihan') {
+                sisaTag += (item.sisa || 0);
             }
 
-            // Update Total Sisa Ringkasan Atas
-            document.getElementById("dirutSisaInvoice").innerText = `Rp ${formatRupiah(sisaInv)}`;
-            document.getElementById("dirutSisaTagihan").innerText = `Rp ${formatRupiah(sisaTag)}`;
+            // KHUSUS DIRUT: Hanya tampilkan yang BELUM LUNAS (sisa > 0)
+            if (item.sisa > 0) {
+                adaDataTampil = true;
+
+                const isInv = item.tipe === 'invoice';
+                const borderClass = isInv ? 'border-invoice' : 'border-tagihan';
+                const badgeClass = isInv ? 'inv' : 'tag';
+                const tipeText = isInv ? 'INVOICE' : 'TAGIHAN';
+                
+                // Format tanggal dengan nama hari
+                const tglFormatted = formatTanggalDenganHari(item.tanggal);
+
+                // Container Memanjang Kebawah per Tagihan/Invoice
+                const cardHTML = `
+                    <div class="card-item ${borderClass}" onclick="bukaPopupRincian('${id}')">
+                        <!-- 1. Hari, Tanggal & Tipe -->
+                        <div class="card-header-row">
+                            <span class="card-date">📅 ${tglFormatted}</span>
+                            <span class="badge-tipe ${badgeClass}">${tipeText}</span>
+                        </div>
+
+                        <!-- 2. Isi Keterangan Tagihan/Invoice -->
+                        <div class="card-keterangan">
+                            ${item.keterangan}
+                        </div>
+
+                        <!-- 3. Sisa Nominal & Keterangan Belum Lunas -->
+                        <div class="card-footer-row">
+                            <div class="nominal-info">
+                                Total: Rp ${formatRupiah(item.total)}<br>
+                                Sisa: <b style="color: ${isInv ? '#00c853' : '#ff1744'};">Rp ${formatRupiah(item.sisa)}</b>
+                            </div>
+                            <div class="badge-status">
+                                BELUM DIBAYAR
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            }
         });
+
+        if (!adaDataTampil) {
+            container.innerHTML = `<div class="text-empty">✨ Semua transaksi telah lunas. ✨</div>`;
+        }
+    } else {
+        container.innerHTML = `<div class="text-empty">Belum ada data transaksi.</div>`;
+    }
+
+    // Update Total Sisa Ringkasan Atas
+    document.getElementById("dirutSisaInvoice").innerText = `Rp ${formatRupiah(sisaInv)}`;
+    document.getElementById("dirutSisaTagihan").innerText = `Rp ${formatRupiah(sisaTag)}`;
+});
 
         // --- FUNGSI BUKA POPUP RINCIAN ---
         window.bukaPopupRincian = function(id) {
