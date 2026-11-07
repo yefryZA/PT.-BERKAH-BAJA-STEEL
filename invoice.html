@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0F172A">
+    
     <title>Sistem Keuangan - MANAGER BBS</title>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script type="text/javascript">
-   (function(){
-      emailjs.init("PfFPPaTrq6QBETvjp"); // Public Key
-   })();
-</script>
 
+    <!-- Web App Manifest & Apple Touch Icon -->
+    <link rel="manifest" href="manifest_1.json">
+    <link rel="apple-touch-icon" href="https://yefryza.github.io/KAS_BBS/logobbs.png">
+
+    <!-- EmailJS SDK & Initialization -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init("PfFPPaTrq6QBETvjp"); // Public Key
+       })();
+    </script>
+
+    <!-- Custom Style -->
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #f4f6f9; }
         .hidden { display: none; }
@@ -630,6 +639,25 @@
             document.getElementById("detailModal").style.display = "none";
         }
 
+        function formatTanggalIndo(tanggalStr) {
+    if (!tanggalStr) return '-';
+    
+    const d = new Date(tanggalStr);
+    
+    // Jika format tanggal valid (contoh: YYYY-MM-DD atau ISO String)
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+    
+    // Fallback jika item.tanggal berupa teks biasa
+    return tanggalStr;
+}
+
         // --- LISTENER REALTIME FIREBASE ---
         const dbRef = ref(db, 'invoiceBBS/transaksi');
         onValue(dbRef, (snapshot) => {
@@ -683,10 +711,12 @@
                         }
 
                         const row = `<tr>
-                            <td>
+                           <td>
                                 <span class="${tipeClass}">[${tipeText}]</span><br>
                                 <b>${item.keterangan}</b><br>
-                                <small style="color:gray; font-size:12px;">${item.tanggal}</small>
+                                <div style="color: #0f172a; font-weight: 600; font-size: 12px; margin-top: 3px;">
+                                📅 ${formatTanggalIndo(item.tanggal)}
+                                </div>
                             </td>
                             <td>
                                 Tot: Rp ${formatRupiah(item.total)}<br>
@@ -725,6 +755,7 @@
                     : "";
             }
         });
+        
 // --- FUNGSI KIRIM EMAIL VIA EMAILJS (KIRIM KE 2 EMAIL SEPARATELY) ---
         function kirimEmailKeKasir(nominalTagihanTotal) {
             const listEmail = [
