@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Transaksi Realtime</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-sky-100 via-sky-200 to-sky-300 min-h-screen text-slate-800 p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+
+        <!-- HEADER MONITORING -->
+        <header class="bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-sky-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-extrabold text-sky-950 flex items-center gap-2">
+                    📊 Dashboard Monitoring Transaksi
+                </h1>
+                <p class="text-xs text-sky-700 mt-1 font-medium">Pantauan Keuangan & Transaksi Realtime Cloud (Sistem Kas)</p>
+            </div>
+            <div>
+                <span id="syncBadge" class="bg-amber-100 text-amber-800 text-xs px-3 py-1.5 rounded-full font-semibold shadow-sm flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Menghubungkan...
+                </span>
+            </div>
+        </header>
+
+        <!-- KARTU RINGKASAN KEUANGAN -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Modal Awal -->
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border border-sky-100">
+                <span class="text-xs font-bold text-sky-700 tracking-wider uppercase">Modal Awal</span>
+                <div id="cardModal" class="text-lg font-extrabold text-slate-800 mt-1">Rp 0</div>
+            </div>
+
+            <!-- Total Penjualan -->
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border border-emerald-100">
+                <span class="text-xs font-bold text-emerald-700 tracking-wider uppercase">Total Penjualan</span>
+                <div id="cardPenjualan" class="text-lg font-extrabold text-emerald-600 mt-1">Rp 0</div>
+            </div>
+
+            <!-- Total Pengeluaran -->
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border border-rose-100">
+                <span class="text-xs font-bold text-rose-700 tracking-wider uppercase">Total Pengeluaran</span>
+                <div id="cardPengeluaran" class="text-lg font-extrabold text-rose-600 mt-1">Rp 0</div>
+            </div>
+
+            <!-- Laba Bersih -->
+            <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-md border border-sky-100">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-sky-700 tracking-wider uppercase">Laba Bersih</span>
+                    <span id="cardPersenMargin" class="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded-full">0% Profit Margin</span>
+                </div>
+                <div id="cardMargin" class="text-lg font-extrabold text-sky-900 mt-1">Rp 0</div>
+            </div>
+
+            <!-- Kas Akhir -->
+            <div class="bg-gradient-to-br from-sky-600 to-blue-700 text-white rounded-2xl p-4 shadow-md sm:col-span-2 lg:col-span-1">
+                <span class="text-xs font-bold text-sky-200 tracking-wider uppercase">Kas Akhir</span>
+                <div id="cardKasAkhir" class="text-xl font-black mt-1 text-white">Rp 0</div>
+            </div>
+        </section>
+
+        <!-- TABEL RINCIAN TRANSAKSI (MONITORING ONLY) -->
+        <main class="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-sky-100 overflow-hidden">
+            <div class="p-5 border-b border-sky-100 flex justify-between items-center">
+                <h2 class="font-bold text-sky-950 text-base flex items-center gap-2">
+                    📑 Rincian Transaksi Terbaru
+                </h2>
+                <span class="text-xs text-sky-600 font-semibold">Live Realtime Data</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-sky-50/80 text-sky-900 font-bold uppercase text-xs border-b border-sky-100">
+                        <tr>
+                            <th class="p-3.5">Tanggal & Keterangan</th>
+                            <th class="p-3.5 text-center">Tipe Transaksi</th>
+                            <th class="p-3.5 text-right">Nominal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="txTable" class="divide-y divide-sky-100">
+                        <tr>
+                            <td colspan="3" class="p-6 text-center text-sky-600">Memuat data transaksi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- FIREBASE MODULE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZ2e-WKpiIIn3DkwuuO_v1FfY2Dhxsnrg",
+            authDomain: "system-hasan-lestari.firebaseapp.com",
+            databaseURL: "https://system-hasan-lestari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "system-hasan-lestari",
+            storageBucket: "system-hasan-lestari.firebasestorage.app",
+            messagingSenderId: "341447120860",
+            appId: "1:341447120860:web:fcc93ac4c7320767cae119"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // NODE UTAMA SISTEM KAS
+        const rootRef = ref(db, 'sistem_kas');
+
+        // Format Mata Uang IDR
+        function formatIDR(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(amount || 0);
+        }
+
+        // Format Tanggal Tajam + Nama Hari (Bahasa Indonesia)
+        function formatDate(tanggalInput) {
+            if (!tanggalInput) return '-';
+            const d = new Date(tanggalInput);
+            if (!isNaN(d.getTime())) {
+                return d.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+            return tanggalInput;
+        }
+
+        // REALTIME FIREBASE SYNC (MONITORING ONLY)
+        onValue(rootRef, (snapshot) => {
+            const data = snapshot.val() || {};
+            
+            // Status indikator cloud
+            const badge = document.getElementById('syncBadge');
+            badge.innerText = "Terhubung Cloud";
+            badge.className = "bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold shadow-sm flex items-center gap-1.5";
+
+            const currentModalAwal = parseFloat(data.modal_awal) || 0;
+            const transaksiObj = data.transaksi || {};
+            let currentTotalPengeluaran = 0;
+            let currentTotalPenjualan = 0;
+
+            const tbody = document.getElementById('txTable');
+            tbody.innerHTML = '';
+
+            // Membalik urutan key agar transaksi terbaru berada di paling atas
+            const keys = Object.keys(transaksiObj).reverse();
+
+            if (keys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-sky-700 font-medium">Belum ada transaksi tercatat.</td></tr>';
+            } else {
+                keys.forEach(key => {
+                    const t = transaksiObj[key];
+                    const amount = parseFloat(t.amount || t.nominal || t.total) || 0;
+                    const type = (t.type || t.tipe || '').toLowerCase();
+                    const isPenjualan = type === 'penjualan' || type === 'invoice';
+
+                    if (isPenjualan) {
+                        currentTotalPenjualan += amount;
+                    } else {
+                        currentTotalPengeluaran += amount;
+                    }
+
+                    const tglFormatted = formatDate(t.createdAt || t.updatedAt || t.tanggal);
+                    const desc = t.desc || t.keterangan || '-';
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-sky-50/70 transition-colors border-b border-sky-100/60";
+                    row.innerHTML = `
+                        <td class="p-3.5 font-medium">
+                            <div class="text-xs text-sky-950 font-bold mb-0.5">📅 ${tglFormatted}</div>
+                            <div class="text-sky-900 font-extrabold text-sm">${desc}</div>
+                        </td>
+                        <td class="p-3.5 text-center">
+                            <span class="px-3 py-1 text-xs rounded-full font-bold ${isPenjualan ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}">
+                                ${isPenjualan ? 'INVOICE' : 'Pengeluaran'}
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-right font-extrabold ${isPenjualan ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${isPenjualan ? '+' : '-'} ${formatIDR(amount)}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Perhitungan Ringkasan Kas
+            const currentLabaBersih = currentTotalPenjualan - currentTotalPengeluaran;
+            const kasAkhir = currentModalAwal - currentTotalPengeluaran + currentTotalPenjualan;
+            const marginPersen = currentTotalPengeluaran > 0 ? ((currentLabaBersih / currentTotalPengeluaran) * 100).toFixed(1) : 0;
+
+            // Update Tampilan Kartu
+            document.getElementById('cardModal').innerText = formatIDR(currentModalAwal);
+            document.getElementById('cardPengeluaran').innerText = formatIDR(currentTotalPengeluaran);
+            document.getElementById('cardPenjualan').innerText = formatIDR(currentTotalPenjualan);
+            document.getElementById('cardMargin').innerText = formatIDR(currentLabaBersih);
+            document.getElementById('cardKasAkhir').innerText = formatIDR(kasAkhir);
+            document.getElementById('cardPersenMargin').innerText = `${marginPersen}% Profit Margin`;
+        });
+    </script>
+</body>
+</html>
