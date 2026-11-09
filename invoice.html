@@ -121,22 +121,14 @@
             </form>
         </div>
 
-        <div class="card">
-            <h3>Daftar Transaksi</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Detail</th>
-                        <th>Nominal & Riwayat</th>
-                        <th>Status / Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTable">
-                    <tr><td colspan="3" style="text-align:center;">Memuat data...</td></tr>
-                </tbody>
-            </table>
-        </div>
+<div class="card">
+    <h3>Daftar Transaksi</h3>
+    
+    <!-- Wadah Container Utama (Menggantikan Table & Thead) -->
+    <div id="dataTable" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <div style="text-align:center; padding:15px; color:#666;">Memuat data...</div>
     </div>
+</div>
 
     <!-- TAMPILAN DIRUT -->
     <div id="dirutView" class="hidden">
@@ -192,25 +184,19 @@
         </div>
     </div>
 
-    <!-- POP-UP RINCIAN DIRUT -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h3 id="modalTitle">Riwayat Rincian</h3>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Keterangan</th>
-                            <th>Nominal</th>
-                            <th>Riwayat</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modalBody"></tbody>
-                </table>
-            </div>
-            <button class="btn btn-secondary" onclick="tutupModal()" style="width:100%; margin-top:15px;">Tutup</button>
+ <!-- POP-UP RINCIAN DIRUT -->
+<div id="detailModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h3 id="modalTitle">Riwayat Rincian</h3>
+        
+        <!-- Container Pembungkus List Data (Scrollable jika data banyak) -->
+        <div id="modalBody" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding: 4px;">
+            <!-- Data container/card akan di-render di sini via JavaScript -->
         </div>
+
+        <button class="btn btn-secondary" onclick="tutupModal()" style="width:100%; margin-top:15px;">Tutup</button>
     </div>
+</div>
 
     <script>
         function updateWarnaSelect(selectEl) {
@@ -586,58 +572,76 @@
 
         // --- MODAL DIRUT ---
         window.bukaModal = function(tipe) {
-            const modal = document.getElementById("detailModal");
-            const modalTitle = document.getElementById("modalTitle");
-            const modalBody = document.getElementById("modalBody");
+    const modal = document.getElementById("detailModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    
+    modalTitle.innerText = tipe === 'invoice' ? "Riwayat Rincian Invoice" : "Riwayat Rincian Tagihan";
+    modalBody.innerHTML = "";
+
+    let adaData = false;
+    Object.values(cacheDataTransaksi).forEach(item => {
+        if (item.tipe === tipe) {
+            adaData = true;
             
-            modalTitle.innerText = tipe === 'invoice' ? "Riwayat Rincian Invoice" : "Riwayat Rincian Tagihan";
-            modalBody.innerHTML = "";
+            let statusInfo = (item.status === "Lunas" || item.sisa <= 0) 
+                ? `<span style="color:green; font-weight:bold;">LUNAS</span>` 
+                : `<span style="color:red; font-weight:bold;">${item.status.toUpperCase()}</span>`;
 
-            let adaData = false;
-            Object.values(cacheDataTransaksi).forEach(item => {
-                if (item.tipe === tipe) {
-                    adaData = true;
-                    
-                    let statusInfo = (item.status === "Lunas" || item.sisa <= 0) 
-                        ? `<span style="color:green; font-weight:bold;">LUNAS</span>` 
-                        : `<span style="color:red; font-weight:bold;">${item.status.toUpperCase()}</span>`;
-
-                    let riwayatHTML = "";
-                    let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
-                    if (listRiwayat.length > 0) {
-                        listRiwayat.forEach((r, index) => {
-                            riwayatHTML += `<div style="font-size: 12px; margin-top: 4px;"><b>#${index + 1}</b> • ${r.waktu}<br><b>Rp ${formatRupiah(r.nominal)}</b></div>`;
-                        });
-                    } else {
-                        riwayatHTML = `<small style="color:gray; font-size: 12px;">Belum ada riwayat.</small>`;
-                    }
-
-                    const row = `<tr>
-                        <td style="padding: 8px;">
-                            <b>${item.keterangan}</b><br>
-                            <small style="color:gray;">Tgl: ${item.tanggal}</small>
-                        </td>
-                        <td style="padding: 8px;">
-                            Tot: Rp ${formatRupiah(item.total)}<br>
-                            Sisa: <b style="color:#d50000;">Rp ${formatRupiah(item.sisa)}</b><br>
-                            ${statusInfo}
-                        </td>
-                        <td style="padding: 8px;">${riwayatHTML}</td>
-                    </tr>`;
-                    modalBody.innerHTML += row;
-                }
-            });
-
-            if (!adaData) {
-                modalBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:gray; padding: 15px;">Belum ada data ${tipe}.</td></tr>`;
+            let riwayatHTML = "";
+            let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+            if (listRiwayat.length > 0) {
+                listRiwayat.forEach((r, index) => {
+                    riwayatHTML += `<div style="font-size: 11px; color: #555; margin-top: 2px;">• <b>#${index + 1}</b> (${r.waktu}): Rp ${formatRupiah(r.nominal)}</div>`;
+                });
+            } else {
+                riwayatHTML = `<div style="color:gray; font-size: 11px; margin-top: 2px;">Belum ada riwayat cicilan.</div>`;
             }
 
-            modal.style.display = "block";
-        }
+            let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
+            let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
 
-        window.tutupModal = function() {
-            document.getElementById("detailModal").style.display = "none";
+            // CONTAINER CARD 4 BARIS PER ITEM
+            const card = `
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <!-- BARIS 1: Hari & Tanggal (Warna Hitam Jelas) -->
+                    <div style="color: #000000; font-weight: bold; font-size: 13px;">
+                        📅 ${formatTanggalIndo(item.tanggal)}
+                    </div>
+                    
+                    <!-- BARIS 2: Detail Keterangan -->
+                    <div style="margin-top: 6px; font-size: 14px;">
+                        <span class="${tipeClass}">[${tipeText}]</span> 
+                        <b>${item.keterangan}</b>
+                    </div>
+                    
+                    <!-- BARIS 3: Nominal & Riwayat Pembayaran -->
+                    <div style="margin-top: 6px; font-size: 13px; color: #334155;">
+                        Tot: Rp ${formatRupiah(item.total)} | 
+                        <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
+                        ${riwayatHTML}
+                    </div>
+                    
+                    <!-- BARIS 4: Status -->
+                    <div style="margin-top: 8px; font-size: 13px;">
+                        Status: ${statusInfo}
+                    </div>
+                </div>
+            `;
+            modalBody.innerHTML += card;
         }
+    });
+
+    if (!adaData) {
+        modalBody.innerHTML = `<div style="text-align:center; color:gray; padding: 20px;">Belum ada data ${tipe}.</div>`;
+    }
+
+    modal.style.display = "block";
+}
+
+window.tutupModal = function() {
+    document.getElementById("detailModal").style.display = "none";
+}
 
         function formatTanggalIndo(tanggalStr) {
     if (!tanggalStr) return '-';
@@ -659,102 +663,114 @@
 }
 
         // --- LISTENER REALTIME FIREBASE ---
-        const dbRef = ref(db, 'invoiceBBS/transaksi');
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            cacheDataTransaksi = data || {};
-            
-            let sisaInv = 0, countInv = 0;
-            let sisaTag = 0, countTag = 0;
-            
-            const tableBody = document.getElementById("dataTable");
-            if (tableBody) tableBody.innerHTML = "";
+const dbRef = ref(db, 'invoiceBBS/transaksi');
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    cacheDataTransaksi = data || {};
+    
+    let sisaInv = 0, countInv = 0;
+    let sisaTag = 0, countTag = 0;
+    
+    const containerUtama = document.getElementById("dataTable");
+    if (containerUtama) containerUtama.innerHTML = "";
 
-            if (data) {
-                // Ubah object ke array, lalu balik posisinya (reverse) 
-                // supaya data yang baru/terakhir masuk tampil di paling atas
-                const entries = Object.entries(data).reverse();
+    if (data) {
+        // Ubah object ke array, lalu balik posisinya (reverse) 
+        // supaya data yang baru/terakhir masuk tampil di paling atas
+        const entries = Object.entries(data).reverse();
 
-                entries.forEach(([id, item]) => {
-                    if (item.tipe === 'invoice') {
-                        sisaInv += (item.sisa || 0);
-                        countInv++;
-                    } else if (item.tipe === 'tagihan') {
-                        sisaTag += (item.sisa || 0);
-                        countTag++;
-                    }
-
-                    if (item.status === "Menunggu Konfirmasi" && item.notifAdminDilihat === false) {
-                        tampilkanModalKonfirmasiAdmin(id, item);
-                    }
-
-                    if (tableBody) {
-                        let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
-                        let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
-                        let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
-
-                        let kolomAksi = "";
-                        if (item.status === "Menunggu Konfirmasi") {
-                            kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="tampilkanModalKonfirmasiAdmin('${id}', cacheDataTransaksi['${id}'])">BUTUH KONFIRMASI</span>`;
-                        } else if (item.status === "Belum Dibayar" || item.sisa > 0) {
-                            kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
-                        } else {
-                            kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
-                        }
-
-                        let listRiwayatAdmin = "";
-                        let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
-                        if (listRiwayat.length > 0) {
-                            listRiwayat.forEach((r) => {
-                                listRiwayatAdmin += `<div style="font-size:10px; color:#555;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
-                            });
-                        }
-
-                        const row = `<tr>
-                           <td>
-                                <span class="${tipeClass}">[${tipeText}]</span><br>
-                                <b>${item.keterangan}</b><br>
-                                <div style="color: #0f172a; font-weight: 600; font-size: 12px; margin-top: 3px;">
-                                📅 ${formatTanggalIndo(item.tanggal)}
-                                </div>
-                            </td>
-                            <td>
-                                Tot: Rp ${formatRupiah(item.total)}<br>
-                                <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
-                                <div style="margin-top:4px;">${listRiwayatAdmin}</div>
-                            </td>
-                            <td style="vertical-align: middle; text-align: center;">
-                                ${kolomAksi}
-                            </td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
-                    }
-                });
-            } else {
-                if (tableBody) tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Belum ada data.</td></tr>`;
+        entries.forEach(([id, item]) => {
+            if (item.tipe === 'invoice') {
+                sisaInv += (item.sisa || 0);
+                countInv++;
+            } else if (item.tipe === 'tagihan') {
+                sisaTag += (item.sisa || 0);
+                countTag++;
             }
 
-            // Update Ringkasan Dirut
-            const elSisaInv = document.getElementById("dirutSisaInvoice");
-            const elSisaTag = document.getElementById("dirutSisaTagihan");
-            const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
-            const elStatusTagContainer = document.getElementById("dirutStatusTagihanContainer");
-
-            if (elSisaInv) elSisaInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
-            if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
-
-            if (elStatusInvContainer) {
-                elStatusInvContainer.innerHTML = (countInv > 0 && sisaInv <= 0) 
-                    ? `<span style="background:#2e7d32; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
-                    : "";
+            if (item.status === "Menunggu Konfirmasi" && item.notifAdminDilihat === false) {
+                tampilkanModalKonfirmasiAdmin(id, item);
             }
 
-            if (elStatusTagContainer) {
-                elStatusTagContainer.innerHTML = (countTag > 0 && sisaTag <= 0) 
-                    ? `<span style="background:#ff1744; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
-                    : "";
+            if (containerUtama) {
+                let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
+                let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
+                let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
+
+                let kolomAksi = "";
+                if (item.status === "Menunggu Konfirmasi") {
+                    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="tampilkanModalKonfirmasiAdmin('${id}', cacheDataTransaksi['${id}'])">BUTUH KONFIRMASI</span>`;
+                } else if (item.status === "Belum Dibayar" || item.sisa > 0) {
+                    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
+                } else {
+                    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
+                }
+
+                let listRiwayatAdmin = "";
+                let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+                if (listRiwayat.length > 0) {
+                    listRiwayat.forEach((r) => {
+                        listRiwayatAdmin += `<div style="font-size:11px; color:#555; margin-top:2px;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
+                    });
+                }
+
+                // CONTAINER CARD 4 BARIS PER ITEM (TANPA HEADER TABEL)
+                const card = `
+                    <div class="transaksi-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        
+                        <!-- BARIS 1: Hari & Tanggal (Warna Hitam Jelas) -->
+                        <div style="color: #000000; font-weight: bold; font-size: 13px;">
+                            📅 ${formatTanggalIndo(item.tanggal)}
+                        </div>
+                        
+                        <!-- BARIS 2: Rincian / Detail Keterangan -->
+                        <div style="margin-top: 6px; font-size: 14px;">
+                            <span class="${tipeClass}">[${tipeText}]</span> 
+                            <b>${item.keterangan}</b>
+                        </div>
+                        
+                        <!-- BARIS 3: Nominal & Riwayat Pembayaran -->
+                        <div style="margin-top: 6px; font-size: 13px; color: #334155;">
+                            Tot: Rp ${formatRupiah(item.total)} | 
+                            <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
+                            ${listRiwayatAdmin}
+                        </div>
+                        
+                        <!-- BARIS 4: Status / Tombol Aksi -->
+                        <div style="margin-top: 10px;">
+                            ${kolomAksi}
+                        </div>
+
+                    </div>
+                `;
+                containerUtama.innerHTML += card;
             }
         });
+    } else {
+        if (containerUtama) containerUtama.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Belum ada data.</div>`;
+    }
+
+    // Update Ringkasan Dirut
+    const elSisaInv = document.getElementById("dirutSisaInvoice");
+    const elSisaTag = document.getElementById("dirutSisaTagihan");
+    const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
+    const elStatusTagContainer = document.getElementById("dirutStatusTagihanContainer");
+
+    if (elSisaInv) elSisaInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
+    if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
+
+    if (elStatusInvContainer) {
+        elStatusInvContainer.innerHTML = (countInv > 0 && sisaInv <= 0) 
+            ? `<span style="background:#2e7d32; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
+            : "";
+    }
+
+    if (elStatusTagContainer) {
+        elStatusTagContainer.innerHTML = (countTag > 0 && sisaTag <= 0) 
+            ? `<span style="background:#ff1744; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
+            : "";
+    }
+});
         
 // --- FUNGSI KIRIM EMAIL VIA EMAILJS (KIRIM KE 2 EMAIL SEPARATELY) ---
         function kirimEmailKeKasir(nominalTagihanTotal) {
