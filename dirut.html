@@ -371,52 +371,54 @@ onValue(dbRef, (snapshot) => {
     document.getElementById("dirutSisaTagihan").innerText = `Rp ${formatRupiah(sisaTag)}`;
 });
 
-        // --- FUNGSI BUKA POPUP RINCIAN ---
-        window.bukaPopupRincian = function(id) {
-            const item = cacheDataTransaksi[id];
-            if (!item) return;
+window.bukaPopupRincian = function(id) {
+    const item = cacheDataTransaksi[id];
+    if (!item) return;
 
-            const modal = document.getElementById("popupModal");
-            const modalTitle = document.getElementById("modalTitle");
-            const modalBody = document.getElementById("modalBody");
+    const modal = document.getElementById("popupModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
 
-            const isInv = item.tipe === 'invoice';
-            modalTitle.innerText = `Rincian ${isInv ? 'Invoice' : 'Tagihan'}`;
+    const isInv = item.tipe === 'invoice';
+    modalTitle.innerText = `Rincian ${isInv ? 'Invoice' : 'Tagihan'}`;
 
-            let riwayatHTML = "";
-            let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+    // Format tanggal lengkap untuk modal
+   const tglModalFormatted = formatTanggalDenganHari(item.tanggal);
 
-            if (listRiwayat.length > 0) {
-                listRiwayat.forEach((r, idx) => {
-                    riwayatHTML += `
-                        <div class="riwayat-item">
-                            <span><b>#${idx + 1}</b> ${r.waktu}</span>
-                            <span style="color:green; font-weight:bold;">+ Rp ${formatRupiah(r.nominal)}</span>
-                        </div>
-                    `;
-                });
-            } else {
-                riwayatHTML = `<div style="color:gray; font-size:12px; text-align:center; padding:5px;">Belum ada riwayat cicilan.</div>`;
-            }
+    let riwayatHTML = "";
+    let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
 
-            modalBody.innerHTML = `
-                <div class="detail-row"><b>Tipe:</b> ${item.tipe.toUpperCase()}</div>
-                <div class="detail-row"><b>Tanggal:</b> ${item.tanggal}</div>
-                <div class="detail-row"><b>Keterangan:</b> ${item.keterangan}</div>
-                <hr style="border:0.5px dashed #eee; margin:10px 0;">
-                <div class="detail-row"><b>Total Nominal:</b> Rp ${formatRupiah(item.total)}</div>
-                <div class="detail-row"><b>Sudah Dibayar:</b> Rp ${formatRupiah(item.dibayar)}</div>
-                <div class="detail-row"><b>Sisa Tagihan:</b> <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b></div>
-                <div class="detail-row"><b>Status:</b> <span style="color:#ef6c00; font-weight:bold;">${item.status}</span></div>
-
-                <div style="margin-top:15px; font-weight:bold; font-size:13px;">Riwayat Pembayaran:</div>
-                <div class="riwayat-box">
-                    ${riwayatHTML}
+    if (listRiwayat.length > 0) {
+        listRiwayat.forEach((r, idx) => {
+            riwayatHTML += `
+                <div class="riwayat-item">
+                    <span><b>#${idx + 1}</b> ${r.waktu}</span>
+                    <span style="color:green; font-weight:bold;">+ Rp ${formatRupiah(r.nominal)}</span>
                 </div>
             `;
+        });
+    } else {
+        riwayatHTML = `<div style="color:gray; font-size:12px; text-align:center; padding:5px;">Belum ada riwayat cicilan.</div>`;
+    }
 
-            modal.style.display = "flex";
-        }
+    modalBody.innerHTML = `
+        <div class="detail-row"><b>Tipe:</b> ${item.tipe.toUpperCase()}</div>
+        <div class="detail-row"><b>Tanggal:</b> 📅 ${tglModalFormatted}</div>
+        <div class="detail-row"><b>Keterangan:</b> ${item.keterangan}</div>
+        <hr style="border:0.5px dashed #eee; margin:10px 0;">
+        <div class="detail-row"><b>Total Nominal:</b> Rp ${formatRupiah(item.total)}</div>
+        <div class="detail-row"><b>Sudah Dibayar:</b> Rp ${formatRupiah(item.dibayar)}</div>
+        <div class="detail-row"><b>Sisa Tagihan:</b> <b style="color:red;">Rp ${formatRupiah(item.sisa)}</b></div>
+        <div class="detail-row"><b>Status:</b> <span style="color:#ef6c00; font-weight:bold;">${item.status}</span></div>
+
+        <div style="margin-top:15px; font-weight:bold; font-size:13px;">Riwayat Pembayaran:</div>
+        <div class="riwayat-box">
+            ${riwayatHTML}
+        </div>
+    `;
+
+    modal.style.display = "flex";
+}
 
         window.tutupPopup = function() {
             document.getElementById("popupModal").style.display = "none";
