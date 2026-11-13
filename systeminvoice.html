@@ -198,6 +198,33 @@
     </div>
 </div>
 
+<!-- POP-UP EDIT TRANSAKSI -->
+<div id="modalEditTransaksi" class="modal">
+    <div class="modal-content" style="text-align: left;">
+        <h3 style="margin-top:0;">✏️ Edit Transaksi</h3>
+        
+        <label style="display:block; margin-top:10px; font-weight:bold;">Tanggal:</label>
+        <input type="date" id="editTanggal" style="width:100%; padding:8px; box-sizing:border-box;">
+
+        <label style="display:block; margin-top:10px; font-weight:bold;">Tipe:</label>
+        <select id="editTipe" style="width:100%; padding:8px; box-sizing:border-box;">
+            <option value="invoice">INVOICE</option>
+            <option value="tagihan">TAGIHAN</option>
+        </select>
+
+        <label style="display:block; margin-top:10px; font-weight:bold;">Keterangan:</label>
+        <input type="text" id="editKeterangan" style="width:100%; padding:8px; box-sizing:border-box;">
+
+        <label style="display:block; margin-top:10px; font-weight:bold;">Total Nominal (Rp):</label>
+        <input type="text" id="editTotal" inputmode="numeric" style="width:100%; padding:8px; box-sizing:border-box;">
+
+        <div style="margin-top: 15px; display: flex; gap: 8px;">
+            <button class="btn-modal btn-simpan" onclick="simpanEditTransaksi()">Simpan Perubahan</button>
+            <button class="btn-modal" style="background:gray;" onclick="tutupEditModal()">Batal</button>
+        </div>
+    </div>
+</div>
+
     <script>
         function updateWarnaSelect(selectEl) {
             if (selectEl.value === 'invoice') {
@@ -660,14 +687,22 @@ onValue(dbRef, (snapshot) => {
                 let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
                 let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
 
-                let kolomAksi = "";
-                if (item.status === "Menunggu Konfirmasi") {
-                    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="bukaKonfirmasiManual('${id}')">BUTUH KONFIRMASI</span>`;
-                } else if (item.status === "Belum Dibayar" || item.sisa > 0) {
-                    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
-                } else {
-                    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
-                }
+               let kolomAksi = "";
+if (item.status === "Menunggu Konfirmasi") {
+    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="bukaKonfirmasiManual('${id}')">BUTUH KONFIRMASI</span>`;
+} else if (item.status === "Belum Dibayar" || item.sisa > 0) {
+    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
+} else {
+    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
+}
+
+// Tombol tambahan Edit & Hapus
+let tombolEditHapus = `
+    <div style="display: flex; gap: 6px;">
+        <button onclick="bukaEditModal('${id}')" style="background:#f59e0b; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">✏️ Edit</button>
+        <button onclick="hapusTransaksi('${id}')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🗑️ Hapus</button>
+    </div>
+`;
 
                 let listRiwayatAdmin = "";
                 let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
@@ -691,9 +726,10 @@ onValue(dbRef, (snapshot) => {
                             <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
                             ${listRiwayatAdmin}
                         </div>
-                        <div style="margin-top: 10px;">
-                            ${kolomAksi}
-                        </div>
+                       <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+    <div>${kolomAksi}</div>
+    ${tombolEditHapus}
+</div>
                     </div>
                 `;
                 containerUtama.innerHTML += card;
@@ -849,6 +885,95 @@ window.tutupModal = function() {
                     });
             });
         }
+
+        let activeEditId = null;
+
+// Auto-format Rupiah saat mengedit Total Nominal
+const inputEditTotal = document.getElementById("editTotal");
+if (inputEditTotal) {
+    inputEditTotal.addEventListener("input", function () {
+        let angkaMurni = this.value.replace(/[^0-9]/g, "");
+        this.value = angkaMurni ? formatRupiah(angkaMurni) : "";
+    });
+}
+
+// Buka Modal Edit & isi otomatis dari cacheDataTransaksi
+window.bukaEditModal = function(id) {
+    const item = cacheDataTransaksi[id];
+    if (!item) return alert("Data transaksi tidak ditemukan!");
+
+    activeEditId = id;
+    document.getElementById("editTanggal").value = item.tanggal || "";
+    document.getElementById("editTipe").value = item.tipe || "tagihan";
+    document.getElementById("editKeterangan").value = item.keterangan || "";
+    document.getElementById("editTotal").value = formatRupiah(item.total || 0);
+
+    document.getElementById("modalEditTransaksi").style.display = "block";
+};
+
+window.tutupEditModal = function() {
+    activeEditId = null;
+    document.getElementById("modalEditTransaksi").style.display = "none";
+};
+
+// Simpan Perubahan ke Firebase
+window.simpanEditTransaksi = function() {
+    if (!activeEditId) return;
+    const itemLama = cacheDataTransaksi[activeEditId];
+
+    const tanggalBaru = document.getElementById("editTanggal").value;
+    const tipeBaru = document.getElementById("editTipe").value;
+    const keteranganBaru = document.getElementById("editKeterangan").value.trim();
+    const totalStr = document.getElementById("editTotal").value;
+    const totalBaru = parseFloat(totalStr.replace(/\./g, '').replace(/[^0-9]/g, '')) || 0;
+    const sudahDibayar = itemLama.dibayar || 0;
+
+    if (!tanggalBaru || !keteranganBaru || totalBaru <= 0) {
+        return alert("Lengkapi semua data dengan benar!");
+    }
+    if (totalBaru < sudahDibayar) {
+        return alert(`Total baru tidak boleh lebih kecil dari jumlah yang sudah dibayar (Rp ${formatRupiah(sudahDibayar)})!`);
+    }
+
+    // Hitung ulang sisa & sesuaikan status otomatis
+    const sisaBaru = totalBaru - sudahDibayar;
+    let statusBaru = itemLama.status;
+    if (statusBaru !== "Menunggu Konfirmasi") {
+        statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Dibayar";
+    }
+
+    const itemRef = ref(db, 'invoiceBBS/transaksi/' + activeEditId);
+    update(itemRef, {
+        tanggal: tanggalBaru,
+        tipe: tipeBaru,
+        keterangan: keteranganBaru,
+        total: totalBaru,
+        sisa: sisaBaru,
+        status: statusBaru
+    }).then(() => {
+        alert("Transaksi berhasil diperbarui!");
+        tutupEditModal();
+    }).catch((err) => {
+        alert("Gagal mengedit transaksi: " + err.message);
+    });
+};
+
+// Hapus Transaksi dari Firebase
+window.hapusTransaksi = function(id) {
+    const item = cacheDataTransaksi[id];
+    const namaItem = item ? item.keterangan : "transaksi ini";
+
+    if (confirm(`Yakin ingin menghapus "${namaItem}" secara permanen?`)) {
+        const itemRef = ref(db, 'invoiceBBS/transaksi/' + id);
+        remove(itemRef)
+            .then(() => {
+                alert("Transaksi berhasil dihapus!");
+            })
+            .catch((err) => {
+                alert("Gagal menghapus transaksi: " + err.message);
+            });
+    }
+};
     </script>
 </body>
 </html>
