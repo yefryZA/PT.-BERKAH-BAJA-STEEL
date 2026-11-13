@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halaman Kasir - Barcode Warung</title>
+
+    <!-- Library untuk Generate PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         /* Styling Halaman Utama */
         body { 
@@ -14,16 +19,47 @@
         }
 
         h2 { 
-            color: #FFD700; /* Warna Emas Menyala */
+            color: #FFD700;
             text-shadow: 0 0 8px rgba(255, 215, 0, 0.6), 0 0 2px #000;
             margin-top: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
             font-size: 18px;
             font-weight: bold;
         }
 
-        /* Modal Styles untuk HP (Sudah diperbaiki agar bisa di-scroll) */
+        /* Wrapper Utama */
+        .main-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Tombol Download PDF */
+        .btn-pdf-trigger {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            color: #d50000;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-pdf-trigger:active {
+            background-color: #f1f1f1;
+        }
+
+        /* Modal Styles untuk HP */
         .modal { 
             display: none; 
             position: fixed; 
@@ -33,7 +69,7 @@
             width: 100%; 
             height: 100%; 
             background: rgba(0,0,0,0.7); 
-            overflow-y: auto; /* Mengizinkan scroll jika layar sangat pendek */
+            overflow-y: auto;
             padding: 16px 0;
             box-sizing: border-box;
         }
@@ -45,14 +81,13 @@
             border-radius: 12px; 
             width: 90%; 
             max-width: 400px; 
-            max-height: 85vh; /* Batasi tinggi modal maksimal 85% layar */
+            max-height: 85vh;
             display: flex;
             flex-direction: column;
             text-align: center; 
             box-sizing: border-box; 
         }
 
-        /* Area daftar tagihan di dalam pop-up yang bisa di-scroll */
         #isiNotifTagihan {
             overflow-y: auto;
             flex: 1;
@@ -73,17 +108,17 @@
             font-weight: bold; 
             cursor: pointer; 
             margin-top: 10px; 
-            flex-shrink: 0; /* Mencegah tombol mengecil saat konten penuh */
+            flex-shrink: 0;
         }
 
         .btn-simpan { 
             background: #2e7d32; 
         }
 
-        input[type="text"] { 
+        input[type="text"], input[type="date"] { 
             width: 100%; 
             padding: 12px; 
-            margin-top: 10px; 
+            margin-top: 6px; 
             box-sizing: border-box; 
             font-size: 16px; 
             border: 1px solid #ccc;
@@ -93,14 +128,9 @@
         /* Container List Tagihan */
         #containerTagihan {
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
         }
 
-        /* ==========================================
-           CARD TAGIHAN FULL WIDTH (PER BARIS)
-           ========================================== */
-
+        /* CARD TAGIHAN */
         .card-tagihan {
             background: #ea5858;
             border-radius: 10px;
@@ -114,7 +144,6 @@
             box-sizing: border-box;
         }
 
-        /* 1. Baris Hari & Tanggal */
         .card-row-tanggal {
             width: 100%;
             font-size: 13px;
@@ -127,7 +156,6 @@
             font-weight: bold;
         }
 
-        /* 2. Baris Rincian Keterangan */
         .card-row-rincian {
             width: 100%;
             font-size: 17px;
@@ -139,7 +167,6 @@
             box-sizing: border-box;
         }
 
-        /* 3. Baris Totalan */
         .card-row-totalan {
             width: 100%;
             background-color: #fff8f8;
@@ -171,7 +198,6 @@
             margin-top: 6px;
         }
 
-        /* 4. Baris Tombol & Badge Aksi */
         .card-row-aksi {
             width: 100%;
         }
@@ -206,28 +232,43 @@
             font-size: 13px;
             box-sizing: border-box;
         }
-
-        .badge-lunas-full {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background-color: #198754;
-            color: white;
-            padding: 12px;
-            font-weight: bold;
-            border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
     </style>
 </head>
 <body>
 
-    <h2>DAFTAR TAGIHAN PT. BERKAH BAJA STEEL</h2>
+    <div class="main-wrapper">
+        <h2>DAFTAR TAGIHAN PT. BERKAH BAJA STEEL</h2>
 
-    <!-- Container Utama Card Tagihan -->
-    <div id="containerTagihan">
-        <div style="text-align:center; padding: 20px; color: white;">Memuat data...</div>
+        <!-- Tombol Buka Pilihan Download PDF -->
+        <button class="btn-pdf-trigger" onclick="bukaModalPDF()">
+            📄 Download PDF Tagihan (Pilih Tanggal)
+        </button>
+
+        <!-- Container Utama Card Tagihan -->
+        <div id="containerTagihan">
+            <div style="text-align:center; padding: 20px; color: white;">Memuat data...</div>
+        </div>
+    </div>
+
+    <!-- POP-UP PILIH TANGGAL DOWNLOAD PDF -->
+    <div id="modalDownloadPDF" class="modal">
+        <div class="modal-content" style="text-align: left;">
+            <h3 style="margin-top:0; color:#009cb4;">📄 Download Laporan Tagihan PDF</h3>
+            <p style="font-size: 13px; color: #555; margin-top: 0;">Pilih rentang tanggal tagihan yang akan dicetak ke PDF:</p>
+
+            <label style="display:block; margin-top:10px; font-weight:bold; font-size:14px;">Dari Tanggal:</label>
+            <input type="date" id="pdfTglMulai">
+
+            <label style="display:block; margin-top:12px; font-weight:bold; font-size:14px;">Sampai Tanggal:</label>
+            <input type="date" id="pdfTglAkhir">
+
+            <button class="btn-modal btn-simpan" onclick="generatePDFTagihan()" style="margin-top: 18px;">
+                ⬇️ Download PDF Sekarang
+            </button>
+            <button class="btn-modal" style="background:gray;" onclick="tutupModalPDF()">
+                Batal
+            </button>
+        </div>
     </div>
 
     <!-- POP-UP BACA TAGIHAN BARU FOR KASIR -->
@@ -268,6 +309,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, "https://barcode-warung-81e97-default-rtdb.asia-southeast1.firebasedatabase.app/");
 
+    let semuaTagihanAktif = []; // Menyimpan data tagihan aktif untuk keperluan filter PDF
     let listTagihanBelumDibaca = [];
     let activeBayarId = null;
     let activeTotal = 0;
@@ -276,8 +318,8 @@
 
     // Helper Format Rupiah
     function formatRupiah(angka) {
-        if (!angka) return "0";
-        let number_string = angka.toString().replace(/[^,\d]/g, ""),
+        if (!angka && angka !== 0) return "0";
+        let number_string = Math.round(angka).toString().replace(/[^,\d]/g, ""),
             split = number_string.split(","),
             sisa = split[0].length % 3,
             rupiah = split[0].substr(0, sisa),
@@ -287,7 +329,7 @@
             let separator = sisa ? "." : "";
             rupiah += separator + ribuan.join(".");
         }
-        return rupiah;
+        return rupiah || "0";
     }
 
     // Input Auto Format Rupiah
@@ -305,11 +347,13 @@
         const container = document.getElementById("containerTagihan");
         container.innerHTML = "";
         listTagihanBelumDibaca = [];
+        semuaTagihanAktif = [];
 
         if (data) {
             Object.entries(data).forEach(([id, item]) => {
                 // Filter: Hanya tampilkan tipe tagihan yang belum lunas (sisa > 0)
                 if (item.tipe === 'tagihan' && item.sisa > 0) {
+                    semuaTagihanAktif.push({ id, ...item });
 
                     if (item.dibacaKasir === false) {
                         listTagihanBelumDibaca.push({ id, ...item });
@@ -357,6 +401,206 @@
         }
     });
 
+    // ==========================================
+    // FITUR MODAL & DOWNLOAD PDF BERDASARKAN TANGGAL
+    // ==========================================
+    window.bukaModalPDF = function() {
+        // Set default tanggal: tanggal 1 bulan ini s/d hari ini
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+
+        if (!document.getElementById("pdfTglMulai").value) {
+            document.getElementById("pdfTglMulai").value = `${yyyy}-${mm}-01`;
+        }
+        if (!document.getElementById("pdfTglAkhir").value) {
+            document.getElementById("pdfTglAkhir").value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        document.getElementById("modalDownloadPDF").style.display = "block";
+    }
+
+    window.tutupModalPDF = function() {
+        document.getElementById("modalDownloadPDF").style.display = "none";
+    }
+
+    // Helper konversi string tanggal database ke format YYYY-MM-DD agar akurat saat difilter
+    function normalisasiTanggalYYYYMMDD(tglStr) {
+        if (!tglStr) return "";
+        // Jika sudah format YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}$/.test(tglStr.trim())) {
+            return tglStr.trim();
+        }
+        // Jika format DD/MM/YYYY atau D/M/YYYY
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(tglStr.trim())) {
+            const parts = tglStr.trim().split('/');
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+        // Fallback parsing Date standar
+        const d = new Date(tglStr);
+        if (!isNaN(d.getTime())) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+        return "";
+    }
+
+    // Format Tanggal Panjang untuk Judul PDF (Contoh: 1 November 2026)
+    function formatTanggalPanjang(yyyy_mm_dd) {
+        if (!yyyy_mm_dd) return "-";
+        const [y, m, d] = yyyy_mm_dd.split('-');
+        const namaBulan = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+        return `${parseInt(d, 10)} ${namaBulan[parseInt(m, 10) - 1]} ${y}`;
+    }
+
+    window.generatePDFTagihan = function() {
+        const tglMulai = document.getElementById("pdfTglMulai").value;
+        const tglAkhir = document.getElementById("pdfTglAkhir").value;
+
+        if (!tglMulai || !tglAkhir) {
+            return alert("Silakan pilih tanggal mulai dan tanggal akhir terlebih dahulu!");
+        }
+        if (tglMulai > tglAkhir) {
+            return alert("Tanggal mulai tidak boleh lebih besar dari tanggal akhir!");
+        }
+
+        // Filter tagihan sesuai rentang tanggal
+        const dataTerfilter = semuaTagihanAktif
+            .filter(item => {
+                const tglItem = normalisasiTanggalYYYYMMDD(item.tanggal);
+                return tglItem >= tglMulai && tglItem <= tglAkhir;
+            })
+            .sort((a, b) => {
+                // Urutkan dari tanggal paling awal ke terbaru
+                return normalisasiTanggalYYYYMMDD(a.tanggal).localeCompare(normalisasiTanggalYYYYMMDD(b.tanggal));
+            });
+
+        if (dataTerfilter.length === 0) {
+            return alert(`Tidak ada tagihan yang belum dibayar pada periode ${formatTanggalPanjang(tglMulai)} s/d ${formatTanggalPanjang(tglAkhir)}.`);
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        // --- KOP / JUDUL DOKUMEN ---
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("PT. BERKAH BAJA STEEL", 14, 18);
+
+        doc.setFontSize(11);
+        doc.text("DAFTAR TAGIHAN YANG HARUS DIBAYAR", 14, 25);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Periode Tanggal : ${formatTanggalPanjang(tglMulai)} s/d ${formatTanggalPanjang(tglAkhir)}`, 14, 32);
+
+        // Garis pemisah kop
+        doc.setLineWidth(0.5);
+        doc.line(14, 36, 196, 36);
+
+        // --- PERSIAPAN DATA TABEL ---
+        let totalHarusDibayar = 0;
+        const rows = dataTerfilter.map((item, index) => {
+            const sisaTagihan = Number(item.sisa) || 0;
+            totalHarusDibayar += sisaTagihan;
+
+            return [
+                index + 1,
+                formatTanggalIndo(item.tanggal),
+                item.keterangan || "-",
+                `Rp ${formatRupiah(item.total)}`,
+                `Rp ${formatRupiah(item.dibayar || 0)}`,
+                `Rp ${formatRupiah(sisaTagihan)}`
+            ];
+        });
+
+        // --- RENDER TABEL ---
+        doc.autoTable({
+            startY: 41,
+            head: [['No', 'Hari & Tanggal', 'Rincian Tagihan', 'Total Tagihan', 'Sudah Dibayar', 'Sisa Tagihan']],
+            body: rows,
+            theme: 'grid',
+            styles: {
+                fontSize: 9,
+                cellPadding: 3,
+                valign: 'middle'
+            },
+            headStyles: {
+                fillColor: [0, 156, 180],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                1: { cellWidth: 34 },
+                2: { cellWidth: 'auto' },
+                3: { halign: 'right', cellWidth: 28 },
+                4: { halign: 'right', cellWidth: 28 },
+                5: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
+            }
+        });
+
+        let finalY = doc.lastAutoTable.finalY + 8;
+
+        // Cek jika ruang bawah halaman tidak cukup untuk total + TTD
+        if (finalY + 60 > 285) {
+            doc.addPage();
+            finalY = 20;
+        }
+
+        // --- KOTAK TOTAL JUMLAH YANG HARUS DIBAYAR ---
+        doc.setFillColor(255, 243, 243);
+        doc.setDrawColor(213, 0, 0);
+        doc.setLineWidth(0.4);
+        doc.rect(14, finalY, 182, 12, 'FD');
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text("TOTAL JUMLAH YANG HARUS DIBAYAR :", 18, finalY + 8);
+
+        doc.setTextColor(213, 0, 0);
+        doc.text(`Rp ${formatRupiah(totalHarusDibayar)}`, 192, finalY + 8, { align: "right" });
+
+        // --- BAGIAN TANDA TANGAN (KANAN BAWAH) ---
+        doc.setTextColor(0, 0, 0);
+        let ttdY = finalY + 25;
+        let centerX = 160; // Titik tengah area TTD di sisi kanan
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text("Hormat kami,", centerX, ttdY, { align: "center" });
+
+        // Ruang kosong untuk tanda tangan (24 mm)
+        let namaY = ttdY + 26;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        const namaTTD = "Alif Alfasya Fawwaz";
+        doc.text(namaTTD, centerX, namaY, { align: "center" });
+
+        // Garis bawah nama
+        const textWidth = doc.getTextWidth(namaTTD);
+        doc.setLineWidth(0.3);
+        doc.line(centerX - (textWidth / 2), namaY + 1.2, centerX + (textWidth / 2), namaY + 1.2);
+
+        // Jabatan
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.text("KEUANGAN PT. BBS", centerX, namaY + 6, { align: "center" });
+
+        // Simpan file PDF
+        doc.save(`Tagihan_PT_BBS_${tglMulai}_sd_${tglAkhir}.pdf`);
+        tutupModalPDF();
+    }
+
     // Pop-up Tagihan Baru untuk Kasir
     function tampilkanPopUpTagihanBaru() {
         const container = document.getElementById("isiNotifTagihan");
@@ -371,7 +615,7 @@
         });
 
         container.innerHTML = htmlContent;
-        container.scrollTop = 0; // Reset posisi scroll ke paling atas saat pop-up muncul
+        container.scrollTop = 0;
         document.getElementById("popTagihanBaru").style.display = "block";
     }
 
