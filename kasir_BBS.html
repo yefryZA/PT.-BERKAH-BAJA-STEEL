@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Kasir - Barcode Warung</title>
+    <title>KASIR BBS</title>
 
     <!-- Library untuk Generate PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -316,29 +316,36 @@
     let activeDibayar = 0;
     let activeRiwayat = [];
 
-    // Helper Format Rupiah
-    function formatRupiah(angka) {
-        if (!angka && angka !== 0) return "0";
-        let number_string = Math.round(angka).toString().replace(/[^,\d]/g, ""),
-            split = number_string.split(","),
-            sisa = split[0].length % 3,
-            rupiah = split[0].substr(0, sisa),
-            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+// Helper Format Rupiah (Aman untuk angka database maupun string bertitik)
+function formatRupiah(angka) {
+    if (angka === null || angka === undefined || angka === "") return "0";
 
-        if (ribuan) {
-            let separator = sisa ? "." : "";
-            rupiah += separator + ribuan.join(".");
-        }
-        return rupiah || "0";
-    }
+    // Jika dari database (number), bulatkan dulu. Jika dari ketikan (string), buang titiknya dulu.
+    let bersih = typeof angka === "number"
+        ? Math.round(angka).toString()
+        : angka.toString().replace(/[^0-9]/g, "");
 
-    // Input Auto Format Rupiah
-    const inputNominal = document.getElementById("nominalBayarKasir");
-    if (inputNominal) {
-        inputNominal.addEventListener("keyup", function() {
-            this.value = formatRupiah(this.value);
-        });
+    if (!bersih) return "0";
+
+    let sisa = bersih.length % 3,
+        rupiah = bersih.substr(0, sisa),
+        ribuan = bersih.substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        let separator = sisa ? "." : "";
+        rupiah += separator + ribuan.join(".");
     }
+    return rupiah || "0";
+}
+
+// Input Auto Format Rupiah
+const inputNominal = document.getElementById("nominalBayarKasir");
+if (inputNominal) {
+    inputNominal.addEventListener("input", function() {
+        let angkaMurni = this.value.replace(/[^0-9]/g, "");
+        this.value = angkaMurni ? formatRupiah(angkaMurni) : "";
+    });
+}
 
     // Listener Realtime Tagihan Kasir
     const dbRef = ref(db, 'invoiceBBS/transaksi');
