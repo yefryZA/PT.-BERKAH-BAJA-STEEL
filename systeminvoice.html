@@ -21,9 +21,9 @@
 
     <!-- Custom Style -->
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #f4f6f9; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #a0db9b; }
         .hidden { display: none; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .card { background: rgb(177, 177, 185); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background-color: #007bff; color: white; }
@@ -31,13 +31,13 @@
         .badge-invoice { color: #00c853; font-weight: bold; }
         .badge-tagihan { color: #ff1744; font-weight: bold; }
         
-        .badge-belum-lunas-cicil { background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-belum-lunas-cicil { background: #ff9800; color: rgb(254, 255, 254); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
         .badge-menunggu-konfirmasi { background: #0288d1; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
         .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
         
         .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
         .modal-content { 
-            background: white; 
+            background: rgb(156, 220, 170); 
             margin: 5% auto; 
             padding: 20px; 
             border-radius: 8px; 
@@ -47,7 +47,7 @@
             overflow-y: auto; 
         }
         .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-success { background: #2e7d32; color: white; }
+        .btn-success { background: #2e7d32; color: rgb(164, 147, 147); }
         .btn-danger { background: #d50000; color: white; }
         .btn-secondary { background: gray; color: white; }
         .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
@@ -78,7 +78,7 @@
 
     <!-- TAMPILAN ADMIN -->
     <div id="adminView" class="hidden">
-        <h2>🛠️ Panel Admin Keuangan</h2>
+        <h2>PANEL INVOICE & TAGIHAN</h2>
         
         <div class="card">
             <h3>Input Transaksi Baru</h3>
@@ -114,10 +114,10 @@
                 <button type="button" class="btn btn-add" onclick="tambahBarisItem()">+ Tambah Tagihan Lainnya</button>
 
                 <div style="margin: 15px 0; font-size: 16px; font-weight: bold; background: #e3f2fd; padding: 10px; border-radius: 4px;">
-                    Total Akumulasi Transaksi: <span id="grandTotalText" style="color: #0d47a1;">Rp 0</span>
+                    Total Akumulasi Transaksi : <span id="grandTotalText" style="color: #0d47a1;">Rp 0</span>
                 </div>
 
-                <button type="submit" class="btn btn-success" style="width: 100%;">Simpan Semua Transaksi</button>
+                <button type="submit" class="btn btn-success" style="width: 100%; color: #d8f900 !important; font-weight: bold;">Simpan Semua Transaksi</button>
             </form>
         </div>
 
@@ -468,107 +468,268 @@
             });
         }
 
-        // --- LOGIKA SETUJUI / TOLAK PEMBAYARAN KASIR ---
-        function tampilkanModalKonfirmasiAdmin(id, item) {
-            targetKonfirmasiId = id;
-            itemKonfirmasiData = item;
+      // Variabel penampung antrean konfirmasi
+let listKonfirmasiAdmin = [];
 
-            const container = document.getElementById("detailKonfirmasiAdmin");
-            let pengajuan = item.nominalPengajuanKasir || 0;
-            let sisaSetelahan = item.sisa - pengajuan;
+// --- LOGIKA TAMPILKAN, SETUJUI, & TOLAK PEMBAYARAN KASIR ---
+function tampilkanModalKonfirmasiAdmin(daftarItem) {
+    listKonfirmasiAdmin = daftarItem;
+    const container = document.getElementById("listKonfirmasiAdmin");
+    const badgeJumlah = document.getElementById("jumlahKonfirmasiAdmin");
+    
+    if (badgeJumlah) badgeJumlah.textContent = listKonfirmasiAdmin.length;
 
-            container.innerHTML = `
-                <b>Keterangan:</b> ${item.keterangan}<br>
-                <b>Total Tagihan:</b> Rp ${formatRupiah(item.total)}<br>
-                <b>Sisa Saat Ini:</b> Rp ${formatRupiah(item.sisa)}<br>
-                <hr style="border:0.5px dashed #ccc; margin: 8px 0;">
-                <b>Nominal Dibayar Kasir:</b> <b style="color:green; font-size:16px;">Rp ${formatRupiah(pengajuan)}</b><br>
-                <b>Sisa Setelah Bayar:</b> <b style="color:red;">Rp ${formatRupiah(sisaSetelahan < 0 ? 0 : sisaSetelahan)}</b>
-            `;
-            document.getElementById("modalKonfirmasiAdmin").style.display = "block";
-        }
+    let htmlContent = "";
 
-        window.tutupModalKonfirmasiAdmin = function() {
-            if (targetKonfirmasiId) {
-                const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetKonfirmasiId);
-                update(itemRef, { notifAdminDilihat: true });
+    listKonfirmasiAdmin.forEach((item, idx) => {
+        let pengajuan = item.nominalPengajuanKasir || 0;
+        let sisaSetelahan = item.sisa - pengajuan;
+
+        htmlContent += `
+            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin: 10px 0;">
+                <div style="font-weight: bold; color: #0288d1; margin-bottom: 4px;">
+                    #${idx + 1}. ${item.keterangan}
+                </div>
+                <div>Total Tagihan: <b>Rp ${formatRupiah(item.total)}</b></div>
+                <div>Sisa Saat Ini: <b>Rp ${formatRupiah(item.sisa)}</b></div>
+                <hr style="border:0.5px dashed #ccc; margin: 6px 0;">
+                <div>Nominal Dibayar Kasir: <b style="color:green; font-size:15px;">Rp ${formatRupiah(pengajuan)}</b></div>
+                <div style="margin-bottom: 10px;">Sisa Setelah Bayar: <b style="color:red;">Rp ${formatRupiah(sisaSetelahan < 0 ? 0 : sisaSetelahan)}</b></div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-success" onclick="setujuiPembayaranKasir('${item.id}')" style="flex: 1; padding: 8px; font-size: 13px;">
+                        ✅ Setujui
+                    </button>
+                    <button class="btn btn-danger" onclick="tolakPembayaranKasir('${item.id}')" style="flex: 1; padding: 8px; font-size: 13px;">
+                        ❌ Tolak
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = htmlContent;
+    document.getElementById("modalKonfirmasiAdmin").style.display = "block";
+}
+
+// Fungsi jika admin mengklik badge "BUTUH KONFIRMASI" secara manual di card
+window.bukaKonfirmasiManual = function(idKlik) {
+    let semuaMenunggu = [];
+    Object.entries(cacheDataTransaksi).forEach(([id, item]) => {
+        if (item.status === "Menunggu Konfirmasi") {
+            if (id === idKlik) {
+                semuaMenunggu.unshift({ id, ...item }); // Taruh item yang diklik di urutan paling atas
+            } else {
+                semuaMenunggu.push({ id, ...item });
             }
+        }
+    });
+
+    if (semuaMenunggu.length > 0) {
+        tampilkanModalKonfirmasiAdmin(semuaMenunggu);
+    }
+}
+
+window.tutupModalKonfirmasiAdmin = function() {
+    listKonfirmasiAdmin.forEach(item => {
+        const itemRef = ref(db, 'invoiceBBS/transaksi/' + item.id);
+        update(itemRef, { notifAdminDilihat: true });
+    });
+    document.getElementById("modalKonfirmasiAdmin").style.display = "none";
+}
+
+window.setujuiPembayaranKasir = function(id) {
+    const itemKonfirmasiData = cacheDataTransaksi[id];
+    if (!itemKonfirmasiData) return;
+
+    let dibayarKasir = itemKonfirmasiData.nominalPengajuanKasir || 0;
+    let totalBaruDibayar = (itemKonfirmasiData.dibayar || 0) + dibayarKasir;
+    let sisaBaru = itemKonfirmasiData.total - totalBaruDibayar;
+    
+    let statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Dibayar";
+    let tglLunasBaru = sisaBaru <= 0 ? new Date().toISOString().split('T')[0] : "-";
+
+    let riwayatBaru = itemKonfirmasiData.riwayat ? Object.values(itemKonfirmasiData.riwayat) : [];
+    riwayatBaru.push({
+        waktu: getWaktuSekarang(),
+        nominal: dibayarKasir
+    });
+
+    const itemRef = ref(db, 'invoiceBBS/transaksi/' + id);
+    update(itemRef, {
+        dibayar: totalBaruDibayar,
+        sisa: sisaBaru < 0 ? 0 : sisaBaru,
+        status: statusBaru,
+        tglLunas: tglLunasBaru,
+        riwayat: riwayatBaru,
+        nominalPengajuanKasir: null,
+        notifAdminDilihat: true
+    }).then(() => {
+        alert(`Pembayaran "${itemKonfirmasiData.keterangan}" berhasil disetujui & dicatat!`);
+        // Jika modal dibuka manual & masih ada antrean lain, refresh tampilan modalnya
+        let sisaAntrean = listKonfirmasiAdmin.filter(x => x.id !== id);
+        if (sisaAntrean.length > 0) {
+            tampilkanModalKonfirmasiAdmin(sisaAntrean);
+        } else {
             document.getElementById("modalKonfirmasiAdmin").style.display = "none";
         }
+    }).catch((err) => {
+        alert("Gagal menyetujui: " + err.message);
+    });
+}
 
-        window.setujuiPembayaranKasir = function() {
-            if (!targetKonfirmasiId || !itemKonfirmasiData) return;
+window.tolakPembayaranKasir = function(id) {
+    const itemKonfirmasiData = cacheDataTransaksi[id];
+    if (!itemKonfirmasiData) return;
 
-            let dibayarKasir = itemKonfirmasiData.nominalPengajuanKasir || 0;
-            let totalBaruDibayar = (itemKonfirmasiData.dibayar || 0) + dibayarKasir;
-            let sisaBaru = itemKonfirmasiData.total - totalBaruDibayar;
-            
-            let statusBaru = sisaBaru <= 0 ? "Lunas" : "Belum Dibayar";
-            let tglLunasBaru = sisaBaru <= 0 ? new Date().toISOString().split('T')[0] : "-";
-
-            let riwayatBaru = itemKonfirmasiData.riwayat ? Object.values(itemKonfirmasiData.riwayat) : [];
-            riwayatBaru.push({
-                waktu: getWaktuSekarang(),
-                nominal: dibayarKasir
-            });
-
-            const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetKonfirmasiId);
-            update(itemRef, {
-                dibayar: totalBaruDibayar,
-                sisa: sisaBaru < 0 ? 0 : sisaBaru,
-                status: statusBaru,
-                tglLunas: tglLunasBaru,
-                riwayat: riwayatBaru,
-                nominalPengajuanKasir: null,
-                notifAdminDilihat: true
-            }).then(() => {
-                alert("Pembayaran berhasil disetujui & dicatat!");
-                document.getElementById("modalKonfirmasiAdmin").style.display = "none";
-            }).catch((err) => {
-                alert("Gagal menyetujui: " + err.message);
-            });
+    const itemRef = ref(db, 'invoiceBBS/transaksi/' + id);
+    update(itemRef, {
+        status: "Belum Dibayar",
+        nominalPengajuanKasir: null,
+        notifAdminDilihat: true
+    }).then(() => {
+        alert(`Pembayaran "${itemKonfirmasiData.keterangan}" dari kasir ditolak.`);
+        let sisaAntrean = listKonfirmasiAdmin.filter(x => x.id !== id);
+        if (sisaAntrean.length > 0) {
+            tampilkanModalKonfirmasiAdmin(sisaAntrean);
+        } else {
+            document.getElementById("modalKonfirmasiAdmin").style.display = "none";
         }
+    }).catch((err) => {
+        alert("Gagal menolak: " + err.message);
+    });
+}
 
-        window.tolakPembayaranKasir = function() {
-            if (!targetKonfirmasiId) return;
+// --- HAPUS DATA ---
+window.konfirmasiHapus = function(id, keterangan, total) {
+    targetHapusId = id;
+    document.getElementById("dangerInfoText").innerHTML = `Data: <b>${keterangan}</b><br>Total: <b>Rp ${formatRupiah(total)}</b><br><br>Data lunas ini akan dihapus permanen.`;
+    document.getElementById("dangerModal").style.display = "block";
+}
 
-            const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetKonfirmasiId);
-            update(itemRef, {
-                status: "Belum Dibayar",
-                nominalPengajuanKasir: null,
-                notifAdminDilihat: true
-            }).then(() => {
-                alert("Pembayaran dari kasir ditolak.");
-                document.getElementById("modalKonfirmasiAdmin").style.display = "none";
-            }).catch((err) => {
-                alert("Gagal menolak: " + err.message);
-            });
-        }
+window.tutupDangerModal = function() {
+    targetHapusId = null;
+    document.getElementById("dangerModal").style.display = "none";
+}
 
-        // --- HAPUS DATA ---
-        window.konfirmasiHapus = function(id, keterangan, total) {
-            targetHapusId = id;
-            document.getElementById("dangerInfoText").innerHTML = `Data: <b>${keterangan}</b><br>Total: <b>Rp ${formatRupiah(total)}</b><br><br>Data lunas ini akan dihapus permanen.`;
-            document.getElementById("dangerModal").style.display = "block";
-        }
+window.eksekusiHapusData = function() {
+    if (!targetHapusId) return;
 
-        window.tutupDangerModal = function() {
-            targetHapusId = null;
-            document.getElementById("dangerModal").style.display = "none";
-        }
+    const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetHapusId);
+    remove(itemRef).then(() => {
+        tutupDangerModal();
+        alert("Data berhasil dihapus dari sistem.");
+    }).catch((error) => {
+        alert("Gagal menghapus data: " + error.message);
+        tutupDangerModal();
+    });
+}
 
-        window.eksekusiHapusData = function() {
-            if (!targetHapusId) return;
+// --- LISTENER REALTIME FIREBASE ---
+const dbRef = ref(db, 'invoiceBBS/transaksi');
+onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    cacheDataTransaksi = data || {};
+    
+    let sisaInv = 0, countInv = 0;
+    let sisaTag = 0, countTag = 0;
+    let antreanBaruBelumDilihat = [];
+    
+    const containerUtama = document.getElementById("dataTable");
+    if (containerUtama) containerUtama.innerHTML = "";
 
-            const itemRef = ref(db, 'invoiceBBS/transaksi/' + targetHapusId);
-            remove(itemRef).then(() => {
-                tutupDangerModal();
-                alert("Data berhasil dihapus dari sistem.");
-            }).catch((error) => {
-                alert("Gagal menghapus data: " + error.message);
-                tutupDangerModal();
-            });
-        }
+    if (data) {
+        const entries = Object.entries(data).reverse();
+
+        entries.forEach(([id, item]) => {
+            if (item.tipe === 'invoice') {
+                sisaInv += (item.sisa || 0);
+                countInv++;
+            } else if (item.tipe === 'tagihan') {
+                sisaTag += (item.sisa || 0);
+                countTag++;
+            }
+
+            // Kumpulkan semua pengajuan kasir yang belum dilihat admin
+            if (item.status === "Menunggu Konfirmasi" && item.notifAdminDilihat === false) {
+                antreanBaruBelumDilihat.push({ id, ...item });
+            }
+
+            if (containerUtama) {
+                let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
+                let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
+                let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
+
+                let kolomAksi = "";
+                if (item.status === "Menunggu Konfirmasi") {
+                    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="bukaKonfirmasiManual('${id}')">BUTUH KONFIRMASI</span>`;
+                } else if (item.status === "Belum Dibayar" || item.sisa > 0) {
+                    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
+                } else {
+                    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
+                }
+
+                let listRiwayatAdmin = "";
+                let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
+                if (listRiwayat.length > 0) {
+                    listRiwayat.forEach((r) => {
+                        listRiwayatAdmin += `<div style="font-size:11px; color:#555; margin-top:2px;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
+                    });
+                }
+
+                const card = `
+                    <div class="transaksi-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="color: #000000; font-weight: bold; font-size: 13px;">
+                            📅 ${formatTanggalIndo(item.tanggal)}
+                        </div>
+                        <div style="margin-top: 6px; font-size: 14px;">
+                            <span class="${tipeClass}">[${tipeText}]</span> 
+                            <b>${item.keterangan}</b>
+                        </div>
+                        <div style="margin-top: 6px; font-size: 13px; color: #334155;">
+                            Tot: Rp ${formatRupiah(item.total)} | 
+                            <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
+                            ${listRiwayatAdmin}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            ${kolomAksi}
+                        </div>
+                    </div>
+                `;
+                containerUtama.innerHTML += card;
+            }
+        });
+    } else {
+        if (containerUtama) containerUtama.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Belum ada data.</div>`;
+    }
+
+    // Tampilkan semua pengajuan sekaligus setelah perulangan selesai
+    if (antreanBaruBelumDilihat.length > 0) {
+        tampilkanModalKonfirmasiAdmin(antreanBaruBelumDilihat);
+    }
+
+    // Update Ringkasan Dirut
+    const elSisaInv = document.getElementById("dirutSisaInvoice");
+    const elSisaTag = document.getElementById("dirutSisaTagihan");
+    const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
+    const elStatusTagContainer = document.getElementById("dirutStatusTagihanContainer");
+
+    if (elSisaInv) elSisaInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
+    if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
+
+    if (elStatusInvContainer) {
+        elStatusInvContainer.innerHTML = (countInv > 0 && sisaInv <= 0) 
+            ? `<span style="background:#2e7d32; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
+            : "";
+    }
+
+    if (elStatusTagContainer) {
+        elStatusTagContainer.innerHTML = (countTag > 0 && sisaTag <= 0) 
+            ? `<span style="background:#ff1744; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
+            : "";
+    }
+});    
+
 
         // --- MODAL DIRUT ---
         window.bukaModal = function(tipe) {
@@ -662,116 +823,7 @@ window.tutupModal = function() {
     return tanggalStr;
 }
 
-        // --- LISTENER REALTIME FIREBASE ---
-const dbRef = ref(db, 'invoiceBBS/transaksi');
-onValue(dbRef, (snapshot) => {
-    const data = snapshot.val();
-    cacheDataTransaksi = data || {};
-    
-    let sisaInv = 0, countInv = 0;
-    let sisaTag = 0, countTag = 0;
-    
-    const containerUtama = document.getElementById("dataTable");
-    if (containerUtama) containerUtama.innerHTML = "";
 
-    if (data) {
-        // Ubah object ke array, lalu balik posisinya (reverse) 
-        // supaya data yang baru/terakhir masuk tampil di paling atas
-        const entries = Object.entries(data).reverse();
-
-        entries.forEach(([id, item]) => {
-            if (item.tipe === 'invoice') {
-                sisaInv += (item.sisa || 0);
-                countInv++;
-            } else if (item.tipe === 'tagihan') {
-                sisaTag += (item.sisa || 0);
-                countTag++;
-            }
-
-            if (item.status === "Menunggu Konfirmasi" && item.notifAdminDilihat === false) {
-                tampilkanModalKonfirmasiAdmin(id, item);
-            }
-
-            if (containerUtama) {
-                let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
-                let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
-                let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
-
-                let kolomAksi = "";
-                if (item.status === "Menunggu Konfirmasi") {
-                    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="tampilkanModalKonfirmasiAdmin('${id}', cacheDataTransaksi['${id}'])">BUTUH KONFIRMASI</span>`;
-                } else if (item.status === "Belum Dibayar" || item.sisa > 0) {
-                    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
-                } else {
-                    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
-                }
-
-                let listRiwayatAdmin = "";
-                let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
-                if (listRiwayat.length > 0) {
-                    listRiwayat.forEach((r) => {
-                        listRiwayatAdmin += `<div style="font-size:11px; color:#555; margin-top:2px;">• ${r.waktu}: Rp ${formatRupiah(r.nominal)}</div>`;
-                    });
-                }
-
-                // CONTAINER CARD 4 BARIS PER ITEM (TANPA HEADER TABEL)
-                const card = `
-                    <div class="transaksi-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        
-                        <!-- BARIS 1: Hari & Tanggal (Warna Hitam Jelas) -->
-                        <div style="color: #000000; font-weight: bold; font-size: 13px;">
-                            📅 ${formatTanggalIndo(item.tanggal)}
-                        </div>
-                        
-                        <!-- BARIS 2: Rincian / Detail Keterangan -->
-                        <div style="margin-top: 6px; font-size: 14px;">
-                            <span class="${tipeClass}">[${tipeText}]</span> 
-                            <b>${item.keterangan}</b>
-                        </div>
-                        
-                        <!-- BARIS 3: Nominal & Riwayat Pembayaran -->
-                        <div style="margin-top: 6px; font-size: 13px; color: #334155;">
-                            Tot: Rp ${formatRupiah(item.total)} | 
-                            <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
-                            ${listRiwayatAdmin}
-                        </div>
-                        
-                        <!-- BARIS 4: Status / Tombol Aksi -->
-                        <div style="margin-top: 10px;">
-                            ${kolomAksi}
-                        </div>
-
-                    </div>
-                `;
-                containerUtama.innerHTML += card;
-            }
-        });
-    } else {
-        if (containerUtama) containerUtama.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Belum ada data.</div>`;
-    }
-
-    // Update Ringkasan Dirut
-    const elSisaInv = document.getElementById("dirutSisaInvoice");
-    const elSisaTag = document.getElementById("dirutSisaTagihan");
-    const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
-    const elStatusTagContainer = document.getElementById("dirutStatusTagihanContainer");
-
-    if (elSisaInv) elSisaInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
-    if (elSisaTag) elSisaTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
-
-    if (elStatusInvContainer) {
-        elStatusInvContainer.innerHTML = (countInv > 0 && sisaInv <= 0) 
-            ? `<span style="background:#2e7d32; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
-            : "";
-    }
-
-    if (elStatusTagContainer) {
-        elStatusTagContainer.innerHTML = (countTag > 0 && sisaTag <= 0) 
-            ? `<span style="background:#ff1744; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
-            : "";
-    }
-});
-        
 // --- FUNGSI KIRIM EMAIL VIA EMAILJS (KIRIM KE 2 EMAIL SEPARATELY) ---
         function kirimEmailKeKasir(nominalTagihanTotal) {
             const listEmail = [
