@@ -128,11 +128,11 @@
             <h2>Panel Invoice & Tagihan</h2>
             <div class="sticky-summary">
                 <div class="summary-box summary-invoice">
-                    <div class="summary-label">🟢 INVOICE</div>
+                    <div class="summary-label">🟡 IINVOICE</div>
                     <div class="summary-value" id="totalInvoiceText">Rp 0</div>
                 </div>
                 <div class="summary-box summary-tagihan">
-                    <div class="summary-label">🔴 TAGIHAN</div>
+                    <div class="summary-label">🟡 TAGIHAN</div>
                     <div class="summary-value" id="totalTagihanText">Rp 0</div>
                 </div>
             </div>
@@ -145,9 +145,8 @@
                 <label>Tipe Transaksi:</label>
                 <select id="tipe" onchange="updateWarnaSelect(this)">
                   <select id="tipe" onchange="updateWarnaSelect(this)">
-    <option value="invoice">🟡 Invoice (Pemasukan)</option>
-    <option value="tagihan">🟡 Tagihan (Pengeluaran Kasir)</option>
-</select>
+                        <option value="invoice">🟢 Invoice (Pemasukan)</option>
+                        <option value="tagihan">🔴 Tagihan (Pengeluaran Kasir)</option>
                 </select>
 
                 <label>Tanggal Transaksi:</label>
