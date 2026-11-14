@@ -128,11 +128,11 @@
             <h2>PANEL INVOICE & TAGIHAN</h2>
             <div class="sticky-summary">
                 <div class="summary-box summary-invoice">
-                    <div class="summary-label">🟡 IINVOICE</div>
+                    <div class="summary-label">🟢 INVOICE</div>
                     <div class="summary-value" id="totalInvoiceText">Rp 0</div>
                 </div>
                 <div class="summary-box summary-tagihan">
-                    <div class="summary-label">🟡 TAGIHAN</div>
+                    <div class="summary-label">🔴 TAGIHAN</div>
                     <div class="summary-value" id="totalTagihanText">Rp 0</div>
                 </div>
             </div>
@@ -217,21 +217,21 @@
     </div>
 
     <!-- POP-UP KONFIRMASI PEMBAYARAN KASIR -->
-    <div id="modalKonfirmasiAdmin" class="modal">
-        <div class="modal-content" style="text-align:center;">
-            <h3 style="color:#0288d1; margin-top:0;">🔔 Konfirmasi Pembayaran Kasir</h3>
-            <div id="detailKonfirmasiAdmin" style="text-align:left; line-height:1.6; margin-bottom:15px; font-size: 14px;"></div>
-            <button class="btn btn-success" onclick="setujuiPembayaranKasir()" style="width:100%; margin-bottom:8px;">
-                ✅ Setujui (Terima Pembayaran)
-            </button>
-            <button class="btn btn-danger" onclick="tolakPembayaranKasir()" style="width:100%; margin-bottom:8px;">
-                ❌ Tolak Pembayaran
-            </button>
-            <button class="btn btn-secondary" onclick="tutupModalKonfirmasiAdmin()" style="width:100%;">
-                Nanti Saja
-            </button>
-        </div>
+<div id="modalKonfirmasiAdmin" class="modal">
+    <div class="modal-content" style="text-align:center; max-height: 85vh; overflow-y: auto;">
+        <h3 style="color:#0288d1; margin-top:0;">
+            🔔 Konfirmasi Pembayaran Kasir (<span id="jumlahKonfirmasiAdmin">0</span>)
+        </h3>
+        
+        <!-- ID disamakan menjadi listKonfirmasiAdmin -->
+        <div id="listKonfirmasiAdmin" style="text-align:left; line-height:1.6; margin-bottom:15px; font-size: 14px;"></div>
+        
+        <!-- Tombol Setujui & Tolak global dihapus karena sudah ada di dalam tiap item -->
+        <button class="btn btn-secondary" onclick="tutupModalKonfirmasiAdmin()" style="width:100%;">
+            Nanti Saja
+        </button>
     </div>
+</div>
 
     <!-- POP-UP HAPUS DATA -->
     <div id="dangerModal" class="modal">
