@@ -144,8 +144,10 @@
             <form id="financeForm">
                 <label>Tipe Transaksi:</label>
                 <select id="tipe" onchange="updateWarnaSelect(this)">
-                    <option value="invoice">🟢 Invoice (Pemasukan)</option>
-                    <option value="tagihan">🔴 Tagihan (Pengeluaran Kasir)</option>
+                  <select id="tipe" onchange="updateWarnaSelect(this)">
+    <option value="invoice">🟡 Invoice (Pemasukan)</option>
+    <option value="tagihan">🟡 Tagihan (Pengeluaran Kasir)</option>
+</select>
                 </select>
 
                 <label>Tanggal Transaksi:</label>
