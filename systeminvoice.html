@@ -20,66 +20,125 @@
     </script>
 
     <!-- Custom Style -->
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #a0db9b; }
-        .hidden { display: none; }
-        .card { background: rgb(177, 177, 185); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        
-        .badge-invoice { color: #00c853; font-weight: bold; }
-        .badge-tagihan { color: #ff1744; font-weight: bold; }
-        
-        .badge-belum-lunas-cicil { background: #ff9800; color: rgb(254, 255, 254); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-        .badge-menunggu-konfirmasi { background: #0288d1; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-        .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-        
-        .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-        .modal-content { 
-            background: rgb(156, 220, 170); 
-            margin: 5% auto; 
-            padding: 20px; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 400px; 
-            max-height: 80vh; 
-            overflow-y: auto; 
-        }
-        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-success { background: #2e7d32; color: rgb(164, 147, 147); }
-        .btn-danger { background: #d50000; color: white; }
-        .btn-secondary { background: gray; color: white; }
-        .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
-        .btn-remove { background: #ff1744; color: white; padding: 5px 8px; font-size: 12px; margin-top: 5px; }
+   <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #a0db9b; }
+    .hidden { display: none; }
+    .card { background: rgb(177, 177, 185); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #007bff; color: white; }
+    
+    /* HEADER & BAR RINGKASAN STICKY (DIAM SAAT SCROLL) */
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #a0db9b;
+        margin: -15px -15px 15px -15px;
+        padding: 15px 15px 12px 15px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    .sticky-header h2 {
+        margin: 0 0 10px 0;
+    }
+    .sticky-summary {
+        display: flex;
+        gap: 10px;
+    }
+    .summary-box {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        color: white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    }
+    .summary-invoice {
+        background: #1b5e20;
+        border-left: 5px solid #00e676;
+    }
+    .summary-tagihan {
+        background: #b71c1c;
+        border-left: 5px solid #ff5252;
+    }
+    .summary-label {
+        font-size: 12px;
+        opacity: 0.9;
+        font-weight: bold;
+    }
+    .summary-value {
+        font-size: 17px;
+        font-weight: bold;
+        margin-top: 4px;
+        word-break: break-word;
+    }
 
-        input, select { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
+    .badge-invoice { color: #00c853; font-weight: bold; }
+    .badge-tagihan { color: #ff1744; font-weight: bold; }
+    
+    .badge-belum-lunas-cicil { background: #ff9800; color: rgb(254, 255, 254); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+    .badge-menunggu-konfirmasi { background: #0288d1; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+    .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+    
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+    .modal-content { 
+        background: rgb(156, 220, 170); 
+        margin: 5% auto; 
+        padding: 20px; 
+        border-radius: 8px; 
+        width: 90%; 
+        max-width: 400px; 
+        max-height: 80vh; 
+        overflow-y: auto; 
+    }
+    .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-success { background: #2e7d32; color: rgb(164, 147, 147); }
+    .btn-danger { background: #d50000; color: white; }
+    .btn-secondary { background: gray; color: white; }
+    .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
+    .btn-remove { background: #ff1744; color: white; padding: 5px 8px; font-size: 12px; margin-top: 5px; }
 
-        #tipe {
-            font-weight: bold;
-            font-size: 15px;
-            color: #00c853;
-            border: 2px solid #00c853;
-            border-radius: 4px;
-        }
-        #tipe option[value="invoice"] { background-color: #00e676; color: black; font-weight: bold; }
-        #tipe option[value="tagihan"] { background-color: #ff1744; color: white; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
 
-        .item-row {
-            background: #f9f9f9;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-    </style>
+    #tipe {
+        font-weight: bold;
+        font-size: 15px;
+        color: #00c853;
+        border: 2px solid #00c853;
+        border-radius: 4px;
+    }
+    #tipe option[value="invoice"] { background-color: #00e676; color: black; font-weight: bold; }
+    #tipe option[value="tagihan"] { background-color: #ff1744; color: white; font-weight: bold; }
+
+    .item-row {
+        background: #f9f9f9;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+</style>
 </head>
 <body>
 
     <!-- TAMPILAN ADMIN -->
     <div id="adminView" class="hidden">
-        <h2>PANEL INVOICE & TAGIHAN</h2>
         
+        <!-- JUDUL & KOTAK TOTAL (TETAP DIAM SAAT SCROLL) -->
+        <div class="sticky-header">
+            <h2>PANEL INVOICE & TAGIHAN</h2>
+            <div class="sticky-summary">
+                <div class="summary-box summary-invoice">
+                    <div class="summary-label">🟢 INVOICE</div>
+                    <div class="summary-value" id="totalInvoiceText">Rp 0</div>
+                </div>
+                <div class="summary-box summary-tagihan">
+                    <div class="summary-label">🔴 TAGIHAN</div>
+                    <div class="summary-value" id="totalTagihanText">Rp 0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AREA YANG IKUT BERGERAK SAAT SCROLL -->
         <div class="card">
             <h3>Input Transaksi Baru</h3>
             <form id="financeForm">
@@ -121,14 +180,14 @@
             </form>
         </div>
 
-<div class="card">
-    <h3>Daftar Transaksi</h3>
-    
-    <!-- Wadah Container Utama (Menggantikan Table & Thead) -->
-    <div id="dataTable" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-        <div style="text-align:center; padding:15px; color:#666;">Memuat data...</div>
+        <div class="card">
+            <h3>Daftar Transaksi</h3>
+            <div id="dataTable" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <div style="text-align:center; padding:15px; color:#666;">Memuat data...</div>
+            </div>
+        </div>
+
     </div>
-</div>
 
     <!-- TAMPILAN DIRUT -->
     <div id="dirutView" class="hidden">
@@ -661,6 +720,7 @@ onValue(dbRef, (snapshot) => {
     let sisaInv = 0, countInv = 0;
     let sisaTag = 0, countTag = 0;
     let antreanBaruBelumDilihat = [];
+    let adaTransaksiDitampilkan = false;
     
     const containerUtama = document.getElementById("dataTable");
     if (containerUtama) containerUtama.innerHTML = "";
@@ -669,11 +729,14 @@ onValue(dbRef, (snapshot) => {
         const entries = Object.entries(data).reverse();
 
         entries.forEach(([id, item]) => {
+            const sisaNominal = Number(item.sisa) || 0;
+
+            // Hitung total sisa yang belum lunas saja
             if (item.tipe === 'invoice') {
-                sisaInv += (item.sisa || 0);
+                if (sisaNominal > 0) sisaInv += sisaNominal;
                 countInv++;
             } else if (item.tipe === 'tagihan') {
-                sisaTag += (item.sisa || 0);
+                if (sisaNominal > 0) sisaTag += sisaNominal;
                 countTag++;
             }
 
@@ -682,27 +745,32 @@ onValue(dbRef, (snapshot) => {
                 antreanBaruBelumDilihat.push({ id, ...item });
             }
 
+            // FILTER: Jika sudah lunas (sisa <= 0) dan bukan menunggu konfirmasi, jangan ditampilkan lagi
+            if (sisaNominal <= 0 && item.status !== "Menunggu Konfirmasi") {
+                return;
+            }
+
             if (containerUtama) {
+                adaTransaksiDitampilkan = true;
+
                 let riwayatJson = item.riwayat ? JSON.stringify(item.riwayat).replace(/"/g, '&quot;') : '[]';
                 let tipeClass = item.tipe === 'invoice' ? 'badge-invoice' : 'badge-tagihan';
                 let tipeText = item.tipe === 'invoice' ? 'INVOICE' : 'TAGIHAN';
 
-               let kolomAksi = "";
-if (item.status === "Menunggu Konfirmasi") {
-    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="bukaKonfirmasiManual('${id}')">BUTUH KONFIRMASI</span>`;
-} else if (item.status === "Belum Dibayar" || item.sisa > 0) {
-    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
-} else {
-    kolomAksi = `<span class="badge-lunas-hapus" onclick="konfirmasiHapus('${id}', '${item.keterangan.replace(/'/g, "\\'")}', ${item.total})">LUNAS</span>`;
-}
+                let kolomAksi = "";
+                if (item.status === "Menunggu Konfirmasi") {
+                    kolomAksi = `<span class="badge-menunggu-konfirmasi" onclick="bukaKonfirmasiManual('${id}')">BUTUH KONFIRMASI</span>`;
+                } else {
+                    kolomAksi = `<span class="badge-belum-lunas-cicil" onclick="bukaCicilModal('${id}', ${item.total}, ${item.dibayar}, ${riwayatJson})">BELUM DIBAYAR</span>`;
+                }
 
-// Tombol tambahan Edit & Hapus
-let tombolEditHapus = `
-    <div style="display: flex; gap: 6px;">
-        <button onclick="bukaEditModal('${id}')" style="background:#f59e0b; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">✏️ Edit</button>
-        <button onclick="hapusTransaksi('${id}')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🗑️ Hapus</button>
-    </div>
-`;
+                // Tombol tambahan Edit & Hapus
+                let tombolEditHapus = `
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="bukaEditModal('${id}')" style="background:#f59e0b; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">✏️ Edit</button>
+                        <button onclick="hapusTransaksi('${id}')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer;">🗑️ Hapus</button>
+                    </div>
+                `;
 
                 let listRiwayatAdmin = "";
                 let listRiwayat = item.riwayat ? Object.values(item.riwayat) : [];
@@ -723,20 +791,23 @@ let tombolEditHapus = `
                         </div>
                         <div style="margin-top: 6px; font-size: 13px; color: #334155;">
                             Tot: Rp ${formatRupiah(item.total)} | 
-                            <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(item.sisa)}</b>
+                            <b style="color: ${item.tipe === 'invoice' ? '#00c853' : '#ff1744'};">Sisa: Rp ${formatRupiah(sisaNominal)}</b>
                             ${listRiwayatAdmin}
                         </div>
-                       <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
-    <div>${kolomAksi}</div>
-    ${tombolEditHapus}
-</div>
+                        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                            <div>${kolomAksi}</div>
+                            ${tombolEditHapus}
+                        </div>
                     </div>
                 `;
                 containerUtama.innerHTML += card;
             }
         });
-    } else {
-        if (containerUtama) containerUtama.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Belum ada data.</div>`;
+    }
+
+    // Jika semua data sudah lunas atau database kosong
+    if (containerUtama && !adaTransaksiDitampilkan) {
+        containerUtama.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Tidak ada transaksi yang belum lunas.</div>`;
     }
 
     // Tampilkan semua pengajuan sekaligus setelah perulangan selesai
@@ -744,7 +815,13 @@ let tombolEditHapus = `
         tampilkanModalKonfirmasiAdmin(antreanBaruBelumDilihat);
     }
 
-    // Update Ringkasan Dirut
+    // Update Kotak Sticky Admin (Kiri & Kanan)
+    const elAdminInv = document.getElementById("totalInvoiceText");
+    const elAdminTag = document.getElementById("totalTagihanText");
+    if (elAdminInv) elAdminInv.innerText = `Rp ${formatRupiah(sisaInv)}`;
+    if (elAdminTag) elAdminTag.innerText = `Rp ${formatRupiah(sisaTag)}`;
+
+    // Update Ringkasan Dirut (Tetap dipertahankan agar tidak berubah)
     const elSisaInv = document.getElementById("dirutSisaInvoice");
     const elSisaTag = document.getElementById("dirutSisaTagihan");
     const elStatusInvContainer = document.getElementById("dirutStatusInvoiceContainer");
@@ -764,7 +841,7 @@ let tombolEditHapus = `
             ? `<span style="background:#ff1744; color:#fff; padding:2px 8px; border-radius:4px;">✨ SEMUA LUNAS ✨</span>` 
             : "";
     }
-});    
+});   
 
 
         // --- MODAL DIRUT ---
