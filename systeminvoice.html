@@ -20,105 +20,257 @@
     </script>
 
     <!-- Custom Style -->
-   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #a0db9b; }
-    .hidden { display: none; }
-    .card { background: rgb(177, 177, 185); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background-color: #007bff; color: white; }
-    
-    /* HEADER & BAR RINGKASAN STICKY (DIAM SAAT SCROLL) */
-    .sticky-header {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: #a0db9b;
-        margin: -15px -15px 15px -15px;
-        padding: 15px 15px 12px 15px;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-    .sticky-header h2 {
-        margin: 0 0 10px 0;
-    }
-    .sticky-summary {
-        display: flex;
-        gap: 10px;
-    }
-    .summary-box {
-        flex: 1;
-        padding: 12px;
-        border-radius: 8px;
-        color: white;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-    }
-    .summary-invoice {
-        background: #1b5e20;
-        border-left: 5px solid #00e676;
-    }
-    .summary-tagihan {
-        background: #b71c1c;
-        border-left: 5px solid #ff5252;
-    }
-    .summary-label {
-        font-size: 12px;
-        opacity: 0.9;
-        font-weight: bold;
-    }
-    .summary-value {
-        font-size: 17px;
-        font-weight: bold;
-        margin-top: 4px;
-        word-break: break-word;
-    }
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background: #a0db9b; }
+        .hidden { display: none; }
+        .card { background: rgb(177, 177, 185); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        
+        /* HEADER & BAR RINGKASAN STICKY (DIAM SAAT SCROLL) */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #a0db9b;
+            margin: -15px -15px 15px -15px;
+            padding: 15px 15px 12px 15px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .sticky-header h2 {
+            margin: 0 0 10px 0;
+        }
+        .sticky-summary {
+            display: flex;
+            gap: 10px;
+        }
+        .summary-box {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+        .summary-invoice {
+            background: #1b5e20;
+            border-left: 5px solid #00e676;
+        }
+        .summary-tagihan {
+            background: #b71c1c;
+            border-left: 5px solid #ff5252;
+        }
+        .summary-label {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: bold;
+        }
+        .summary-value {
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 4px;
+            word-break: break-word;
+        }
 
-    .badge-invoice { color: #00c853; font-weight: bold; }
-    .badge-tagihan { color: #ff1744; font-weight: bold; }
-    
-    .badge-belum-lunas-cicil { background: #ff9800; color: rgb(254, 255, 254); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-    .badge-menunggu-konfirmasi { background: #0288d1; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-    .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
-    
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-    .modal-content { 
-        background: rgb(156, 220, 170); 
-        margin: 5% auto; 
-        padding: 20px; 
-        border-radius: 8px; 
-        width: 90%; 
-        max-width: 400px; 
-        max-height: 80vh; 
-        overflow-y: auto; 
-    }
-    .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-success { background: #2e7d32; color: rgb(164, 147, 147); }
-    .btn-danger { background: #d50000; color: white; }
-    .btn-secondary { background: gray; color: white; }
-    .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
-    .btn-remove { background: #ff1744; color: white; padding: 5px 8px; font-size: 12px; margin-top: 5px; }
+        .badge-invoice { color: #00c853; font-weight: bold; }
+        .badge-tagihan { color: #ff1744; font-weight: bold; }
+        
+        .badge-belum-lunas-cicil { background: #ff9800; color: rgb(254, 255, 254); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-menunggu-konfirmasi { background: #0288d1; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-lunas-hapus { background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: inline-block; }
+        
+        .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { 
+            background: rgb(156, 220, 170); 
+            margin: 5% auto; 
+            padding: 20px; 
+            border-radius: 8px; 
+            width: 90%; 
+            max-width: 400px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+        }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-success { background: #2e7d32; color: rgb(164, 147, 147); }
+        .btn-danger { background: #d50000; color: white; }
+        .btn-secondary { background: gray; color: white; }
+        .btn-add { background: #0288d1; color: white; padding: 6px 12px; font-size: 13px; margin-top: 5px; }
+        .btn-remove { background: #ff1744; color: white; padding: 5px 8px; font-size: 12px; margin-top: 5px; }
 
-    input, select { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0 10px 0; box-sizing: border-box; }
 
-    #tipe {
-        font-weight: bold;
-        font-size: 15px;
-        color: #00c853;
-        border: 2px solid #00c853;
-        border-radius: 4px;
-    }
-    #tipe option[value="invoice"] { background-color: #00e676; color: black; font-weight: bold; }
-    #tipe option[value="tagihan"] { background-color: #ff1744; color: white; font-weight: bold; }
+        #tipe {
+            font-weight: bold;
+            font-size: 15px;
+            color: #00c853;
+            border: 2px solid #00c853;
+            border-radius: 4px;
+        }
+        #tipe option[value="invoice"] { background-color: #00e676; color: black; font-weight: bold; }
+        #tipe option[value="tagihan"] { background-color: #ff1744; color: white; font-weight: bold; }
 
-    .item-row {
-        background: #f9f9f9;
-        padding: 10px;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        margin-bottom: 10px;
-    }
-</style>
+        .item-row {
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* ================= UPGRADE WELCOME / LOGIN SCREEN ================= */
+        #welcome-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .welcome-card {
+            background: #ffffff;
+            padding: 32px 24px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 330px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+            border-top: 4px solid #1b5e20;
+        }
+        .welcome-logo {
+            display: block;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin: 0 auto 12px auto;
+            border-radius: 10px;
+            background: #f1f5f9;
+            padding: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+        .welcome-title {
+            margin: 0 0 4px 0;
+            color: #0f172a;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-align: center;
+        }
+        .welcome-subtitle {
+            margin: 0 0 22px 0;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .pass-group {
+            position: relative;
+            margin-bottom: 14px;
+        }
+        .pass-group input {
+            width: 100%;
+            padding: 12px 40px; /* Padding kiri & kanan seimbang agar teks benar-benar di tengah */
+            margin: 0;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #0f172a;
+            background: #f8fafc;
+            text-align: center;
+            letter-spacing: 2px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .pass-group input::placeholder {
+            letter-spacing: normal;
+            font-weight: normal;
+            color: #94a3b8;
+        }
+        .pass-group input:focus {
+            border-color: #1b5e20;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.15);
+        }
+        .btn-toggle-pass {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            padding: 4px;
+            opacity: 0.7;
+        }
+        .btn-toggle-pass:hover {
+            opacity: 1;
+        }
+        .btn-unlock {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-unlock:hover {
+            box-shadow: 0 6px 16px rgba(27, 94, 32, 0.4);
+        }
+        .btn-unlock:active {
+            transform: scale(0.98);
+        }
+        #login-error {
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+        }
+        @keyframes shakeBox {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .shake {
+            animation: shakeBox 0.3s ease-in-out;
+        }
+    </style>
 </head>
 <body>
+
+    <!-- 1. LAYAR LOGIN (TERKUNCI SEBELUM PASSWORD BENAR) -->
+    <div id="welcome-screen">
+        <div class="welcome-card" id="welcome-card">
+            <img src="https://yefryza.github.io/KAS_BBS/logobbs.png" alt="Logo BBS" class="welcome-logo">
+            <h2 class="welcome-title">LOGIN</h2>
+            <p class="welcome-subtitle">MANAGER BBS</p>
+
+            <form onsubmit="cekPassword(event)">
+                <div class="pass-group">
+                    <input type="password" id="input-password" placeholder="Masukkan Password" required autofocus>
+                    <button type="button" class="btn-toggle-pass" onclick="togglePassword()" title="Lihat Password">👁️</button>
+                </div>
+                <button type="submit" class="btn-unlock">LOGIN</button>
+            </form>
+
+            <div id="login-error">Password salah! Silakan coba lagi.</div>
+        </div>
+    </div>
+
+    <!-- 2. PEMBUNGKUS APLIKASI UTAMA (TERSEMBUNYI SAMPAI PASSWORD BENAR) -->
+    <div id="main-app" style="display: none;">
 
     <!-- TAMPILAN ADMIN -->
     <div id="adminView" class="hidden">
@@ -293,6 +445,53 @@
                 selectEl.style.color = "#ff1744";
                 selectEl.style.borderColor = "#ff1744";
             }
+        }
+    </script>
+
+    <!-- 1. SCRIPT LOGIN (WAJIB PAKAI <script> BIASA, BUKAN type="module") -->
+    <script>
+        const PASSWORD_BENAR = "BBS2026";
+
+        // Cek langsung apakah sudah login di sesi tab ini
+        if (sessionStorage.getItem("bbs_unlocked") === "true") {
+            bukaAplikasi();
+        }
+
+        function cekPassword(event) {
+            event.preventDefault();
+            const input = document.getElementById("input-password").value;
+            const errorMsg = document.getElementById("login-error");
+            const card = document.getElementById("welcome-card");
+
+            if (input === PASSWORD_BENAR) {
+                sessionStorage.setItem("bbs_unlocked", "true");
+                bukaAplikasi();
+            } else {
+                errorMsg.style.display = "block";
+                card.classList.remove("shake");
+                void card.offsetWidth;
+                card.classList.add("shake");
+                document.getElementById("input-password").value = "";
+                document.getElementById("input-password").focus();
+            }
+        }
+
+        function bukaAplikasi() {
+            document.getElementById("welcome-screen").style.display = "none";
+            document.getElementById("main-app").style.display = "block";
+        }
+
+        function togglePassword() {
+            const input = document.getElementById("input-password");
+            input.type = (input.type === "password") ? "text" : "password";
+        }
+
+        function kunciLayar() {
+            sessionStorage.removeItem("bbs_unlocked");
+            document.getElementById("main-app").style.display = "none";
+            document.getElementById("welcome-screen").style.display = "flex";
+            document.getElementById("input-password").value = "";
+            document.getElementById("login-error").style.display = "none";
         }
     </script>
 
